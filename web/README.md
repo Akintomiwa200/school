@@ -33,7 +33,7 @@ web/
 ## Setup
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env.local
 ```
 
@@ -49,10 +49,12 @@ npm run db:seed
 ### Run
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
+
+> Uses Turbopack. Requires `pnpm install` first (Prisma generates on postinstall).
 
 ## Seed accounts
 

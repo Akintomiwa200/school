@@ -1,1 +1,1 @@
-export { stripe, createPaymentIntent, createCheckoutSession } from "./stripe";
+export { getStripe, createPaymentIntent, createCheckoutSession } from "./stripe";

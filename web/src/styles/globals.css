@@ -1,75 +1,375 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+@plugin "tailwindcss-animate";
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 221.2 83.2% 53.3%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 221.2 83.2% 53.3%;
-  }
+/* ─── Tailwind 4 design tokens ─── */
+@theme {
+  /* Brand & accent */
+  --color-primary: #5865f2;
+  --color-primary-foreground: #ffffff;
+  --color-green: #35ed7e;
+  --color-magenta: #ec48bd;
+  --color-hyperlink: #00b0f4;
 
+  /* Marketing / homepage */
+  --color-brand-purple: #5d21d0;
+  --color-brand-orange: #ff9f1c;
+  --color-brand-yellow: #ffb800;
+  --color-brand-blue: #4f8cff;
+  --color-brand-pink: #ff6bcb;
+  --color-marketing-bg: #ffffff;
+  --color-marketing-text: #1e293b;
+  --color-marketing-muted: #64748b;
+  --color-marketing-grid: #e8ecf1;
+  --color-marketing-surface: #f3f4f6;
+  --color-marketing-card: #f1f3f5;
+
+  /* App shell (dashboard) */
+  --color-canvas: #0a0d3a;
+  --color-surface-indigo: #1e2353;
+  --color-surface-onyx: #23272a;
+  --color-surface-black: #000000;
+  --color-ink: #ffffff;
+  --color-ink-dark: #000000;
+  --color-muted-ink: #333333;
+
+  --color-background: #ffffff;
+  --color-foreground: #1e293b;
+  --color-card: #ffffff;
+  --color-card-foreground: #1e293b;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #1e293b;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #1e293b;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #5865f2;
+
+  --color-sidebar: #ffffff;
+  --color-sidebar-foreground: #1e293b;
+  --color-sidebar-primary: #5865f2;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #f1f5f9;
+  --color-sidebar-accent-foreground: #1e293b;
+  --color-sidebar-border: #e2e8f0;
+  --color-sidebar-ring: #5865f2;
+
+  --color-accent: #ec48bd;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #ed4245;
+  --color-destructive-foreground: #ffffff;
+
+  --radius-xs: 6px;
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --radius-xl: 40px;
+  --radius-pill: 50px;
+  --radius-jumbo: 120px;
+  --radius-full: 9999px;
+  --radius: 12px;
+
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 20px;
+  --spacing-xl: 24px;
+  --spacing-xxl: 32px;
+  --spacing-section: 40px;
+
+  --text-display-xl: 82px;
+  --text-display-xl--line-height: 1;
+  --text-display-lg: 62px;
+  --text-display-lg--line-height: 1.05;
+  --text-display-md: 56px;
+  --text-display-md--line-height: 1.05;
+  --text-heading-lg: 48px;
+  --text-heading-lg--line-height: 1.1;
+  --text-heading-sm: 22px;
+  --text-heading-sm--line-height: 1.2;
+  --text-body-lg: 20px;
+  --text-body-lg--line-height: 1.4;
+  --text-type-link-lg: 18px;
+  --text-type-link-lg--line-height: 1.4;
+  --text-body: 16px;
+  --text-body--line-height: 1.5;
+  --text-type-link: 16px;
+  --text-type-link--line-height: 1.4;
+  --text-type-link-sm: 14px;
+  --text-type-link-sm--line-height: 1.4;
+
+  --font-display: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --shadow-float: 0 8px 32px rgba(15, 23, 42, 0.08);
+  --shadow-marketing: 0 4px 24px rgba(93, 33, 208, 0.08);
+
+  --container-content: 1200px;
+  --animate-mesh: mesh-shift 18s ease-in-out infinite;
+}
+
+/* Dark mode — follows system preference via next-themes `class="dark"` on <html> */
+@layer theme {
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --color-marketing-bg: #0a0d3a;
+    --color-marketing-text: #f1f5f9;
+    --color-marketing-muted: #94a3b8;
+    --color-marketing-grid: #1e293b;
+    --color-marketing-surface: #1e2353;
+    --color-marketing-card: #23272a;
+
+    --color-background: #0a0d3a;
+    --color-foreground: #ffffff;
+    --color-card: #1e2353;
+    --color-card-foreground: #ffffff;
+    --color-popover: #1e2353;
+    --color-popover-foreground: #ffffff;
+    --color-secondary: #23272a;
+    --color-secondary-foreground: #ffffff;
+    --color-muted: #1e2353;
+    --color-muted-foreground: #a0a4b8;
+    --color-border: #2e3568;
+    --color-input: #2e3568;
+    --color-ring: #5865f2;
+
+    --color-sidebar: #0a0d3a;
+    --color-sidebar-foreground: #ffffff;
+    --color-sidebar-accent: #1e2353;
+    --color-sidebar-accent-foreground: #ffffff;
+    --color-sidebar-border: #2e3568;
+
+    --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.35);
+    --shadow-marketing: 0 4px 24px rgba(0, 0, 0, 0.25);
   }
 }
 
+@keyframes mesh-shift {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1) translate(0%, 0%);
+  }
+  33% {
+    opacity: 1;
+    transform: scale(1.08) translate(2%, -1%);
+  }
+  66% {
+    opacity: 0.9;
+    transform: scale(1.04) translate(-1%, 2%);
+  }
+}
+
+/* ─── Typography utilities (prefixed to avoid color token clashes) ─── */
+@utility text-display-xl {
+  font-family: var(--font-display);
+  font-size: var(--text-display-xl);
+  font-weight: 800;
+  line-height: var(--text-display-xl--line-height);
+  letter-spacing: 0;
+}
+
+@utility text-display-lg {
+  font-family: var(--font-display);
+  font-size: var(--text-display-lg);
+  font-weight: 800;
+  line-height: var(--text-display-lg--line-height);
+  letter-spacing: 0;
+}
+
+@utility text-display-md {
+  font-family: var(--font-display);
+  font-size: var(--text-display-md);
+  font-weight: 700;
+  line-height: var(--text-display-md--line-height);
+  letter-spacing: 0;
+}
+
+@utility text-heading-lg {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-lg);
+  font-weight: 700;
+  line-height: var(--text-heading-lg--line-height);
+}
+
+@utility text-heading-sm {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-sm);
+  font-weight: 700;
+  line-height: var(--text-heading-sm--line-height);
+}
+
+@utility text-body-lg {
+  font-family: var(--font-sans);
+  font-size: var(--text-body-lg);
+  font-weight: 500;
+  line-height: var(--text-body-lg--line-height);
+}
+
+@utility type-link-lg {
+  font-family: var(--font-sans);
+  font-size: var(--text-type-link-lg);
+  font-weight: 500;
+  line-height: var(--text-type-link-lg--line-height);
+}
+
+@utility text-body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: var(--text-body--line-height);
+}
+
+@utility type-link {
+  font-family: var(--font-sans);
+  font-size: var(--text-type-link);
+  font-weight: 500;
+  line-height: var(--text-type-link--line-height);
+}
+
+@utility type-link-sm {
+  font-family: var(--font-sans);
+  font-size: var(--text-type-link-sm);
+  font-weight: 500;
+  line-height: var(--text-type-link-sm--line-height);
+}
+
+/* ─── Marketing surfaces ─── */
+@utility marketing-grid-bg {
+  background-color: var(--color-marketing-bg);
+  background-image:
+    linear-gradient(to right, var(--color-marketing-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-marketing-grid) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@utility squiggle-underline {
+  text-decoration: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 12' preserveAspectRatio='none'%3E%3Cpath d='M0 8 C40 2 80 12 120 6 S200 2 240 8 300 4 320 8' fill='none' stroke='%23ff9f1c' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 10px;
+  padding-bottom: 6px;
+}
+
+@utility shadow-float {
+  box-shadow: var(--shadow-float);
+}
+
+@utility container-content {
+  width: 100%;
+  max-width: var(--container-content);
+  margin-inline: auto;
+  padding-inline: var(--spacing-xl);
+}
+
+@utility brand-mesh {
+  position: relative;
+  background-color: var(--color-canvas);
+  overflow: hidden;
+}
+
 @layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
   * {
     @apply border-border;
   }
+
+  html {
+    @apply scroll-smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: inherit;
+  }
+}
+
+/* ─── Marketing page scope ─── */
+@layer components {
+  .marketing-page {
+    @apply min-h-screen bg-marketing-bg text-marketing-text;
+  }
+
+  .marketing-page a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .marketing-page .marketing-nav-link {
+    @apply type-link font-medium text-marketing-text transition-colors;
+  }
+
+  .marketing-page .marketing-nav-link:hover {
+    @apply text-brand-purple;
+  }
+
+  .marketing-page .btn-pill-orange {
+    @apply inline-flex items-center justify-center rounded-full bg-brand-orange px-xl py-sm type-link font-semibold text-white shadow-sm transition-transform hover:scale-[1.02];
+  }
+
+  .marketing-page .btn-pill-purple {
+    @apply inline-flex min-h-11 items-center justify-center rounded-full bg-brand-purple px-xxl py-md type-link-lg font-semibold text-white shadow-marketing transition-transform hover:scale-[1.02];
+  }
+
+  .marketing-page .btn-pill-yellow {
+    @apply inline-flex min-h-12 items-center justify-center rounded-full bg-brand-yellow px-xxl py-md type-link-lg font-bold text-white transition-all;
+    box-shadow: 0 5px 0 #d97706;
+  }
+
+  .marketing-page .btn-pill-yellow:hover {
+    @apply scale-[1.02];
+  }
+
+  .marketing-page .btn-pill-yellow:active {
+    transform: translateY(2px);
+    box-shadow: 0 3px 0 #d97706;
+  }
+
+  .marketing-page .section-badge {
+    @apply inline-flex rounded-full bg-brand-purple/10 px-md py-xs text-xs font-bold uppercase tracking-[0.12em] text-brand-purple;
+  }
+
+  /* Lead / description copy — matches Figma body-lg (20px, medium, relaxed) */
+  .marketing-page .marketing-lead {
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--color-marketing-muted);
+  }
+
+  .marketing-page .marketing-lead-light {
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.6;
+    color: rgb(255 255 255 / 0.9);
+  }
+
+  .marketing-page .marketing-section-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-marketing-text);
   }
 }

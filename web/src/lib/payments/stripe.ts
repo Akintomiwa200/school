@@ -1,12 +1,23 @@
 import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
-  apiVersion: "2025-02-24.acacia",
-  typescript: true,
-});
+let stripeClient: Stripe | null = null;
+
+export function getStripe(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) {
+    throw new Error("STRIPE_SECRET_KEY is not configured");
+  }
+  if (!stripeClient) {
+    stripeClient = new Stripe(key, {
+      apiVersion: "2026-02-25.clover",
+      typescript: true,
+    });
+  }
+  return stripeClient;
+}
 
 export async function createPaymentIntent(amount: number, metadata?: Record<string, string>) {
-  return stripe.paymentIntents.create({
+  return getStripe().paymentIntents.create({
     amount: Math.round(amount * 100),
     currency: "usd",
     metadata,
@@ -20,7 +31,7 @@ export async function createCheckoutSession(params: {
   successUrl: string;
   cancelUrl: string;
 }) {
-  return stripe.checkout.sessions.create({
+  return getStripe().checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: [
       {

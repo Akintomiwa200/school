@@ -67,6 +67,7 @@ export const API_ENDPOINTS = {
   ANNOUNCEMENTS: `${API_BASE}/announcements`,
   MESSAGES: `${API_BASE}/messages`,
   NOTIFICATIONS: `${API_BASE}/notifications`,
+  NOTIFICATIONS_BY_ID: (id: string) => `${API_BASE}/notifications/${id}`,
 
   // Support
   SUPPORT: `${API_BASE}/support`,

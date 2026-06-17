@@ -14,9 +14,9 @@ export function Sidebar() {
   const routes = role ? ROLE_ROUTES[role] ?? [] : [];
 
   return (
-    <aside className="hidden w-64 flex-col border-r bg-sidebar lg:flex">
-      <div className="flex h-16 items-center border-b px-6">
-        <Link href="/" className="text-lg font-bold text-sidebar-primary">
+    <aside className="hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+      <div className="flex h-16 items-center border-b border-sidebar-border px-xl">
+        <Link href="/" className="font-display type-link-lg font-bold text-sidebar-primary">
           School LMS
         </Link>
       </div>
@@ -26,7 +26,7 @@ export function Sidebar() {
             key={route.path}
             href={route.path}
             className={cn(
-              "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "flex items-center rounded-lg px-md py-sm type-link font-medium transition-colors",
               pathname === route.path || pathname.startsWith(route.path + "/")
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-sidebar-foreground hover:bg-sidebar-accent/50"
@@ -42,7 +42,7 @@ export function Sidebar() {
               key={route.path}
               href={route.path}
               className={cn(
-                "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center rounded-lg px-md py-sm type-link font-medium transition-colors",
                 pathname === route.path
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground hover:bg-sidebar-accent/50"

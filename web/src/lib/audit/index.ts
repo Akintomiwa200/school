@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import type { AuditAction } from "@/shared";
 
 interface AuditLogParams {
@@ -19,8 +20,8 @@ export async function createAuditLog(params: AuditLogParams) {
       action: params.action,
       entity: params.entity,
       entityId: params.entityId,
-      oldValue: params.oldValue ?? undefined,
-      newValue: params.newValue ?? undefined,
+      oldValue: params.oldValue as Prisma.InputJsonValue | undefined,
+      newValue: params.newValue as Prisma.InputJsonValue | undefined,
       ipAddress: params.ipAddress,
       userAgent: params.userAgent,
     },

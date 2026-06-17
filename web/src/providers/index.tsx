@@ -13,7 +13,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         defaultOptions: {
           queries: { staleTime: 60 * 1000, refetchOnWindowFocus: false },
         },
-      })
+      }),
   );
 
   return (
@@ -21,7 +21,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
-          <Toaster richColors position="top-right" />
+          <Toaster
+            richColors
+            position="top-right"
+            toastOptions={{
+              classNames: {
+                toast: "bg-card border-border text-card-foreground rounded-lg shadow-float",
+              },
+            }}
+          />
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>

@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { UserRole } from "../types";
 
+const userRoleValues = Object.values(UserRole) as [UserRole, ...UserRole[]];
+
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -12,7 +14,7 @@ export const registerSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
   lastName: z.string().min(2, "Last name is required"),
   phone: z.string().optional(),
-  role: z.nativeEnum(UserRole).optional(),
+  role: z.enum(userRoleValues).optional(),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -103,7 +105,7 @@ export const supportTicketSchema = z.object({
 export const announcementSchema = z.object({
   title: z.string().min(1),
   content: z.string().min(1),
-  targetRoles: z.array(z.nativeEnum(UserRole)).optional(),
+  targetRoles: z.array(z.enum(userRoleValues)).optional(),
   targetClassIds: z.array(z.string()).optional(),
   isPinned: z.boolean().default(false),
 });

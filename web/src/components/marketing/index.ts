@@ -1,0 +1,9 @@
+export { MarketingNavbar } from "./navbar";
+export { MarketingHero } from "./hero";
+export { MarketingServices } from "./services";
+export { MarketingOffering } from "./offering";
+export { MarketingTestimonials } from "./testimonials";
+export { MarketingArticles } from "./articles";
+export { MarketingCta } from "./cta";
+export { MarketingFooter } from "./footer";
+export { MarketingLogo } from "./logo";

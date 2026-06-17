@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/db";
+import { getStripe } from "@/lib/payments";
 import { generateReceiptNumber } from "@/shared";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
-  apiVersion: "2025-02-24.acacia",
-});
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -16,6 +13,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const stripe = getStripe();
     const event = stripe.webhooks.constructEvent(
       body,
       signature,
