@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Native
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision

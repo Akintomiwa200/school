@@ -1,0 +1,31 @@
+export const EMAIL_TEMPLATES = {
+  WELCOME: "welcome",
+  VERIFY_EMAIL: "verify-email",
+  RESET_PASSWORD: "reset-password",
+  FEE_REMINDER: "fee-reminder",
+  PAYMENT_RECEIPT: "payment-receipt",
+  ATTENDANCE_ALERT: "attendance-alert",
+  ASSIGNMENT_DUE: "assignment-due",
+  GRADE_PUBLISHED: "grade-published",
+  ANNOUNCEMENT: "announcement",
+  SUPPORT_REPLY: "support-reply",
+  ADMISSION_STATUS: "admission-status",
+  LEAVE_STATUS: "leave-status",
+  EVENT_INVITATION: "event-invitation",
+} as const;
+
+export const EMAIL_SUBJECTS = {
+  [EMAIL_TEMPLATES.WELCOME]: "Welcome to School LMS",
+  [EMAIL_TEMPLATES.VERIFY_EMAIL]: "Verify Your Email Address",
+  [EMAIL_TEMPLATES.RESET_PASSWORD]: "Reset Your Password",
+  [EMAIL_TEMPLATES.FEE_REMINDER]: "Fee Payment Reminder",
+  [EMAIL_TEMPLATES.PAYMENT_RECEIPT]: "Payment Receipt",
+  [EMAIL_TEMPLATES.ATTENDANCE_ALERT]: "Attendance Alert",
+  [EMAIL_TEMPLATES.ASSIGNMENT_DUE]: "Assignment Due Reminder",
+  [EMAIL_TEMPLATES.GRADE_PUBLISHED]: "Grades Published",
+  [EMAIL_TEMPLATES.ANNOUNCEMENT]: "New Announcement",
+  [EMAIL_TEMPLATES.SUPPORT_REPLY]: "Support Ticket Update",
+  [EMAIL_TEMPLATES.ADMISSION_STATUS]: "Admission Status Update",
+  [EMAIL_TEMPLATES.LEAVE_STATUS]: "Leave Request Update",
+  [EMAIL_TEMPLATES.EVENT_INVITATION]: "Event Invitation",
+} as const;
