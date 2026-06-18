@@ -1,10 +1,21 @@
 import { Resend } from "resend";
 import { EMAIL_SUBJECTS, EMAIL_TEMPLATES } from "@/shared/constants";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const FROM_EMAIL = process.env.EMAIL_FROM ?? "noreply@school-lms.com";
 const FROM_NAME = process.env.EMAIL_FROM_NAME ?? "School LMS";
+
+let resendClient: Resend | null = null;
+
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  if (!resendClient) {
+    resendClient = new Resend(apiKey);
+  }
+  return resendClient;
+}
 
 interface SendEmailOptions {
   to: string | string[];
@@ -14,6 +25,16 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
+  const resend = getResendClient();
+
+  if (!resend) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+    console.warn("Email skipped: RESEND_API_KEY is not configured");
+    return null;
+  }
+
   try {
     const { data, error } = await resend.emails.send({
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
@@ -30,7 +51,6 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
     throw error;
   }
 }
-
 export async function sendWelcomeEmail(to: string, name: string) {
   return sendEmail({
     to,
