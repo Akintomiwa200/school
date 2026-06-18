@@ -13,11 +13,13 @@ function createPrismaClient() {
   const connectionString =
     process.env.DATABASE_URL ??
     (process.env.NODE_ENV === "development" ? defaultDatabaseUrl : undefined);
+
   if (!connectionString) {
     throw new Error(
       "DATABASE_URL is not set. Copy .env.example to .env.local and start PostgreSQL (docker compose up -d).",
     );
   }
+
   const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({
@@ -26,8 +28,25 @@ function createPrismaClient() {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+function getPrismaClient(): PrismaClient {
+  if (globalForPrisma.prisma) {
+    return globalForPrisma.prisma;
+  }
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+  globalForPrisma.prisma = createPrismaClient();
+  return globalForPrisma.prisma;
+}
+
+/** Lazy Prisma client — avoids crashing build when DATABASE_URL is unset at import time. */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    const client = getPrismaClient();
+    const value = Reflect.get(client, prop, receiver);
+    if (typeof value === "function") {
+      return value.bind(client);
+    }
+    return value;
+  },
+});
 
 export default prisma;
