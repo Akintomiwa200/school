@@ -1,6 +1,15 @@
+"use client";
+
 import type { ReactNode } from "react";
 import Image from "next/image";
-import { Check, Sparkles, Star } from "lucide-react";
+import {
+  Check,
+  FileText,
+  MessageCircle,
+  Plus,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type FrameColor = "purple" | "orange";
@@ -23,35 +32,23 @@ const FEATURES: OfferingFeature[] = [
     label: "One on One Tutoring",
     title: "Personalized Sessions for Every Subject",
     description:
-      "Connect with experienced tutors who adapt every session to your child's pace, goals, and learning style — from math to music.",
+      "Get personalized sessions with experienced tutors for every subject, from math to language arts, tailored to meet your child's individual learning needs, all managed through an interactive dashboard for real-time tracking and progress monitoring.",
     items: [
       "Personalized Learning",
       "Expert Tutors",
-      "Live Feedback",
-      "Progress Tracking",
-      "Subject Specialists",
-      "Safe Online Sessions",
+      "Subject Variety",
+      "Interactive Dashboard",
     ],
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=720&h=560&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=720&h=560&fit=crop",
     alt: "Tutor in a one-on-one online session with headset",
     frame: "purple",
     overlays: <TutoringOverlays />,
     doodles: (
       <>
-        <Sparkles className="absolute -right-3 top-8 h-6 w-6 text-brand-orange" />
-        <svg
-          aria-hidden
-          className="absolute -left-4 bottom-16 h-10 w-16 text-brand-purple"
-          viewBox="0 0 64 24"
-          fill="none"
-        >
-          <path
-            d="M2 14C18 4 34 20 50 10C56 6 60 8 62 12"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-        </svg>
+        <Sparkles className="absolute -right-1 top-8 z-20 h-5 w-5 text-brand-orange lg:top-10 lg:h-7 lg:w-7" />
+        <Sparkles className="absolute -left-1 bottom-24 z-20 h-4 w-4 text-brand-orange lg:-left-2 lg:bottom-28 lg:h-6 lg:w-6" />
+        <Sparkles className="absolute right-6 top-1 z-20 hidden h-5 w-5 text-brand-orange/80 lg:block lg:right-8 lg:top-2" />
       </>
     ),
   },
@@ -59,16 +56,15 @@ const FEATURES: OfferingFeature[] = [
     label: "Flexible Scheduling",
     title: "Learn at a Pace That Works for You",
     description:
-      "No rigid timetables. Pause when life gets busy, pick sessions that fit your week, and keep learning without the pressure.",
+      "There's no rush! You can take breaks, go back to things you enjoy, and spend as much time as you need on each lesson.",
     items: [
-      "Book Anytime",
-      "Reschedule Easily",
-      "Self-Paced Modules",
-      "Weekend Slots",
-      "Holiday Breaks",
-      "Family-Friendly Hours",
+      "Flexible Learning Flow",
+      "Relaxed Learning Mode",
+      "Personalized Learning Journey",
+      "Pause/Repeat",
     ],
-    image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=720&h=560&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=720&h=560&fit=crop",
     alt: "Hands on a laptop with coffee — flexible study setup",
     frame: "orange",
     reverse: true,
@@ -77,11 +73,11 @@ const FEATURES: OfferingFeature[] = [
       <>
         <div
           aria-hidden
-          className="absolute -top-4 right-10 h-8 w-8 rounded-full bg-brand-blue/30 blur-[1px]"
+          className="absolute -top-2 right-6 h-6 w-6 rounded-full bg-brand-blue/30 blur-[1px] lg:-top-4 lg:right-10 lg:h-8 lg:w-8"
         />
         <svg
           aria-hidden
-          className="absolute -bottom-2 right-4 h-8 w-20 text-green-500"
+          className="absolute -bottom-1 right-2 h-6 w-14 text-green lg:-bottom-2 lg:right-4 lg:h-8 lg:w-20"
           viewBox="0 0 80 20"
           fill="none"
         >
@@ -99,25 +95,24 @@ const FEATURES: OfferingFeature[] = [
     label: "Interactive Lessons",
     title: "Fun and Engaging Learning Tools",
     description:
-      "Quizzes, games, and interactive activities turn study time into something kids actually look forward to — while still hitting the curriculum.",
+      "Our platform uses interactive lessons and cool resources like games and quizzes to keep your child engaged and excited while learning new things.",
     items: [
-      "Gamified Quizzes",
-      "Visual Lessons",
-      "Instant Results",
-      "Badges & Rewards",
-      "Multi-Subject Packs",
-      "Kid-Friendly UI",
+      "Interactive Lessons",
+      "Quizzes and Assessments",
+      "Visual Learning",
+      "Gamified Resources",
     ],
-    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=720&h=560&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=720&h=560&fit=crop",
     alt: "Child learning on a laptop with colorful interface",
     frame: "purple",
     overlays: <LessonsOverlays />,
     doodles: (
       <>
-        <Star className="absolute -left-2 top-12 h-5 w-5 fill-brand-orange/30 text-brand-orange" />
+        <Star className="absolute -left-1 top-10 h-4 w-4 fill-brand-orange/30 text-brand-orange lg:-left-2 lg:top-12 lg:h-5 lg:w-5" />
         <svg
           aria-hidden
-          className="absolute -right-2 bottom-20 h-12 w-12 text-brand-purple/80"
+          className="absolute -right-1 bottom-16 h-8 w-8 text-brand-purple/80 lg:-right-2 lg:bottom-20 lg:h-12 lg:w-12"
           viewBox="0 0 48 48"
           fill="none"
         >
@@ -134,28 +129,45 @@ const FEATURES: OfferingFeature[] = [
 ];
 
 function TutoringOverlays() {
+  const statusRows = [
+    { label: "Subject Planned", dot: "bg-brand-blue" },
+    { label: "Subject On Progress", dot: "bg-brand-yellow" },
+    { label: "Subject Finished", dot: "bg-green" },
+  ] as const;
+
   return (
     <>
-      <div className="absolute left-4 top-6 z-10 w-36 rounded-xl bg-card p-sm shadow-float">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-marketing-muted">
-          Subject Planned
-        </p>
-        <ul className="mt-1 space-y-1">
-          {["Biology", "Algebra"].map((item) => (
-            <li key={item} className="flex items-center gap-1 text-[11px] text-marketing-text">
-              <Check className="h-3 w-3 text-brand-purple" />
-              {item}
+      {/* Status card — sits on left frame edge, not over the photo */}
+      <div className="absolute left-0 top-[6%] z-30 w-[8.25rem] rounded-2xl bg-marketing-bg p-2.5 shadow-float lg:top-[12%] lg:-left-11 lg:w-40 lg:p-3">
+        <ul className="space-y-2">
+          {statusRows.map(({ label, dot }) => (
+            <li key={label} className="flex items-center justify-between gap-2">
+              <span className="flex min-w-0 items-center gap-1.5">
+                <span className={cn("h-2 w-2 shrink-0 rounded-full", dot)} />
+                <span className="truncate text-[10px] font-medium text-marketing-text sm:text-[11px]">
+                  {label}
+                </span>
+              </span>
+              <Plus className="h-3 w-3 shrink-0 text-brand-purple" strokeWidth={2.5} />
             </li>
           ))}
         </ul>
       </div>
-      <div className="absolute bottom-8 right-4 z-10 w-44 rounded-xl bg-card p-sm shadow-float">
-        <p className="text-[11px] font-bold text-marketing-text">Challenge 1: Anatomy Research</p>
-        <div className="mt-2 flex gap-2">
-          <div className="h-10 w-10 shrink-0 rounded-lg bg-brand-purple/15" />
-          <p className="text-[10px] leading-snug text-marketing-muted">
-            Complete the diagram and label key organs.
-          </p>
+
+      {/* Task card — straddles bottom frame edge */}
+      <div className="absolute -bottom-5 left-1/2 z-30 w-[11.25rem] max-w-[calc(100%-1rem)] -translate-x-1/2 rounded-2xl bg-marketing-bg p-2.5 shadow-float lg:-bottom-9 lg:w-[88%] lg:max-w-[15.5rem] lg:p-3">
+        <span className="inline-block rounded-md bg-brand-pink/15 px-2 py-0.5 text-[10px] font-semibold text-brand-pink">
+          Science
+        </span>
+        <p className="mt-2 text-[11px] font-bold leading-snug text-marketing-text sm:text-xs">
+          Challenge 1: Anatomy Research
+        </p>
+        <p className="mt-1 text-[10px] leading-relaxed text-marketing-muted">
+          Complete the diagram and label key organs for your assignment.
+        </p>
+        <div className="mt-2.5 flex items-center gap-3 text-brand-purple/70">
+          <MessageCircle className="h-3.5 w-3.5" strokeWidth={2} />
+          <FileText className="h-3.5 w-3.5" strokeWidth={2} />
         </div>
       </div>
     </>
@@ -164,11 +176,14 @@ function TutoringOverlays() {
 
 function ScheduleOverlays() {
   return (
-    <div className="absolute bottom-6 left-4 right-4 z-10 rounded-2xl bg-card p-md shadow-float sm:left-8 sm:right-auto sm:w-64">
-      <p className="text-sm font-bold text-marketing-text">Schedule</p>
+    <div className="absolute -bottom-4 left-1 right-1 z-30 rounded-2xl bg-marketing-bg p-3 shadow-float lg:-bottom-8 lg:left-8 lg:right-auto lg:w-64 lg:p-4">
+      <p className="text-sm font-bold text-brand-purple">Schedule</p>
       <div className="mt-2 grid grid-cols-7 gap-1 text-center text-[9px] text-marketing-muted">
         {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-          <span key={`${d}-${i}`} className={i === 2 ? "font-bold text-brand-purple" : ""}>
+          <span
+            key={`${d}-${i}`}
+            className={i === 2 ? "font-bold text-brand-purple" : ""}
+          >
             {d}
           </span>
         ))}
@@ -190,20 +205,20 @@ function ScheduleOverlays() {
 function LessonsOverlays() {
   return (
     <>
-      <div className="absolute left-4 top-8 z-10 w-40 rounded-xl bg-card p-sm shadow-float">
-        <p className="text-xs font-bold text-marketing-text">Sport Quiz</p>
+      <div className="absolute left-0 top-[6%] z-30 w-[9rem] rounded-xl bg-marketing-bg p-2.5 shadow-float lg:top-[8%] lg:-left-10 lg:w-40 lg:p-3">
+        <p className="text-xs font-bold text-brand-purple">Sport Quiz</p>
         <div className="mt-2 flex gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-orange/15 text-sm">
             ⚽
           </span>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-blue/15 text-sm">
             🏀
           </span>
         </div>
       </div>
-      <div className="absolute bottom-10 right-4 z-10 w-44 rounded-xl bg-card p-sm shadow-float">
-        <p className="text-[11px] font-bold text-marketing-text">Statistics Math Quiz</p>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-marketing-grid">
+      <div className="absolute -bottom-5 right-0 z-30 w-[9.5rem] rounded-xl bg-marketing-bg p-2.5 shadow-float lg:-bottom-9 lg:-right-8 lg:w-44 lg:p-3">
+        <p className="text-[11px] font-bold text-brand-purple">Statistics Math Quiz</p>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-brand-purple/15">
           <div className="h-full w-3/4 rounded-full bg-brand-purple" />
         </div>
         <p className="mt-1 text-[10px] text-marketing-muted">12 / 15 correct</p>
@@ -216,15 +231,25 @@ function BlobFrame({
   color,
   children,
   className,
+  tilt,
 }: {
   color: FrameColor;
   children: ReactNode;
   className?: string;
+  tilt?: "left" | "right";
 }) {
+  const tiltClass =
+    tilt === "left"
+      ? "max-lg:rotate-0 lg:-rotate-[3deg]"
+      : tilt === "right"
+        ? "max-lg:rotate-0 lg:rotate-[3deg]"
+        : "";
+
   return (
     <div
       className={cn(
-        "relative p-3 sm:p-4",
+        "relative p-2 lg:p-4",
+        tiltClass,
         color === "purple" ? "text-brand-purple" : "text-brand-orange",
         className,
       )}
@@ -232,8 +257,8 @@ function BlobFrame({
       <div
         className={cn(
           "relative overflow-hidden",
-          "rounded-[2.5rem] rounded-br-[4rem] rounded-tl-[3.5rem]",
-          "border-[10px] border-current sm:border-[12px]",
+          "rounded-[1.75rem] rounded-br-[3rem] rounded-tl-[2.5rem] lg:rounded-[2.5rem] lg:rounded-br-[4rem] lg:rounded-tl-[3.5rem]",
+          "border-[8px] border-current lg:border-[12px]",
         )}
       >
         {children}
@@ -244,9 +269,12 @@ function BlobFrame({
 
 function FeatureChecklist({ items }: { items: string[] }) {
   return (
-    <ul className="mt-lg grid grid-cols-1 gap-sm sm:grid-cols-2 sm:gap-x-xl sm:gap-y-md">
+    <ul className="mt-4 grid grid-cols-1 gap-2.5 lg:mt-6 lg:grid-cols-2 lg:gap-x-8 lg:gap-y-4">
       {items.map((item) => (
-        <li key={item} className="flex items-center gap-sm text-body text-marketing-text">
+        <li
+          key={item}
+          className="flex items-center gap-3 text-sm text-marketing-text max-lg:mx-auto max-lg:w-fit lg:mx-0"
+        >
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-purple/10">
             <Check className="h-3.5 w-3.5 text-brand-purple" strokeWidth={3} />
           </span>
@@ -269,25 +297,44 @@ function OfferingFeatureRow({
   overlays,
   doodles,
 }: OfferingFeature) {
+  const frameContent = (
+    <div className="relative aspect-[4/3] w-full">
+      <Image
+        src={image}
+        alt={alt}
+        fill
+        className="object-cover"
+        sizes="(max-width: 1024px) 90vw, 480px"
+      />
+    </div>
+  );
+
   const media = (
-    <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+    <div className="relative mx-auto w-full max-w-[19rem] px-1 lg:max-w-none lg:px-0">
       {doodles}
-      <BlobFrame color={frame}>
-        <div className="relative aspect-[4/3] w-full">
-          <Image src={image} alt={alt} fill className="object-cover" sizes="(max-width: 1024px) 90vw, 480px" />
-          {overlays}
-        </div>
-      </BlobFrame>
+      <div className="relative pb-10 pt-3 lg:pb-10 lg:pt-8">
+        <BlobFrame color={frame} tilt={reverse ? "right" : "left"}>
+          {frameContent}
+        </BlobFrame>
+        {overlays}
+      </div>
     </div>
   );
 
   const copy = (
-    <div className="flex flex-col justify-center">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-pink">{label}</p>
-      <h3 className="mt-sm font-display text-[1.75rem] font-bold leading-tight text-marketing-text sm:text-[2rem]">
+    <div className="flex flex-col justify-center max-lg:text-center lg:text-left">
+      <p
+        className={cn(
+          "text-[11px] font-bold uppercase tracking-[0.14em] lg:text-xs",
+          frame === "orange" ? "text-brand-orange" : "text-brand-pink",
+        )}
+      >
+        {label}
+      </p>
+      <h3 className="mt-2 font-display text-[1.375rem] font-bold leading-tight text-marketing-text lg:text-[2rem]">
         {title}
       </h3>
-      <p className="marketing-lead mt-md">{description}</p>
+      <p className="marketing-lead mt-3 max-lg:text-base lg:mt-4">{description}</p>
       <FeatureChecklist items={items} />
     </div>
   );
@@ -295,7 +342,8 @@ function OfferingFeatureRow({
   return (
     <div
       className={cn(
-        "grid items-center gap-xl lg:grid-cols-2 lg:gap-xxl",
+        "marketing-oval-grid-bg marketing-oval-grid-bg--row rounded-[1.25rem] px-4 py-8 max-lg:overflow-x-clip lg:rounded-[2.5rem] lg:px-10 lg:py-16",
+        "grid items-center gap-6 lg:grid-cols-2 lg:gap-12",
         reverse && "lg:[&>*:first-child]:order-2",
       )}
     >
@@ -307,16 +355,17 @@ function OfferingFeatureRow({
 
 export function MarketingOffering() {
   return (
-    <section id="offering" className="marketing-grid-bg py-section lg:py-24">
-      <div className="container-content">
+    <section id="offering" className="overflow-x-clip bg-marketing-bg py-10 lg:overflow-visible lg:py-24">
+      <div className="mx-auto w-full max-w-content px-4 lg:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <span className="section-badge">What We Offer</span>
-          <h2 className="marketing-section-title mt-md text-[2rem] sm:text-[2.5rem] lg:text-[2.75rem]">
-            Explore Our <span className="squiggle-underline">Learning</span> Solution
+          <h2 className="marketing-section-title mt-4 text-[1.625rem] sm:text-[2rem] lg:text-[2.75rem]">
+            Explore Our <span className="squiggle-underline">Learning</span>{" "}
+            Solution
           </h2>
         </div>
 
-        <div className="mt-section flex flex-col gap-section lg:mt-xxl lg:gap-28">
+        <div className="mt-8 flex flex-col gap-8 lg:mt-16 lg:gap-20">
           {FEATURES.map((feature) => (
             <OfferingFeatureRow key={feature.label} {...feature} />
           ))}

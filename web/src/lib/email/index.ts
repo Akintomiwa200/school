@@ -39,11 +39,42 @@ export async function sendWelcomeEmail(to: string, name: string) {
   });
 }
 
-export async function sendPasswordResetEmail(to: string, resetUrl: string) {
+export async function sendOtpEmail(to: string, code: string, name?: string) {
+  const greeting = name ? `Hi ${name},` : "Hi,";
+  return sendEmail({
+    to,
+    subject: "Your verification code",
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#1e293b">
+        <h1 style="color:#5d21d0;font-size:22px">${greeting}</h1>
+        <p>Use this code to continue signing in to Pathway Academy:</p>
+        <p style="font-size:32px;font-weight:700;letter-spacing:0.35em;color:#5d21d0;margin:24px 0">${code}</p>
+        <p style="font-size:14px;color:#64748b">This code expires in 10 minutes. If you did not request it, you can ignore this email.</p>
+      </div>
+    `,
+    text: `${greeting}\n\nYour verification code: ${code}\n\nExpires in 10 minutes.`,
+  });
+}
+
+export async function sendPasswordResetEmail(to: string, resetUrl: string, name?: string) {
+  const greeting = name ? `Hi ${name},` : "Hi,";
   return sendEmail({
     to,
     subject: EMAIL_SUBJECTS[EMAIL_TEMPLATES.RESET_PASSWORD],
-    html: `<p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#1e293b">
+        <h1 style="color:#5d21d0;font-size:22px">${greeting}</h1>
+        <p>We received a request to reset your password. Click the button below to choose a new one.</p>
+        <p style="margin:28px 0">
+          <a href="${resetUrl}" style="background:#5d21d0;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">
+            Reset Password
+          </a>
+        </p>
+        <p style="font-size:14px;color:#64748b">This link expires in 1 hour. If you did not request a reset, you can ignore this email.</p>
+        <p style="font-size:12px;color:#94a3b8;word-break:break-all">${resetUrl}</p>
+      </div>
+    `,
+    text: `${greeting}\n\nReset your password: ${resetUrl}\n\nThis link expires in 1 hour.`,
   });
 }
 

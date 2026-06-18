@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@config "../../tailwind.config.ts";
 @plugin "tailwindcss-animate";
 
 /* ─── Tailwind 4 design tokens ─── */
@@ -163,6 +162,48 @@
   }
 }
 
+@keyframes testimonial-slide-next {
+  from {
+    opacity: 0;
+    transform: translateX(1.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes testimonial-slide-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-1.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes testimonial-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes testimonial-float-slow {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(6deg);
+  }
+}
+
 /* ─── Typography utilities (prefixed to avoid color token clashes) ─── */
 @utility text-display-xl {
   font-family: var(--font-display);
@@ -246,6 +287,12 @@
   background-size: 56px 56px;
 }
 
+@utility marketing-oval-grid-bg {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-marketing-bg);
+}
+
 @utility squiggle-underline {
   text-decoration: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 12' preserveAspectRatio='none'%3E%3Cpath d='M0 8 C40 2 80 12 120 6 S200 2 240 8 300 4 320 8' fill='none' stroke='%23ff9f1c' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");
@@ -293,6 +340,18 @@
     @apply bg-background font-sans text-foreground antialiased;
   }
 
+  /* Keep forms and controls at full width — don't squash in flex/grid layouts */
+  form,
+  fieldset {
+    flex-shrink: 0;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    flex-shrink: 0;
+  }
+
   h1,
   h2,
   h3,
@@ -307,6 +366,63 @@
 @layer components {
   .marketing-page {
     @apply min-h-screen bg-marketing-bg text-marketing-text;
+  }
+
+  /* Oval grid vignette — hero (full section) or offering rows (--row) */
+  .marketing-page .marketing-oval-grid-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        to right,
+        var(--color-marketing-grid) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        var(--color-marketing-grid) 1px,
+        transparent 1px
+      );
+    background-size: 56px 56px;
+    mask-image: radial-gradient(
+      ellipse 72% 62% at 50% 48%,
+      #000 12%,
+      rgb(0 0 0 / 0.82) 36%,
+      rgb(0 0 0 / 0.35) 58%,
+      transparent 76%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse 72% 62% at 50% 48%,
+      #000 12%,
+      rgb(0 0 0 / 0.82) 36%,
+      rgb(0 0 0 / 0.35) 58%,
+      transparent 76%
+    );
+  }
+
+  .marketing-page .marketing-oval-grid-bg--row::before {
+    mask-image: radial-gradient(
+      ellipse 84% 76% at 50% 50%,
+      #000 8%,
+      rgb(0 0 0 / 0.85) 32%,
+      rgb(0 0 0 / 0.4) 54%,
+      transparent 72%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse 84% 76% at 50% 50%,
+      #000 8%,
+      rgb(0 0 0 / 0.85) 32%,
+      rgb(0 0 0 / 0.4) 54%,
+      transparent 72%
+    );
+  }
+
+  .marketing-page .marketing-oval-grid-bg > * {
+    position: relative;
+    z-index: 1;
   }
 
   .marketing-page a {
@@ -365,11 +481,123 @@
     color: rgb(255 255 255 / 0.9);
   }
 
+  /* Secondary section intro — Figma body (18px, medium) */
+  .marketing-page .marketing-lead-sm {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--color-marketing-muted);
+  }
+
   .marketing-page .marketing-section-title {
     font-family: var(--font-display);
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.02em;
     color: var(--color-marketing-text);
+  }
+
+  /* CTA student cutout — keep true colors, no blend with purple banner */
+  .marketing-page .cta-student-image {
+    display: block;
+    mix-blend-mode: normal;
+    isolation: isolate;
+  }
+
+  .marketing-page .testimonials-track-next > *,
+  .marketing-page .testimonials-track-prev > * {
+    animation: testimonial-slide-next 0.5s ease-out both;
+  }
+
+  .marketing-page .testimonials-track-prev > * {
+    animation-name: testimonial-slide-prev;
+  }
+
+  .marketing-page .testimonials-track-next > *:nth-child(2),
+  .marketing-page .testimonials-track-prev > *:nth-child(2) {
+    animation-delay: 80ms;
+  }
+
+  .marketing-page .testimonials-track-next > *:nth-child(3),
+  .marketing-page .testimonials-track-prev > *:nth-child(3) {
+    animation-delay: 160ms;
+  }
+
+  .marketing-page .testimonials-float {
+    animation: testimonial-float 4s ease-in-out infinite;
+  }
+
+  .marketing-page .testimonials-float-slow {
+    animation: testimonial-float-slow 5.5s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marketing-page .testimonials-track-next > *,
+    .marketing-page .testimonials-track-prev > *,
+    .marketing-page .testimonials-float,
+    .marketing-page .testimonials-float-slow {
+      animation: none;
+    }
+  }
+
+  /* Auth — aligned with marketing / app brand tokens */
+  .auth-page {
+    @apply min-h-screen w-full bg-marketing-bg text-marketing-text;
+  }
+
+  .auth-page .auth-title {
+    @apply font-bold text-marketing-text;
+  }
+
+  .auth-page .auth-subtitle {
+    color: var(--color-marketing-muted);
+  }
+
+  .auth-page .auth-muted {
+    @apply text-xs;
+    color: var(--color-marketing-muted);
+  }
+
+  .auth-page .auth-body {
+    @apply text-sm leading-relaxed;
+    color: var(--color-marketing-muted);
+  }
+
+  .auth-page .auth-link {
+    @apply font-semibold text-brand-purple hover:underline;
+  }
+
+  .auth-page .auth-btn-primary {
+    @apply inline-flex w-full items-center justify-center rounded-full bg-brand-orange py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 lg:text-base;
+  }
+
+  .auth-page .auth-btn-mobile-bar {
+    @apply rounded-lg bg-brand-orange px-7 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70;
+  }
+
+  .auth-page .auth-card {
+    box-sizing: border-box;
+    width: 28rem;
+    max-width: calc(100% - 2rem);
+    flex: none;
+  }
+
+  .auth-page .auth-card form {
+    width: 100%;
+  }
+
+  .auth-page .auth-card input:not([type="checkbox"]):not([type="radio"]),
+  .auth-page .auth-card textarea,
+  .auth-page .auth-card select {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .auth-page .auth-form-body {
+    width: 100%;
+    max-width: 28rem;
+    margin-inline: auto;
   }
 }

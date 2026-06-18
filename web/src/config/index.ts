@@ -10,3 +10,4 @@ export const appConfig = {
 export { cloudinaryConfig } from "./cloudinary";
 export { designConfig, colors, spacing, rounded, typography, shadows, breakpoints, container } from "./design";
 export type { DesignColors, TypographyToken } from "./design";
+export { isGoogleAuthEnabled } from "./auth-public";

@@ -1,10 +1,5 @@
+import { ForgotPasswordPageContent } from "@/components/auth/forgot-password-page-content";
+
 export default function ForgotPasswordPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md space-y-6 rounded-lg border bg-card p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-center">Forgot Password</h1>
-        <p className="text-sm text-muted-foreground text-center">Password reset page ready for implementation.</p>
-      </div>
-    </div>
-  );
+  return <ForgotPasswordPageContent />;
 }

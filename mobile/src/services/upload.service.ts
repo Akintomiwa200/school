@@ -1,5 +1,6 @@
 import { apiRequest } from "@/lib/api";
 import { getToken } from "@/lib/auth-storage";
+import { mobileConfig } from "@/config";
 
 export const uploadService = {
   upload: async (file: { uri: string; name: string; type: string }, folder: string) => {
@@ -12,7 +13,7 @@ export const uploadService = {
     } as unknown as Blob);
     formData.append("folder", folder);
 
-    const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/upload`, {
+    const res = await fetch(`${mobileConfig.apiUrl}/upload`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,

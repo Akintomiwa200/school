@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Crown, Sparkles, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -58,6 +58,7 @@ const TESTIMONIALS: Testimonial[] = [
 ];
 
 const PAGE_COUNT = 4;
+const AUTO_PLAY_MS = 5500;
 
 function StarRating() {
   return (
@@ -69,9 +70,20 @@ function StarRating() {
   );
 }
 
-function TestimonialCard({ name, role, quote, avatar }: Testimonial) {
+function TestimonialCard({
+  name,
+  role,
+  quote,
+  avatar,
+  className,
+}: Testimonial & { className?: string }) {
   return (
-    <article className="flex flex-col items-center text-center">
+    <article
+      className={cn(
+        "flex flex-col items-center text-center transition-transform duration-300 hover:-translate-y-1",
+        className,
+      )}
+    >
       <div className="relative">
         <div
           aria-hidden
@@ -92,7 +104,9 @@ function TestimonialCard({ name, role, quote, avatar }: Testimonial) {
 }
 
 export function MarketingTestimonials() {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
+  const [direction, setDirection] = useState<"next" | "prev">("next");
+  const [isPaused, setIsPaused] = useState(false);
 
   const visible = [
     TESTIMONIALS[page % TESTIMONIALS.length],
@@ -100,19 +114,48 @@ export function MarketingTestimonials() {
     TESTIMONIALS[(page + 2) % TESTIMONIALS.length],
   ];
 
-  const goPrev = () => setPage((p) => (p - 1 + PAGE_COUNT) % PAGE_COUNT);
-  const goNext = () => setPage((p) => (p + 1) % PAGE_COUNT);
+  const goPrev = useCallback(() => {
+    setDirection("prev");
+    setPage((p) => (p - 1 + PAGE_COUNT) % PAGE_COUNT);
+  }, []);
+
+  const goNext = useCallback(() => {
+    setDirection("next");
+    setPage((p) => (p + 1) % PAGE_COUNT);
+  }, []);
+
+  const goToPage = useCallback((index: number) => {
+    setDirection(index > page ? "next" : "prev");
+    setPage(index);
+  }, [page]);
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    const id = window.setInterval(() => {
+      setDirection("next");
+      setPage((p) => (p + 1) % PAGE_COUNT);
+    }, AUTO_PLAY_MS);
+
+    return () => window.clearInterval(id);
+  }, [isPaused]);
 
   return (
     <section id="testimonials" className="bg-marketing-bg py-section lg:py-24">
       <div className="container-content">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-marketing-surface px-md py-section sm:px-xl lg:px-16">
-          <div className="pointer-events-none absolute left-8 top-24 hidden text-brand-orange lg:block">
+        <div
+          className="relative overflow-visible rounded-[2.5rem] bg-marketing-surface px-md py-section sm:px-xl lg:px-16"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onFocusCapture={() => setIsPaused(true)}
+          onBlurCapture={() => setIsPaused(false)}
+        >
+          <div className="testimonials-float pointer-events-none absolute left-8 top-24 hidden text-brand-orange lg:block">
             <Sparkles className="h-6 w-6" />
-            <Sparkles className="-mt-1 ml-3 h-4 w-4" />
+            <Sparkles className="testimonials-float-slow -mt-1 ml-3 h-4 w-4" />
           </div>
-          <div className="pointer-events-none absolute right-10 top-20 hidden text-green-500 lg:block">
-            <Crown className="h-7 w-7 fill-green-500/15" />
+          <div className="testimonials-float-slow pointer-events-none absolute right-10 top-20 hidden text-green lg:block">
+            <Crown className="h-7 w-7 fill-green/15" />
           </div>
 
           <div className="relative mx-auto max-w-3xl text-center">
@@ -130,7 +173,7 @@ export function MarketingTestimonials() {
             <button
               type="button"
               onClick={goPrev}
-              className="absolute -left-1 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-brand-orange text-white shadow-md transition-transform hover:scale-105 sm:-left-2 lg:-left-6"
+              className="absolute -left-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-brand-orange text-white shadow-md transition-transform hover:scale-105 active:scale-95 sm:-left-4 lg:-left-6 xl:-left-8"
               aria-label="Previous testimonials"
             >
               <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
@@ -139,16 +182,28 @@ export function MarketingTestimonials() {
             <button
               type="button"
               onClick={goNext}
-              className="absolute -right-1 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-brand-orange text-white shadow-md transition-transform hover:scale-105 sm:-right-2 lg:-right-6"
+              className="absolute -right-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-brand-orange text-white shadow-md transition-transform hover:scale-105 active:scale-95 sm:-right-4 lg:-right-6 xl:-right-8"
               aria-label="Next testimonials"
             >
               <ChevronRight className="h-5 w-5" strokeWidth={2.5} />
             </button>
 
-            <div className="grid gap-xl px-10 md:grid-cols-3 md:gap-lg lg:px-14">
-              {visible.map((item) => (
-                <TestimonialCard key={`${page}-${item.name}`} {...item} />
-              ))}
+            <div className="overflow-x-hidden">
+              <div
+                key={page}
+                className={cn(
+                  "grid gap-xl px-10 md:grid-cols-3 md:gap-lg lg:px-20 xl:px-24",
+                  direction === "next" ? "testimonials-track-next" : "testimonials-track-prev",
+                )}
+              >
+                {visible.map((item, index) => (
+                  <TestimonialCard
+                    key={`${page}-${item.name}`}
+                    {...item}
+                    className={index > 0 ? "hidden md:flex" : undefined}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
@@ -157,12 +212,12 @@ export function MarketingTestimonials() {
               <button
                 key={i}
                 type="button"
-                onClick={() => setPage(i)}
+                onClick={() => goToPage(i)}
                 aria-label={`Go to testimonial slide ${i + 1}`}
                 aria-current={page === i ? "true" : undefined}
                 className={cn(
-                  "h-1.5 rounded-full transition-all",
-                  page === i ? "w-8 bg-brand-purple" : "w-4 bg-marketing-grid",
+                  "h-1.5 rounded-full transition-all duration-300",
+                  page === i ? "w-8 bg-brand-purple" : "w-4 bg-marketing-grid hover:bg-brand-purple/40",
                 )}
               />
             ))}

@@ -11,8 +11,7 @@ export const loginSchema = z.object({
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
+  fullName: z.string().min(2, "Full name is required"),
   phone: z.string().optional(),
   role: z.enum(userRoleValues).optional(),
 });
@@ -28,6 +27,18 @@ export const resetPasswordSchema = z.object({
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
+});
+
+export const verifyCodeSchema = z.object({
+  code: z.string().length(6, "Enter the 6-digit code"),
+});
+
+export const onboardingSchema = z.object({
+  referralSource: z.string().min(1, "Please tell us where you heard about us"),
+  primaryGoal: z.string().min(1, "Please select your primary goal"),
+  role: z.enum(["STUDENT", "PARENT"]).optional(),
+  gradeLevel: z.string().optional(),
+  newsletter: z.boolean().optional(),
 });
 
 export const studentSchema = z.object({
@@ -112,6 +123,10 @@ export const announcementSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
 export type StudentInput = z.infer<typeof studentSchema>;
 export type FeeInput = z.infer<typeof feeSchema>;
 export type PaymentInput = z.infer<typeof paymentSchema>;

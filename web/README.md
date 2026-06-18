@@ -25,7 +25,7 @@ web/
 │   └── types/
 ├── prisma/
 ├── public/
-├── middleware.ts
+├── proxy.ts
 ├── docker-compose.yml
 └── package.json
 ```

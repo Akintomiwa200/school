@@ -30,7 +30,7 @@ mobile/
 ## Setup
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env
 ```
 
@@ -39,7 +39,12 @@ Set `EXPO_PUBLIC_API_URL` to your web API (e.g. `http://localhost:3000/api/v1`).
 ## Run
 
 ```bash
-npm run dev        # Expo dev server
-npm run android    # Android emulator
-npm run ios        # iOS simulator
+pnpm start
+# or
+pnpm dev
+```
+
+```bash
+pnpm android    # Android emulator
+pnpm ios        # iOS simulator
 ```

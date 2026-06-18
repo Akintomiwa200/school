@@ -1,8 +1,8 @@
 import Constants from "expo-constants";
 
-const API_URL = Constants.expoConfig?.extra?.apiUrl ?? process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
+const extra = Constants.expoConfig?.extra as { apiUrl?: string } | undefined;
 
 export const mobileConfig = {
-  apiUrl: API_URL,
+  apiUrl: extra?.apiUrl ?? "http://localhost:3000/api/v1",
   appName: "School LMS",
 };
