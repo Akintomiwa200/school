@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { createAndSendOtp } from "@/lib/auth/otp";
 import { setPendingAuth } from "@/lib/auth/pending-auth";
-import { createApiError, createApiResponse, loginSchema } from "@/shared";
+import { createApiError, createApiResponse, loginSchema, UserRole } from "@/shared";
 import { isStaffRole } from "@/shared/permissions";
 
 export async function POST(request: NextRequest) {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (isStaffRole(user.role)) {
+    if (isStaffRole(user.role as UserRole)) {
       return NextResponse.json(
         createApiError(
           "staff_portal_required",
