@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ROLE_ROUTES, SHARED_ROUTES } from "@/shared/permissions";
+import { ROLE_ROUTES, getSharedRoutesForRole } from "@/shared/permissions";
 import { UserRole } from "@/shared";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ export function Sidebar() {
   const { data: session } = useSession();
   const role = session?.user?.role as UserRole;
   const routes = role ? ROLE_ROUTES[role] ?? [] : [];
+  const sharedRoutes = role ? getSharedRoutesForRole(role) : [];
 
   return (
     <aside className="hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
@@ -35,23 +36,25 @@ export function Sidebar() {
             {route.label}
           </Link>
         ))}
-        <div className="my-4 border-t border-sidebar-border pt-4">
-          <p className="mb-2 px-3 text-xs font-semibold uppercase text-muted-foreground">Shared</p>
-          {SHARED_ROUTES.map((route) => (
-            <Link
-              key={route.path}
-              href={route.path}
-              className={cn(
-                "flex items-center rounded-lg px-md py-sm type-link font-medium transition-colors",
-                pathname === route.path
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/50"
-              )}
-            >
-              {route.label}
-            </Link>
-          ))}
-        </div>
+        {sharedRoutes.length > 0 ? (
+          <div className="my-4 border-t border-sidebar-border pt-4">
+            <p className="mb-2 px-3 text-xs font-semibold uppercase text-muted-foreground">Shared</p>
+            {sharedRoutes.map((route) => (
+              <Link
+                key={route.path}
+                href={route.path}
+                className={cn(
+                  "flex items-center rounded-lg px-md py-sm type-link font-medium transition-colors",
+                  pathname === route.path || pathname.startsWith(`${route.path}/`)
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/50",
+                )}
+              >
+                {route.label}
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </nav>
     </aside>
   );

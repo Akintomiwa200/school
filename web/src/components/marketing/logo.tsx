@@ -1,38 +1,17 @@
 import { cn } from "@/lib/utils";
-import { appConfig } from "@/config";
 
-function ShieldIcon({ className }: { className?: string }) {
+export function MarketingLogo({ variant = "default" }: { variant?: "default" | "auth" }) {
+  const isAuth = variant === "auth";
+
   return (
-    <svg
-      width="40"
-      height="44"
-      viewBox="0 0 40 44"
-      fill="none"
-      aria-hidden
-      className={cn("shrink-0", className)}
-    >
-      <path
-        d="M20 2L36 10V24C36 33 28 40 20 42C12 40 4 33 4 24V10L20 2Z"
-        fill="#5d21d0"
-      />
-      <path d="M20 2L36 10V24C36 28 24 32 20 32V2Z" fill="#ff9f1c" />
-      <path
-        d="M20 14L21.2 18.2H25.5L22.1 20.8L23.3 25L20 22.5L16.7 25L17.9 20.8L14.5 18.2H18.8L20 14Z"
-        fill="white"
-      />
-    </svg>
-  );
-}
-export function MarketingLogo() {
-  return (
-    <div className="flex items-center gap-[10px]">
-      {/* Purple shield/bookmark icon */}
+    <div className="flex items-center gap-3">
       <svg
-        width="36"
-        height="36"
+        width={isAuth ? 48 : 36}
+        height={isAuth ? 48 : 36}
         viewBox="0 0 36 36"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        className="shrink-0"
       >
         <rect width="36" height="36" rx="8" fill="#5d21d0" />
         <path
@@ -51,12 +30,21 @@ export function MarketingLogo() {
           opacity="0.9"
         />
       </svg>
-      {/* Stacked wordmark */}
-      <div className="flex flex-col leading-tight">
-        <span className="text-sm font-bold tracking-[0.01em] text-marketing-text">
+      <div className={cn("flex flex-col leading-tight", isAuth && "gap-0.5")}>
+        <span
+          className={cn(
+            "font-bold tracking-[0.01em] text-marketing-text",
+            isAuth ? "text-xl lg:text-2xl" : "text-sm",
+          )}
+        >
           Pathway
         </span>
-        <span className="text-sm font-bold tracking-[0.01em] text-brand-orange">
+        <span
+          className={cn(
+            "font-bold tracking-[0.01em] text-brand-orange",
+            isAuth ? "text-xl lg:text-2xl" : "text-sm",
+          )}
+        >
           Academy
         </span>
       </div>

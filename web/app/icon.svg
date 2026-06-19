@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 36 36" fill="none">
+  <rect width="36" height="36" rx="8" fill="#5d21d0"/>
+  <path
+    d="M18 6C13 6 9 10 9 15C9 20 13 26 18 30C23 26 27 20 27 15C27 10 23 6 18 6Z"
+    fill="#ffffff"
+    opacity="0.25"
+  />
+  <path
+    d="M18 6C18 6 13 10 13 15C13 20 18 30 18 30V6Z"
+    fill="#ffffff"
+    opacity="0.65"
+  />
+  <path
+    d="M18 6C18 6 23 10 23 15C23 20 18 30 18 30V6Z"
+    fill="#ffffff"
+  />
+  <circle cx="28" cy="8" r="4" fill="#ff9f1c"/>
+</svg>

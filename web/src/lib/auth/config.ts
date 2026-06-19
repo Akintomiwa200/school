@@ -1,10 +1,11 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { consumeOtpSessionToken } from "@/lib/auth/otp";
 import { UserRole } from "@/shared";
-import { getRoleDashboardPath } from "@/shared/permissions";
+import { getRoleDashboardPath, isConsumerRole, isStaffRole } from "@/shared/permissions";
 
 function splitName(fullName: string) {
   const parts = fullName.trim().split(/\s+/);
@@ -62,6 +63,42 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user?.isActive) return null;
+        if (isStaffRole(user.role as UserRole)) return null;
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`,
+          role: user.role as UserRole,
+          image: user.avatar,
+        };
+      },
+    }),
+    CredentialsProvider({
+      id: "staff-credentials",
+      name: "Staff Login",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const email = credentials.email.trim().toLowerCase();
+        const user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user?.password || !user.isActive) return null;
+        if (!isStaffRole(user.role as UserRole)) return null;
+
+        const isValid = await bcrypt.compare(credentials.password, user.password);
+        if (!isValid) return null;
+
+        if (!user.onboardingCompleted) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { onboardingCompleted: true },
+          });
+        }
 
         return {
           id: user.id,
@@ -222,8 +259,12 @@ export async function getPostAuthRedirect(userId: string): Promise<string> {
     });
 
     if (!user) return "/login";
-    if (!user.onboardingCompleted) return "/onboarding";
-    return getRoleDashboardPath(user.role as UserRole);
+
+    const role = user.role as UserRole;
+    if (isStaffRole(role)) return getRoleDashboardPath(role);
+    if (isConsumerRole(role) && !user.onboardingCompleted) return "/onboarding";
+
+    return getRoleDashboardPath(role);
   } catch {
     return "/login";
   }

@@ -334,10 +334,12 @@
 
   html {
     @apply scroll-smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    @apply bg-background font-sans text-foreground antialiased text-body;
   }
 
   /* Keep forms and controls at full width — don't squash in flex/grid layouts */
@@ -369,7 +371,9 @@
   }
 
   /* Oval grid vignette — hero (full section) or offering rows (--row) */
-  .marketing-page .marketing-oval-grid-bg::before {
+  .marketing-page .marketing-oval-grid-bg::before,
+  .auth-page .marketing-oval-grid-bg::before,
+  .staff-auth-page .marketing-oval-grid-bg::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -420,7 +424,9 @@
     );
   }
 
-  .marketing-page .marketing-oval-grid-bg > * {
+  .marketing-page .marketing-oval-grid-bg > *,
+  .auth-page .marketing-oval-grid-bg > *,
+  .staff-auth-page .marketing-oval-grid-bg > * {
     position: relative;
     z-index: 1;
   }
@@ -542,37 +548,61 @@
   }
 
   /* Auth — aligned with marketing / app brand tokens */
-  .auth-page {
+  .auth-page,
+  .staff-auth-page {
     @apply min-h-screen w-full bg-marketing-bg text-marketing-text;
   }
 
-  .auth-page .auth-title {
+  .auth-page .auth-title,
+  .staff-auth-page .auth-title {
     @apply font-bold text-marketing-text;
   }
 
-  .auth-page .auth-subtitle {
+  .staff-auth-page .auth-title {
+    @apply font-display;
+  }
+
+  .auth-page .auth-subtitle,
+  .staff-auth-page .auth-subtitle {
     color: var(--color-marketing-muted);
   }
 
-  .auth-page .auth-muted {
+  .staff-auth-page .auth-subtitle {
+    @apply text-base leading-relaxed lg:text-lg;
+  }
+
+  .auth-page .auth-muted,
+  .staff-auth-page .auth-muted {
     @apply text-xs;
     color: var(--color-marketing-muted);
   }
 
-  .auth-page .auth-body {
+  .staff-auth-page .auth-muted {
+    @apply text-sm lg:text-base;
+  }
+
+  .auth-page .auth-body,
+  .staff-auth-page .auth-body {
     @apply text-sm leading-relaxed;
     color: var(--color-marketing-muted);
   }
 
-  .auth-page .auth-link {
+  .auth-page .auth-link,
+  .staff-auth-page .auth-link {
     @apply font-semibold text-brand-purple hover:underline;
   }
 
-  .auth-page .auth-btn-primary {
+  .auth-page .auth-btn-primary,
+  .staff-auth-page .auth-btn-primary {
     @apply inline-flex w-full items-center justify-center rounded-full bg-brand-orange py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 lg:text-base;
   }
 
-  .auth-page .auth-btn-mobile-bar {
+  .staff-auth-page .auth-btn-primary {
+    @apply py-3.5 text-base lg:py-4 lg:text-lg;
+  }
+
+  .auth-page .auth-btn-mobile-bar,
+  .staff-auth-page .auth-btn-mobile-bar {
     @apply rounded-lg bg-brand-orange px-7 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70;
   }
 
@@ -597,7 +627,6 @@
 
   .auth-page .auth-form-body {
     width: 100%;
-    max-width: 28rem;
-    margin-inline: auto;
+    max-width: 100%;
   }
 }

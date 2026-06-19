@@ -1,12 +1,12 @@
+import { AuthShell } from "@/components/auth/auth-shell";
+
 export default function VerifyEmailPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-marketing-bg px-6">
-      <div className="w-full max-w-md space-y-6 rounded-2xl border border-marketing-grid/80 bg-marketing-bg p-8 shadow-xl">
-        <h1 className="auth-title text-center text-2xl">Verify Email</h1>
-        <p className="auth-body text-center">
-          Email verification page ready for implementation.
-        </p>
-      </div>
-    </div>
+    <AuthShell title="Verify Email" subtitle="Email verification page ready for implementation.">
+      <p className="auth-body text-center">
+        Check your inbox for a verification link, or return to login if you already verified your
+        account.
+      </p>
+    </AuthShell>
   );
 }

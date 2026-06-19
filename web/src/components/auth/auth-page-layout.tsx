@@ -3,10 +3,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useSyncExternalStore } from "react";
-import { AuthWaveBottom, AuthWaveTop } from "./auth-waves";
 import { AuthDivider } from "./auth-divider";
 import { GoogleSignInButton } from "./google-sign-in-button";
-import { LoginIllustration } from "./login-illustration";
+import { AuthIllustration, AuthIllustrationMobile } from "./login-illustration";
 
 type AuthPageLayoutProps = {
   formId: string;
@@ -83,31 +82,14 @@ export function AuthPageLayout({
   const handleSubmit = onSubmit ?? ((e: React.FormEvent<HTMLFormElement>) => e.preventDefault());
 
   const illustrationPanel = (
-    <div className="marketing-grid-bg flex min-h-full items-center justify-center px-12 py-16 lg:px-16 xl:px-20">
-      <LoginIllustration />
+    <div className="marketing-oval-grid-bg relative flex min-h-full w-full items-center justify-center overflow-hidden px-6 py-10 sm:px-8 lg:px-10 lg:py-12 xl:px-12">
+      <AuthIllustration className="w-full max-w-2xl xl:max-w-3xl" />
     </div>
   );
 
   const formPanel = (
-    <div className="relative grid min-h-full place-items-center overflow-hidden bg-marketing-surface px-12 py-16 lg:px-16 xl:px-20">
-      <div
-        aria-hidden
-        className={
-          formSide === "left"
-            ? "pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full border border-brand-purple/15 bg-brand-purple/5"
-            : "pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full border border-brand-purple/15 bg-brand-purple/5"
-        }
-      />
-      <div
-        aria-hidden
-        className={
-          formSide === "left"
-            ? "pointer-events-none absolute bottom-10 left-10 h-40 w-40 rounded-full border border-brand-orange/20 bg-brand-orange/10"
-            : "pointer-events-none absolute bottom-10 right-10 h-40 w-40 rounded-full border border-brand-orange/20 bg-brand-orange/10"
-        }
-      />
-
-      <div className="auth-card relative z-10 rounded-2xl border border-marketing-grid/80 bg-marketing-bg px-10 py-10 shadow-xl lg:px-12 lg:py-12">
+    <div className="relative grid min-h-full place-items-center bg-marketing-bg px-8 py-12 lg:px-12 xl:px-16">
+      <div className="auth-card relative z-10 rounded-2xl border border-marketing-grid/80 bg-marketing-bg px-8 py-9 shadow-xl sm:px-10 sm:py-10 lg:px-12 lg:py-12">
         <h1 className="auth-title text-3xl lg:text-4xl">{desktopTitle}</h1>
         <p className="auth-subtitle mt-2 text-sm lg:text-base">{desktopSubtitle}</p>
 
@@ -158,13 +140,19 @@ export function AuthPageLayout({
   }
 
   return (
-    <form id={formId} className="flex min-h-[calc(100vh-4rem)] w-full flex-col bg-marketing-bg" onSubmit={handleSubmit}>
-      <AuthWaveTop className="h-32 w-full" />
+    <form
+      id={formId}
+      className="marketing-oval-grid-bg relative flex min-h-[calc(100vh-4rem)] w-full flex-col"
+      onSubmit={handleSubmit}
+    >
+      <main className="auth-form-body flex-1 px-6 pb-6 pt-2 sm:px-8">
+        <div className="mb-6 w-full">
+          <AuthIllustrationMobile />
+        </div>
 
-      <main className="auth-form-body px-6 pb-8 pt-4 sm:px-8">
-        <h1 className="auth-title text-2xl text-brand-purple">{mobileTitle}</h1>
+        <h1 className="auth-title text-center text-2xl text-brand-purple">{mobileTitle}</h1>
 
-        <div className="mt-6 space-y-4">
+        <div className="mx-auto mt-6 max-w-md space-y-4">
           {renderFields("mobile")}
 
           {mobileForgotPassword ? (
@@ -191,12 +179,15 @@ export function AuthPageLayout({
       </main>
 
       {mobileSubmit === "footer-bar" && mobileBottomText ? (
-        <div className="relative mt-auto w-full">
-          <AuthWaveBottom className="h-28 w-full" />
-          <div className="absolute inset-0 flex items-center justify-between px-6 pb-2 pt-8">
-            <p className="text-sm text-white">{mobileBottomText}</p>
+        <div className="relative z-10 mt-auto border-t border-marketing-grid/80 bg-marketing-bg/95 px-6 py-4 backdrop-blur-sm sm:px-8">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm text-marketing-text">{mobileBottomText}</p>
             {!hideSubmit ? (
-              <SubmitButton label={submitLabel} isSubmitting={isSubmitting} className="auth-btn-mobile-bar" />
+              <SubmitButton
+                label={submitLabel}
+                isSubmitting={isSubmitting}
+                className="auth-btn-mobile-bar shrink-0"
+              />
             ) : null}
           </div>
         </div>

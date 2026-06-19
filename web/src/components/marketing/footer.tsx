@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { appConfig } from "@/config";
 import { MarketingLogo } from "./logo";
+import { MARKETING_FOOTER_LINKS } from "./nav-links";
 import {
   FacebookIcon,
   InstagramIcon,
@@ -8,13 +9,6 @@ import {
   TwitterIcon,
   YoutubeIcon,
 } from "./social-icons";
-
-const FOOTER_LINKS = [
-  { label: "Services", href: "#services" },
-  { label: "Offering", href: "#offering" },
-  { label: "Testimonials", href: "#testimonials" },
-  { label: "Article", href: "#article" },
-] as const;
 
 const DESKTOP_SOCIAL = [
   { label: "Facebook", href: "https://facebook.com", icon: FacebookIcon },
@@ -59,24 +53,14 @@ export function MarketingFooter() {
             </div>
 
             <p className="mt-6 text-center text-sm font-medium leading-relaxed text-marketing-text">
-              <Link href={FOOTER_LINKS[0].href} className="hover:text-brand-purple">
-                {FOOTER_LINKS[0].label}
-              </Link>
-              <FooterLinkSeparator />
-              <Link href={FOOTER_LINKS[1].href} className="hover:text-brand-purple">
-                {FOOTER_LINKS[1].label}
-              </Link>
-              <FooterLinkSeparator />
-              <Link href={FOOTER_LINKS[2].href} className="hover:text-brand-purple">
-                {FOOTER_LINKS[2].label}
-              </Link>
-              <FooterLinkSeparator />
-            </p>
-
-            <p className="mt-3 text-center text-sm font-medium">
-              <Link href={FOOTER_LINKS[3].href} className="hover:text-brand-purple">
-                {FOOTER_LINKS[3].label}
-              </Link>
+              {MARKETING_FOOTER_LINKS.map((link, index) => (
+                <span key={link.href}>
+                  {index > 0 ? <FooterLinkSeparator /> : null}
+                  <Link href={link.href} className="hover:text-brand-purple">
+                    {link.label}
+                  </Link>
+                </span>
+              ))}
             </p>
 
             <p className="mt-3 text-center text-sm font-medium">
@@ -122,7 +106,7 @@ export function MarketingFooter() {
 
             <nav aria-label="Footer">
               <ul className="flex flex-wrap gap-x-xl gap-y-sm">
-                {FOOTER_LINKS.map((link) => (
+                {MARKETING_FOOTER_LINKS.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="marketing-nav-link">
                       {link.label}

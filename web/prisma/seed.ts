@@ -10,7 +10,7 @@ async function main() {
 
   const superAdmin = await prisma.user.upsert({
     where: { email: "admin@school.com" },
-    update: {},
+    update: { onboardingCompleted: true },
     create: {
       email: "admin@school.com",
       password: hashedPassword,
@@ -18,12 +18,13 @@ async function main() {
       lastName: "Admin",
       role: UserRole.SUPER_ADMIN,
       emailVerified: new Date(),
+      onboardingCompleted: true,
     },
   });
 
   const admin = await prisma.user.upsert({
     where: { email: "principal@school.com" },
-    update: {},
+    update: { onboardingCompleted: true },
     create: {
       email: "principal@school.com",
       password: hashedPassword,
@@ -31,12 +32,13 @@ async function main() {
       lastName: "Principal",
       role: UserRole.ADMIN,
       emailVerified: new Date(),
+      onboardingCompleted: true,
     },
   });
 
   const accountant = await prisma.user.upsert({
     where: { email: "accountant@school.com" },
-    update: {},
+    update: { onboardingCompleted: true },
     create: {
       email: "accountant@school.com",
       password: hashedPassword,
@@ -44,12 +46,13 @@ async function main() {
       lastName: "Accountant",
       role: UserRole.ACCOUNTANT,
       emailVerified: new Date(),
+      onboardingCompleted: true,
     },
   });
 
   const teacher = await prisma.user.upsert({
     where: { email: "teacher@school.com" },
-    update: {},
+    update: { onboardingCompleted: true },
     create: {
       email: "teacher@school.com",
       password: hashedPassword,
@@ -57,6 +60,7 @@ async function main() {
       lastName: "Teacher",
       role: UserRole.TEACHER,
       emailVerified: new Date(),
+      onboardingCompleted: true,
     },
   });
 

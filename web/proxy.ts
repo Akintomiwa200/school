@@ -2,9 +2,18 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { UserRole } from "@/shared";
-import { getRoleDashboardPath } from "@/shared/permissions";
+import {
+  canRoleAccessDashboardPath,
+  getLoginPathForProtectedRoute,
+  getRoleDashboardPath,
+  getUnauthorizedRedirect,
+  isConsumerRole,
+  isStaffRole,
+} from "@/shared/permissions";
 
-const AUTH_PAGES = ["/login", "/register", "/forgot-password", "/reset-password"];
+const CONSUMER_AUTH_PAGES = ["/login", "/register", "/forgot-password", "/reset-password"];
+const STAFF_AUTH_PAGES = ["/staff/login"];
+const AUTH_PAGES = [...CONSUMER_AUTH_PAGES, ...STAFF_AUTH_PAGES];
 
 const PROTECTED_PREFIXES = [
   "/super-admin",
@@ -20,7 +29,13 @@ const PROTECTED_PREFIXES = [
   "/shared",
 ];
 
+function isAuthPage(pathname: string) {
+  return AUTH_PAGES.some((page) => pathname === page || pathname.startsWith(`${page}/`));
+}
+
 function isProtectedPath(pathname: string) {
+  if (isAuthPage(pathname)) return false;
+
   return PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
@@ -43,10 +58,17 @@ function needsAuthCheck(pathname: string) {
   return false;
 }
 
+function isStaffAuthPage(pathname: string) {
+  return STAFF_AUTH_PAGES.some((page) => pathname.startsWith(page));
+}
+
+function isConsumerAuthPage(pathname: string) {
+  return CONSUMER_AUTH_PAGES.some((page) => pathname.startsWith(page));
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Always pass through Next.js internals and public static assets
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon.ico") ||
@@ -60,7 +82,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Marketing, verify-code, etc. — skip JWT entirely (fast path)
   if (!needsAuthCheck(pathname)) {
     return NextResponse.next();
   }
@@ -76,35 +97,62 @@ export async function proxy(request: NextRequest) {
       secret: process.env.NEXTAUTH_SECRET,
     });
 
-    const isAuthPage = AUTH_PAGES.some((page) => pathname.startsWith(page));
+    const role = token?.role as UserRole | undefined;
+    const isStaff = role ? isStaffRole(role) : false;
+    const isConsumer = role ? isConsumerRole(role) : false;
+
     const isPostAuthPage =
       pathname.startsWith("/auth/success") || pathname.startsWith("/onboarding");
 
-    if (isAuthPage && token) {
+    if (isStaffAuthPage(pathname) && token) {
+      if (isStaff) {
+        return NextResponse.redirect(new URL(getRoleDashboardPath(role!), request.url));
+      }
+      if (isConsumer) {
+        return NextResponse.redirect(new URL(getRoleDashboardPath(role!), request.url));
+      }
+    }
+
+    if (isConsumerAuthPage(pathname) && token) {
+      if (isStaff) {
+        return NextResponse.redirect(new URL(getRoleDashboardPath(role!), request.url));
+      }
       if (!token.onboardingCompleted) {
         return NextResponse.redirect(new URL("/onboarding", request.url));
       }
-      const role = token.role as UserRole;
-      return NextResponse.redirect(new URL(getRoleDashboardPath(role), request.url));
+      return NextResponse.redirect(new URL(getRoleDashboardPath(role!), request.url));
     }
 
     if (isPostAuthPage && !token) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      const loginPath = pathname.startsWith("/onboarding") ? "/login" : "/login";
+      return NextResponse.redirect(new URL(loginPath, request.url));
     }
 
     if (isProtectedApi(pathname) && !token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (isAuthPage(pathname) && !token) {
+      return NextResponse.next();
+    }
+
     if (isProtectedPath(pathname)) {
       if (!token) {
-        const loginUrl = new URL("/login", request.url);
+        const loginPath = getLoginPathForProtectedRoute(pathname);
+        if (pathname === loginPath) {
+          return NextResponse.next();
+        }
+        const loginUrl = new URL(loginPath, request.url);
         loginUrl.searchParams.set("callbackUrl", pathname);
         return NextResponse.redirect(loginUrl);
       }
 
-      if (!token.onboardingCompleted && !pathname.startsWith("/onboarding")) {
+      if (!isStaff && !token.onboardingCompleted && !pathname.startsWith("/onboarding")) {
         return NextResponse.redirect(new URL("/onboarding", request.url));
+      }
+
+      if (role && !canRoleAccessDashboardPath(role, pathname)) {
+        return NextResponse.redirect(new URL(getUnauthorizedRedirect(role), request.url));
       }
     }
 

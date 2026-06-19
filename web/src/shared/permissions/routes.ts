@@ -1,4 +1,6 @@
 import { UserRole } from "../types";
+import { hasPermission } from "./index";
+import { ROLE_DASHBOARD_PREFIXES, SHARED_ROUTE_PERMISSIONS } from "./staff-roles";
 
 export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: string }[]> = {
   [UserRole.SUPER_ADMIN]: [
@@ -105,3 +107,33 @@ export const SHARED_ROUTES = [
   { label: "Profile", path: "/shared/profile", icon: "User" },
   { label: "Settings", path: "/shared/settings", icon: "Settings" },
 ];
+
+export function getSharedRoutesForRole(role: UserRole) {
+  return SHARED_ROUTES.filter((route) => {
+    const permission = SHARED_ROUTE_PERMISSIONS[route.path];
+    if (!permission) return true;
+    return hasPermission(role, permission);
+  });
+}
+
+export function canRoleAccessSharedPath(role: UserRole, pathname: string): boolean {
+  const route = SHARED_ROUTES.find(
+    (item) => pathname === item.path || pathname.startsWith(`${item.path}/`),
+  );
+  if (!route) return false;
+  const permission = SHARED_ROUTE_PERMISSIONS[route.path];
+  if (!permission) return true;
+  return hasPermission(role, permission);
+}
+
+export function canRoleAccessDashboardPath(role: UserRole, pathname: string): boolean {
+  if (pathname.startsWith("/shared")) {
+    return canRoleAccessSharedPath(role, pathname);
+  }
+
+  const allowedPrefixes = ROLE_DASHBOARD_PREFIXES[role] ?? [];
+
+  return allowedPrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}

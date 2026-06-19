@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { createAndSendOtp } from "@/lib/auth/otp";
 import { setPendingAuth } from "@/lib/auth/pending-auth";
 import { createApiError, createApiResponse, loginSchema } from "@/shared";
+import { isStaffRole } from "@/shared/permissions";
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,6 +32,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(createApiError("invalid_credentials", "Invalid email or password"), {
         status: 401,
       });
+    }
+
+    if (isStaffRole(user.role)) {
+      return NextResponse.json(
+        createApiError(
+          "staff_portal_required",
+          "Staff accounts must sign in at the staff portal.",
+        ),
+        { status: 403 },
+      );
     }
 
     const otpResult = await createAndSendOtp(

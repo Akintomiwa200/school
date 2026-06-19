@@ -71,7 +71,17 @@ export function LoginPageContent() {
       }
       router.push("/verify-code");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Invalid email or password");
+      const message = error instanceof Error ? error.message : "Invalid email or password";
+      if (message.toLowerCase().includes("staff portal")) {
+        toast.error(message, {
+          action: {
+            label: "Staff login",
+            onClick: () => router.push("/staff/login"),
+          },
+        });
+        return;
+      }
+      toast.error(message);
     }
   });
 

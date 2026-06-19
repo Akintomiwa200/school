@@ -220,3 +220,4 @@ export function getRoleDashboardPath(role: UserRole): string {
 }
 
 export * from "./routes";
+export * from "./staff-roles";

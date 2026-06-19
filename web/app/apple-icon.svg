@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180" fill="none">
+  <rect width="180" height="180" rx="40" fill="#5d21d0"/>
+  <path
+    d="M90 30C65 30 45 50 45 75C45 100 65 130 90 150C115 130 135 100 135 75C135 50 115 30 90 30Z"
+    fill="#ffffff"
+    opacity="0.25"
+  />
+  <path
+    d="M90 30C90 30 65 50 65 75C65 100 90 150 90 150V30Z"
+    fill="#ffffff"
+    opacity="0.65"
+  />
+  <path
+    d="M90 30C90 30 115 50 115 75C115 100 90 150 90 150V30Z"
+    fill="#ffffff"
+  />
+  <circle cx="140" cy="40" r="18" fill="#ff9f1c"/>
+</svg>
