@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
@@ -12,15 +11,6 @@ import { getRoleDashboardPath } from "@/shared/permissions";
 import { UserRole } from "@/shared";
 import { AuthField } from "./auth-field";
 import { StaffAuthLayout } from "./staff-auth-layout";
-
-const LOGIN_PATHS = ["/staff/login", "/login", "/register"];
-
-function resolveCallbackUrl(callbackUrl: string | null) {
-  if (!callbackUrl || !callbackUrl.startsWith("/")) return null;
-  const path = callbackUrl.split("?")[0] ?? callbackUrl;
-  if (LOGIN_PATHS.includes(path)) return null;
-  return callbackUrl;
-}
 
 function StaffLoginFormFields({
   variant,
@@ -66,10 +56,8 @@ function StaffLoginFormFields({
   );
 }
 
-function StaffLoginForm() {
+export function StaffLoginPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = resolveCallbackUrl(searchParams.get("callbackUrl"));
 
   const {
     register,
@@ -95,12 +83,6 @@ function StaffLoginForm() {
       }
 
       toast.success("Signed in successfully");
-
-      if (callbackUrl) {
-        router.push(callbackUrl);
-        router.refresh();
-        return;
-      }
 
       const sessionRes = await fetch("/api/auth/session");
       const session = (await sessionRes.json()) as { user?: { role?: UserRole } };
@@ -133,21 +115,5 @@ function StaffLoginForm() {
         />
       )}
     />
-  );
-}
-
-export function StaffLoginPageContent() {
-  return (
-    <Suspense
-      fallback={
-        <StaffAuthLayout
-          isSubmitting
-          onSubmit={(e) => e.preventDefault()}
-          renderFields={() => <p className="auth-body text-center">Loading…</p>}
-        />
-      }
-    >
-      <StaffLoginForm />
-    </Suspense>
   );
 }

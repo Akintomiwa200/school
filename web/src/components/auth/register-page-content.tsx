@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { appConfig } from "@/config";
 import { authService } from "@/services";
-import { registerSchema, type RegisterInput } from "@/shared";
+import { registerSchema, type RegisterInput, UserRole } from "@/shared";
 import { AuthField } from "./auth-field";
 import { AuthPageLayout } from "./auth-page-layout";
 
@@ -70,7 +70,7 @@ export function RegisterPageContent() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { fullName: "", email: "", password: "" },
+    defaultValues: { fullName: "", email: "", password: "", role: UserRole.STUDENT },
     shouldUnregister: true,
   });
 

@@ -12,7 +12,7 @@ const defaultDatabaseUrl =
 function createPrismaClient() {
   const connectionString =
     process.env.DATABASE_URL ??
-    (process.env.NODE_ENV === "development" ? defaultDatabaseUrl : undefined);
+    (process.env.NODE_ENV !== "production" ? defaultDatabaseUrl : undefined);
 
   if (!connectionString) {
     throw new Error(

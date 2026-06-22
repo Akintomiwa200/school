@@ -17,9 +17,14 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await createPasswordResetToken(parsed.data.email);
+    let devResetUrl: string | undefined;
 
     if (result) {
       const resetUrl = `${appConfig.url}/reset-password?token=${result.token}`;
+      if (process.env.NODE_ENV !== "production") {
+        devResetUrl = resetUrl;
+        console.info(`[dev] Password reset for ${result.user.email}: ${resetUrl}`);
+      }
       try {
         await sendPasswordResetEmail(
           result.user.email,
@@ -33,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       createApiResponse(
-        null,
+        process.env.NODE_ENV !== "production" ? { devResetUrl } : null,
         "If an account exists for that email, a reset link has been sent.",
       ),
     );

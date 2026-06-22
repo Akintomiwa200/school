@@ -13,6 +13,7 @@ import { AuthPageLayout } from "./auth-page-layout";
 
 export function ForgotPasswordPageContent() {
   const [sent, setSent] = useState(false);
+  const [devResetUrl, setDevResetUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -25,9 +26,14 @@ export function ForgotPasswordPageContent() {
 
   const onSubmit = handleSubmit(async (values) => {
     try {
-      await authService.forgotPassword(values);
+      const res = await authService.forgotPassword(values);
       setSent(true);
-      toast.success("Check your email for a reset link.");
+      if (res.data?.devResetUrl) {
+        setDevResetUrl(res.data.devResetUrl);
+        toast.message("Dev reset link copied to page (no email provider configured).");
+      } else {
+        toast.success("Check your email for a reset link.");
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong");
     }
@@ -41,6 +47,14 @@ export function ForgotPasswordPageContent() {
             If an account exists for that email, we sent a password reset link. The link expires in
             1 hour.
           </p>
+          {devResetUrl ? (
+            <p>
+              Dev reset link:{" "}
+              <Link href={devResetUrl} className="auth-link break-all">
+                {devResetUrl}
+              </Link>
+            </p>
+          ) : null}
           <p>Did not receive it? Check spam or try again with the same email address.</p>
         </div>
       );

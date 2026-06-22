@@ -118,6 +118,10 @@ export const authOptions: NextAuthOptions = {
         const email = user.email.toLowerCase();
         const existing = await prisma.user.findUnique({ where: { email } });
 
+        if (existing && isStaffRole(existing.role as UserRole)) {
+          return false;
+        }
+
         if (!existing) {
           const { firstName, lastName } = splitName(user.name ?? "Google User");
           const created = await prisma.user.create({

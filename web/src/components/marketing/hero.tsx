@@ -1,9 +1,8 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
 import {
   Crown,
-  Play,
   Sparkles,
+  UserPlus,
 } from "lucide-react";
 import {
   HeroStudentLeft,
@@ -24,10 +23,10 @@ export function MarketingHero() {
           <Sparkles className="h-6 w-6" />
         </div>
 
-        <div className="flex flex-col items-center gap-xl lg:flex-row lg:items-end lg:justify-center lg:gap-8 xl:gap-12">
-          {/* Left student */}
-          <div className="order-2 hidden lg:order-1 lg:flex lg:justify-end">
-            <HeroStudentLeft />
+        <div className="flex flex-col items-center gap-xl overflow-visible lg:flex-row lg:items-end lg:justify-center lg:gap-8 xl:gap-12">
+          {/* Left student — larger on desktop */}
+          <div className="order-2 hidden lg:order-1 lg:flex lg:h-[390px] lg:w-[312px] lg:items-end lg:justify-end xl:h-[420px] xl:w-[336px]">
+            <HeroStudentLeft className="origin-bottom scale-[1.3] xl:scale-[1.4]" />
           </div>
 
           {/* Center copy */}
@@ -65,16 +64,16 @@ export function MarketingHero() {
             <div className="mt-section flex justify-center">
               <Link href="/register" className="btn-pill-purple gap-sm">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
-                  <Play className="h-4 w-4 fill-white text-white" />
+                  <UserPlus className="h-4 w-4 text-white" />
                 </span>
-                Watch Introduction
+                Enroll Now
               </Link>
             </div>
           </div>
 
-          {/* Right student */}
-          <div className="order-3 hidden lg:order-3 lg:flex lg:justify-start">
-            <HeroStudentRight />
+          {/* Right student — larger on desktop */}
+          <div className="order-3 hidden lg:order-3 lg:flex lg:h-[390px] lg:w-[312px] lg:items-end lg:justify-start xl:h-[420px] xl:w-[336px]">
+            <HeroStudentRight className="origin-bottom scale-[1.3] xl:scale-[1.4]" />
           </div>
         </div>
       </div>

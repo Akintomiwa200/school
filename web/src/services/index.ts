@@ -56,7 +56,10 @@ export const authService = {
   completeOnboarding: () =>
     request(API_ENDPOINTS.AUTH_ONBOARDING, { method: "PATCH" }),
   forgotPassword: (data: unknown) =>
-    request(API_ENDPOINTS.AUTH_FORGOT_PASSWORD, { method: "POST", body: JSON.stringify(data) }),
+    request<{ devResetUrl?: string }>(API_ENDPOINTS.AUTH_FORGOT_PASSWORD, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
   resetPassword: (data: unknown) =>
     request(API_ENDPOINTS.AUTH_RESET_PASSWORD, { method: "POST", body: JSON.stringify(data) }),
 };

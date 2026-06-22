@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { createAndSendOtp } from "@/lib/auth/otp";
 import { setPendingAuth } from "@/lib/auth/pending-auth";
 import { UserRole, createApiError, createApiResponse, registerSchema } from "@/shared";
+import { isStaffRole } from "@/shared/permissions";
 
 function splitFullName(fullName: string) {
   const parts = fullName.trim().split(/\s+/);
@@ -28,12 +29,22 @@ export async function POST(request: NextRequest) {
     const existing = await prisma.user.findUnique({ where: { email } });
 
     if (existing) {
+      if (isStaffRole(existing.role as UserRole)) {
+        return NextResponse.json(
+          createApiError(
+            "staff_portal_required",
+            "This email is registered as staff. Sign in at the staff portal.",
+          ),
+          { status: 403 },
+        );
+      }
       return NextResponse.json(createApiError("email_exists", "An account with this email already exists"), {
         status: 409,
       });
     }
 
     const { firstName, lastName } = splitFullName(parsed.data.fullName);
+    const role = parsed.data.role;
 
     const hashedPassword = await bcrypt.hash(parsed.data.password, 12);
 
@@ -44,7 +55,7 @@ export async function POST(request: NextRequest) {
         firstName,
         lastName,
         phone: parsed.data.phone,
-        role: parsed.data.role ?? UserRole.STUDENT,
+        role,
         isActive: true,
       },
     });

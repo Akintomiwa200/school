@@ -133,6 +133,10 @@ export async function proxy(request: NextRequest) {
     }
 
     if (isAuthPage(pathname) && !token) {
+      if (request.nextUrl.searchParams.has("callbackUrl")) {
+        const clean = new URL(pathname, request.url);
+        return NextResponse.redirect(clean);
+      }
       return NextResponse.next();
     }
 
@@ -142,9 +146,7 @@ export async function proxy(request: NextRequest) {
         if (pathname === loginPath) {
           return NextResponse.next();
         }
-        const loginUrl = new URL(loginPath, request.url);
-        loginUrl.searchParams.set("callbackUrl", pathname);
-        return NextResponse.redirect(loginUrl);
+        return NextResponse.redirect(new URL(loginPath, request.url));
       }
 
       if (!isStaff && !token.onboardingCompleted && !pathname.startsWith("/onboarding")) {

@@ -90,31 +90,49 @@ function SocialPill({ label, dark }: { label: string; dark: boolean }) {
   );
 }
 
-export function AboutContactCta() {
+export function AboutContactCta({
+  variant = "about",
+  hideSocialDecor = false,
+}: {
+  variant?: "about" | "contact";
+  hideSocialDecor?: boolean;
+}) {
   const year = new Date().getFullYear();
+  const isContactPage = variant === "contact";
+
+  const heading = (
+    <>
+      {isContactPage ? "GET IN" : "CONTACTS"}{" "}
+      <span aria-hidden className="inline-block translate-y-[-0.06em] text-brand-yellow">
+        ✦
+      </span>{" "}
+      {isContactPage ? "TOUCH" : "US"}
+    </>
+  );
 
   return (
     <section className="bg-marketing-bg pb-section lg:pb-24" aria-labelledby="about-contact-heading">
-      {/* Scattered social pills + consult badges */}
-      <div className="container-content max-w-[1400px] py-14 lg:py-16">
-        <div className="flex flex-wrap items-center justify-center gap-3 md:hidden">
-          {SOCIAL_PILLS.map(({ label, dark }) => (
-            <SocialPill key={label} label={label} dark={dark} />
-          ))}
-        </div>
+      {!hideSocialDecor ? (
+        <div className="container-content max-w-[1400px] py-14 lg:py-16">
+          <div className="flex flex-wrap items-center justify-center gap-3 md:hidden">
+            {SOCIAL_PILLS.map(({ label, dark }) => (
+              <SocialPill key={label} label={label} dark={dark} />
+            ))}
+          </div>
 
-        <div className="relative mx-auto hidden min-h-[300px] max-w-4xl md:block lg:min-h-[340px]">
-          <ConsultBadge variant="brand" reverse className="absolute left-[2%] top-[38%]" />
-          <ConsultBadge variant="light" className="absolute right-[4%] top-[32%]" />
-          <ConsultBadge variant="brand" className="absolute left-[38%] top-[8%] hidden lg:flex" />
+          <div className="relative mx-auto hidden min-h-[300px] max-w-4xl md:block lg:min-h-[340px]">
+            <ConsultBadge variant="brand" reverse className="absolute left-[2%] top-[38%]" />
+            <ConsultBadge variant="light" className="absolute right-[4%] top-[32%]" />
+            <ConsultBadge variant="brand" className="absolute left-[38%] top-[8%] hidden lg:flex" />
 
-          {SOCIAL_PILLS.map(({ label, dark, className }) => (
-            <div key={label} className={cn("absolute z-[1]", className)}>
-              <SocialPill label={label} dark={dark} />
-            </div>
-          ))}
+            {SOCIAL_PILLS.map(({ label, dark, className }) => (
+              <div key={label} className={cn("absolute z-[1]", className)}>
+                <SocialPill label={label} dark={dark} />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Branded contact banner — same width as other about sections */}
       <div className="container-content max-w-[1400px]">
@@ -171,17 +189,22 @@ export function AboutContactCta() {
             </div>
 
             <div className="overflow-hidden px-6 pb-8 pt-4 sm:px-8 sm:pb-10 lg:px-10">
-              <Link
-                href="/contact"
-                id="about-contact-heading"
-                className="block select-none text-center font-display text-[clamp(2rem,5.5vw,3.75rem)] font-black uppercase leading-[0.95] tracking-[-0.03em] text-white transition-opacity hover:opacity-90"
-              >
-                CONTACTS{" "}
-                <span aria-hidden className="inline-block translate-y-[-0.06em] text-brand-yellow">
-                  ✦
-                </span>{" "}
-                US
-              </Link>
+              {isContactPage ? (
+                <h2
+                  id="about-contact-heading"
+                  className="select-none text-center font-display text-[clamp(2rem,5.5vw,3.75rem)] font-black uppercase leading-[0.95] tracking-[-0.03em] text-white"
+                >
+                  {heading}
+                </h2>
+              ) : (
+                <Link
+                  href="/contact"
+                  id="about-contact-heading"
+                  className="block select-none text-center font-display text-[clamp(2rem,5.5vw,3.75rem)] font-black uppercase leading-[0.95] tracking-[-0.03em] text-white transition-opacity hover:opacity-90"
+                >
+                  {heading}
+                </Link>
+              )}
             </div>
           </div>
         </div>

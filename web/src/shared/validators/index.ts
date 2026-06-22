@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { UserRole } from "../types";
 
+const consumerRoleValues = [UserRole.STUDENT, UserRole.PARENT] as const;
 const userRoleValues = Object.values(UserRole) as [UserRole, ...UserRole[]];
 
 export const loginSchema = z.object({
@@ -13,7 +14,7 @@ export const registerSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   fullName: z.string().min(2, "Full name is required"),
   phone: z.string().optional(),
-  role: z.enum(userRoleValues).optional(),
+  role: z.enum(consumerRoleValues),
 });
 
 export const forgotPasswordSchema = z.object({

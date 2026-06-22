@@ -17,6 +17,10 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate dev",
+    "db:setup": "prisma db push && tsx prisma/seed.ts",
+    "db:probe": "node scripts/setup-db.mjs",
+    "db:provision": "node scripts/provision-db.mjs",
+    "auth:verify": "node scripts/verify-auth.mjs",
     "clean": "rimraf .next",
     "upgrade": "npx npm-check-updates -u && pnpm install"
   },
