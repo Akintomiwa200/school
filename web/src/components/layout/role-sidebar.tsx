@@ -134,28 +134,28 @@ export function RoleSidebar() {
 
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden bg-gradient-to-br from-brand-purple via-[#4a1ca8] to-[#3b1688] shadow-2xl transition-all duration-300 ease-in-out",
+          "fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-2xl transition-all duration-300 ease-in-out",
           sidebarOpen ? "w-[280px] opacity-100" : isMobile ? "w-0 opacity-0 pointer-events-none" : "w-16 opacity-100",
         )}
       >
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -right-40 -top-40 h-80 w-80 rounded-full bg-brand-orange/10 blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
+          <div className="absolute -right-32 -top-32 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-brand-blue/5 blur-3xl" />
         </div>
 
-        <div className="relative shrink-0 border-b border-white/10 px-4 py-4">
+        <div className="relative shrink-0 border-b border-sidebar-border px-4 py-4">
           <div className="flex items-center gap-3">
             {sidebarOpen ? (
               <>
                 <div className="relative shrink-0">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-orange to-[#e8890a] shadow-lg">
-                    <span className="text-lg font-bold text-white">{branding.initial}</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sidebar-primary shadow-lg">
+                    <span className="text-lg font-bold text-sidebar-primary-foreground">{branding.initial}</span>
                   </div>
-                  <div className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-brand-orange" />
+                  <div className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-brand-blue" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h1 className="truncate text-lg font-bold leading-tight text-white">{branding.title}</h1>
-                  <p className="truncate text-xs text-white/60">{branding.subtitle}</p>
+                  <h1 className="truncate text-lg font-bold leading-tight text-sidebar-foreground">{branding.title}</h1>
+                  <p className="truncate text-xs text-muted-foreground">{branding.subtitle}</p>
                 </div>
               </>
             ) : null}
@@ -164,7 +164,7 @@ export function RoleSidebar() {
               type="button"
               onClick={toggleSidebar}
               className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors hover:bg-white/20 hover:text-white",
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-muted-foreground transition-colors hover:bg-sidebar-accent/80 hover:text-sidebar-foreground",
                 !sidebarOpen && "mx-auto",
               )}
               title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
@@ -191,8 +191,8 @@ export function RoleSidebar() {
                       "flex h-11 w-full items-center rounded-xl text-sm font-medium transition-all duration-200",
                       sidebarOpen ? "gap-3 px-3" : "justify-center",
                       active
-                        ? "bg-white/15 text-white shadow-lg"
-                        : "text-white/80 hover:bg-white/10 hover:text-white",
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-foreground",
                     )}
                   >
                     <Icon size={sidebarOpen ? 18 : 20} className="shrink-0" />
@@ -217,10 +217,10 @@ export function RoleSidebar() {
             <>
               <div className="relative mx-4 my-4">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10" />
+                  <div className="w-full border-t border-sidebar-border" />
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-transparent px-2 text-[10px] font-medium uppercase tracking-wider text-white/40">
+                  <span className="bg-sidebar px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Quick Actions
                   </span>
                 </div>
@@ -234,7 +234,7 @@ export function RoleSidebar() {
                       key={action.href + action.label}
                       href={action.href}
                       onClick={handleNavClick}
-                      className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                      className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
                     >
                       <Icon size={16} />
                       <span>{action.label}</span>
@@ -246,12 +246,12 @@ export function RoleSidebar() {
           ) : null}
         </nav>
 
-        <div className="relative shrink-0 border-t border-white/10 px-3 py-4">
+        <div className="relative shrink-0 border-t border-sidebar-border px-3 py-4">
           <button
             type="button"
             onClick={handleLogout}
             className={cn(
-              "flex h-10 w-full items-center rounded-xl text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20 hover:text-red-100",
+              "flex h-10 w-full items-center rounded-xl text-sm font-medium text-destructive transition-colors hover:bg-destructive/10",
               sidebarOpen ? "gap-3 px-3" : "justify-center",
             )}
           >
@@ -260,7 +260,7 @@ export function RoleSidebar() {
           </button>
 
           {sidebarOpen ? (
-            <p className="mt-3 text-center text-[10px] text-white/30">{branding.version}</p>
+            <p className="mt-3 text-center text-[10px] text-muted-foreground">{branding.version}</p>
           ) : null}
         </div>
       </aside>
@@ -269,7 +269,7 @@ export function RoleSidebar() {
         <button
           type="button"
           onClick={toggleSidebar}
-          className="fixed bottom-6 left-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-brand-orange to-[#e8890a] text-white shadow-lg lg:hidden"
+          className="fixed bottom-6 left-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground shadow-lg lg:hidden"
           aria-label="Open menu"
         >
           <Menu size={20} />

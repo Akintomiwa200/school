@@ -1,13 +1,11 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { AuthIllustrationMobile } from "./login-illustration";
 
 type AuthShellProps = {
   title: string;
   subtitle?: string;
   children: ReactNode;
   className?: string;
-  showIllustration?: boolean;
 };
 
 export function AuthShell({
@@ -15,27 +13,20 @@ export function AuthShell({
   subtitle,
   children,
   className,
-  showIllustration = false,
 }: AuthShellProps) {
   return (
     <div
       className={cn(
-        "marketing-oval-grid-bg relative flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-6 py-10 sm:min-h-[calc(100vh-4rem)]",
+        "relative flex min-h-[calc(100vh-3.5rem)] w-full min-w-0 items-center justify-center bg-marketing-bg px-4 py-6 sm:min-h-[calc(100vh-4rem)] sm:px-6 sm:py-8 md:px-8",
         className,
       )}
     >
-      <div className="relative z-10 w-full max-w-md">
-        {showIllustration ? (
-          <div className="mb-4 lg:hidden">
-            <AuthIllustrationMobile />
-          </div>
+      <div className="auth-card relative z-10 mx-auto w-full max-w-[28rem] rounded-2xl border border-marketing-grid/80 bg-marketing-bg px-6 py-8 shadow-xl sm:px-8 sm:py-10 md:max-w-[32rem] lg:max-w-[40rem]">
+        <h1 className="auth-title text-2xl sm:text-3xl">{title}</h1>
+        {subtitle ? (
+          <p className="auth-subtitle mt-2 text-base sm:text-lg">{subtitle}</p>
         ) : null}
-
-        <div className="rounded-2xl border border-marketing-grid/80 bg-marketing-bg p-8 shadow-xl sm:p-10">
-          <h1 className="auth-title text-2xl sm:text-3xl">{title}</h1>
-          {subtitle ? <p className="auth-subtitle mt-2 text-sm sm:text-base">{subtitle}</p> : null}
-          <div className="mt-6">{children}</div>
-        </div>
+        <div className="mt-6 w-full">{children}</div>
       </div>
     </div>
   );

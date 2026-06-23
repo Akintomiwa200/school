@@ -438,10 +438,12 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
   },
   "/student/fees": {
     title: "Fees",
-    description: "Your fee balance and payment history.",
+    description: "Your fee balance, payments, invoices, and account statement.",
     sections: [
-      { title: "Balance", description: "Amount due and due dates." },
-      { title: "Payments", description: "Past receipts." },
+      { title: "Overview", description: "Balance, breakdown, and upcoming due dates." },
+      { title: "Payments", description: "Transaction history and receipts." },
+      { title: "Invoices", description: "Term invoices and download." },
+      { title: "Statement", description: "Full account statement for the term." },
     ],
   },
   "/student/timetable": {
@@ -594,6 +596,19 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
 };
 
 export function getDashboardPageMeta(path: string): DashboardPageMeta {
+  if (path.endsWith("/notifications")) {
+    return (
+      DASHBOARD_PAGE_META[path] ?? {
+        title: "Notifications",
+        description: "Alerts about grades, fees, attendance, and more.",
+        sections: [
+          { title: "Unread", description: "Items needing attention." },
+          { title: "History", description: "All past notifications." },
+        ],
+      }
+    );
+  }
+
   return (
     DASHBOARD_PAGE_META[path] ?? {
       title: "Dashboard",

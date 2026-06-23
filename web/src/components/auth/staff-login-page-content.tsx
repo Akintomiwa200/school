@@ -46,7 +46,7 @@ function StaffLoginFormFields({
           autoComplete="current-password"
           {...register("password")}
         />
-        <p className="mt-2 text-right text-xs">
+        <p className="mt-2 text-right text-sm">
           <Link href="/forgot-password" className="auth-link">
             Forgot password?
           </Link>

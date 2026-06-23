@@ -66,6 +66,7 @@ export const API_ENDPOINTS = {
   MATERIALS_BY_ID: (id: string) => `${API_BASE}/materials/${id}`,
 
   // Communication
+  CONTACT: `${API_BASE}/contact`,
   ANNOUNCEMENTS: `${API_BASE}/announcements`,
   MESSAGES: `${API_BASE}/messages`,
   NOTIFICATIONS: `${API_BASE}/notifications`,

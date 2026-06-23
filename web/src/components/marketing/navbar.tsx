@@ -2,19 +2,47 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MarketingLogo } from "./logo";
 import { MARKETING_NAV_LINKS } from "./nav-links";
+
+function FriesMenuIcon({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn("flex w-5 flex-col items-end justify-center gap-[5px]", className)}
+      aria-hidden
+    >
+      <span className="h-0.5 w-5 rounded-full bg-current" />
+      <span className="h-0.5 w-[0.65rem] rounded-full bg-current" />
+      <span className="h-0.5 w-5 rounded-full bg-current" />
+    </span>
+  );
+}
 
 export function MarketingNavbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
   return (
-    <header className="sticky top-0 z-50 bg-marketing-bg/95 backdrop-blur-md">
-      <div className="container-content flex h-[10vh] min-h-[3.5rem] items-center justify-between gap-md">
+    <header className="relative sticky top-0 z-50 bg-marketing-bg/95 backdrop-blur-md">
+      <div className="relative z-[60] container-content flex h-[10vh] min-h-[3.5rem] items-center justify-between gap-md">
         <Link href="/" className="shrink-0">
           <MarketingLogo />
         </Link>
@@ -50,39 +78,50 @@ export function MarketingNavbar() {
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
           >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {open ? <X className="h-5 w-5" /> : <FriesMenuIcon />}
           </button>
         </div>
       </div>
 
       {open ? (
-        <nav className="border-t border-marketing-grid/60 bg-marketing-bg py-md xl:hidden" aria-label="Mobile">
-          <ul className="container-content flex flex-col gap-sm">
-            {MARKETING_NAV_LINKS.map((link) => (
-              <li key={link.href}>
+        <>
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="fixed inset-0 top-[max(3.5rem,10vh)] z-40 bg-marketing-text/25 xl:hidden"
+            onClick={() => setOpen(false)}
+          />
+          <nav
+            className="absolute left-0 right-0 top-full z-50 max-h-[calc(100dvh-max(3.5rem,10vh))] min-h-[min(72vh,22rem)] overflow-y-auto border-t border-marketing-grid/60 bg-marketing-bg shadow-marketing xl:hidden"
+            aria-label="Mobile"
+          >
+            <ul className="container-content flex flex-col gap-1 py-6 pb-8">
+              {MARKETING_NAV_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "block rounded-lg px-sm py-3.5 text-base font-medium hover:bg-marketing-grid/40",
+                      pathname === link.href ? "text-brand-purple" : "text-marketing-text",
+                    )}
+                    onClick={() => setOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li className="mt-4 border-t border-marketing-grid/60 pt-5">
                 <Link
-                  href={link.href}
-                  className={cn(
-                    "block rounded-lg px-sm py-sm text-[15px] font-medium hover:bg-marketing-grid/40",
-                    pathname === link.href ? "text-brand-purple" : "text-marketing-text",
-                  )}
+                  href="/register"
+                  className="block w-full rounded-full bg-brand-orange py-3.5 text-center text-base font-semibold text-white"
                   onClick={() => setOpen(false)}
                 >
-                  {link.label}
+                  Get Started!
                 </Link>
               </li>
-            ))}
-            <li>
-              <Link
-                href="/register"
-                className="mt-sm block w-full rounded-full bg-brand-orange py-[10px] text-center text-[15px] font-semibold text-white"
-                onClick={() => setOpen(false)}
-              >
-                Get Started!
-              </Link>
-            </li>
-          </ul>
-        </nav>
+            </ul>
+          </nav>
+        </>
       ) : null}
     </header>
   );

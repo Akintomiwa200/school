@@ -27,8 +27,8 @@ async function loadUserTokenFields(userId: string) {
   }
 }
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
 const hasGoogleOAuth = Boolean(googleClientId && googleClientSecret);
 
 export const authOptions: NextAuthOptions = {

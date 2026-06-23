@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appConfig } from "@/config";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { sendPasswordResetEmail, isEmailConfigured } from "@/lib/email";
 import { createPasswordResetToken } from "@/lib/auth/password-reset";
 import { createApiError, createApiResponse, forgotPasswordSchema } from "@/shared";
 
@@ -21,18 +21,25 @@ export async function POST(request: NextRequest) {
 
     if (result) {
       const resetUrl = `${appConfig.url}/reset-password?token=${result.token}`;
-      if (process.env.NODE_ENV !== "production") {
-        devResetUrl = resetUrl;
-        console.info(`[dev] Password reset for ${result.user.email}: ${resetUrl}`);
-      }
+      const emailConfigured = isEmailConfigured();
+
       try {
-        await sendPasswordResetEmail(
+        const sent = await sendPasswordResetEmail(
           result.user.email,
           resetUrl,
           `${result.user.firstName} ${result.user.lastName}`.trim(),
         );
+
+        if (!sent && process.env.NODE_ENV !== "production") {
+          devResetUrl = resetUrl;
+          console.info(`[dev] Password reset for ${result.user.email}: ${resetUrl}`);
+        }
       } catch (error) {
         console.error("Password reset email failed:", error);
+        if (process.env.NODE_ENV !== "production" && !emailConfigured) {
+          devResetUrl = resetUrl;
+          console.info(`[dev] Password reset for ${result.user.email}: ${resetUrl}`);
+        }
       }
     }
 

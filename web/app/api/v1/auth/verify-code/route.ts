@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { sendWelcomeEmail } from "@/lib/email";
 import { createAndSendOtp, createOtpSessionToken, verifyOtpCode } from "@/lib/auth/otp";
 import { clearPendingAuth, getPendingAuth } from "@/lib/auth/pending-auth";
 import { createApiError, createApiResponse, verifyCodeSchema } from "@/shared";
@@ -61,6 +62,13 @@ export async function POST(request: NextRequest) {
 
     const session = await createOtpSessionToken(user.id, user.email);
     await clearPendingAuth();
+
+    if (pending.flow === "signup") {
+      const name = `${user.firstName} ${user.lastName}`.trim() || user.firstName;
+      void sendWelcomeEmail(user.email, name).catch((error) => {
+        console.error("Welcome email failed:", error);
+      });
+    }
 
     return NextResponse.json(
       createApiResponse({

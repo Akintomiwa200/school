@@ -41,6 +41,10 @@ export function getLoginPathForRole(role: UserRole): string {
   return isStaffRole(role) ? "/staff/login" : "/login";
 }
 
+export function getNotificationsPathForRole(role: UserRole): string {
+  return `${getRoleDashboardPath(role)}/notifications`;
+}
+
 export function getLoginPathForProtectedRoute(pathname: string): string {
   if (
     pathname === "/student" ||
@@ -63,7 +67,6 @@ export const SHARED_ROUTE_PERMISSIONS: Record<string, Permission> = {
   "/shared/calendar": Permission.CALENDAR_VIEW,
   "/shared/events": Permission.EVENTS_VIEW,
   "/shared/messages": Permission.MESSAGES_VIEW,
-  "/shared/notifications": Permission.ANNOUNCEMENTS_VIEW,
   "/shared/support": Permission.SUPPORT_VIEW,
   "/shared/online-classes": Permission.ONLINE_CLASSES_VIEW,
   "/shared/leave": Permission.LEAVE_VIEW,

@@ -81,7 +81,6 @@ function ResetPasswordForm() {
           <p className="auth-body">Please wait while we verify your link.</p>
         )}
         showSocial={false}
-        mobileSubmit="inline"
         hideSubmit
       />
     );
@@ -101,7 +100,6 @@ function ResetPasswordForm() {
           </p>
         )}
         showSocial={false}
-        mobileSubmit="inline"
         hideSubmit
         desktopFooter={
           <p className="auth-muted text-center">
@@ -155,7 +153,6 @@ function ResetPasswordForm() {
       submitLabel="Update password"
       renderFields={renderFields}
       showSocial={false}
-      mobileSubmit="inline"
       isSubmitting={isSubmitting}
       onSubmit={onSubmit}
       desktopFooter={
@@ -181,7 +178,6 @@ export function ResetPasswordPageContent() {
           submitLabel="Update password"
           renderFields={() => null}
           showSocial={false}
-          mobileSubmit="inline"
           hideSubmit
         />
       }

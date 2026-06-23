@@ -74,7 +74,7 @@ function AboutIntroSection() {
     <section className="bg-marketing-bg py-14 lg:py-24">
       <div className="container-content max-w-[1400px]">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.65fr)_minmax(0,1.15fr)] lg:items-start xl:gap-14">
-          <div className="flex w-full min-w-0 flex-col justify-start pt-2">
+          <div className="flex w-full flex-col justify-start pt-2">
             <h1 className="font-display text-5xl font-black uppercase leading-[0.88] tracking-tight text-marketing-text sm:text-6xl lg:text-[4.5rem] xl:text-[5.5rem]">
               About
               <br />
@@ -89,7 +89,7 @@ function AboutIntroSection() {
             </p>
           </div>
 
-          <div className="w-full min-w-0">
+          <div className="w-full">
             <div className="relative aspect-[5/4] w-full min-h-[240px] overflow-hidden rounded-[1.75rem] sm:min-h-[320px] lg:min-h-[420px]">
               <Image
                 src={ABOUT_IMAGES.heroClassroom}
@@ -102,7 +102,7 @@ function AboutIntroSection() {
             </div>
           </div>
 
-          <div className="flex w-full min-w-0 flex-col">
+          <div className="flex w-full flex-col">
             <div className="relative aspect-[4/3] w-full min-h-[200px] overflow-hidden rounded-[1.5rem] sm:min-h-[260px]">
               <Image
                 src={ABOUT_IMAGES.teacherStudent}
@@ -133,7 +133,7 @@ function MeetPrincipalsSection() {
       <div className="container-content max-w-[1400px]">
         <div className="rounded-[2rem] bg-marketing-surface px-6 py-12 sm:px-10 sm:py-14 lg:rounded-[2.5rem] lg:px-14 lg:py-20 xl:px-20">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:items-end lg:gap-10 xl:gap-14">
-            <div className="flex w-full min-w-0 flex-col items-center lg:items-start">
+            <div className="flex w-full flex-col items-center lg:items-start">
               <div className="relative aspect-[3/4] w-full min-h-[280px] max-w-[320px] overflow-hidden sm:min-h-[320px] lg:max-w-none lg:min-h-[360px]">
                 <Image
                   src={PRINCIPALS[0].image}
@@ -151,7 +151,7 @@ function MeetPrincipalsSection() {
               </p>
             </div>
 
-            <div className="flex w-full min-w-0 flex-col items-center text-center">
+            <div className="flex w-full flex-col items-center text-center">
               <h2 className="font-display text-3xl font-black uppercase leading-[0.9] tracking-tight text-marketing-text sm:text-4xl lg:text-[2.75rem] xl:text-5xl">
                 Meet the
                 <br />
@@ -183,7 +183,7 @@ function MeetPrincipalsSection() {
               </p>
             </div>
 
-            <div className="flex w-full min-w-0 flex-col items-center lg:items-end">
+            <div className="flex w-full flex-col items-center lg:items-end">
               <div className="relative aspect-[3/4] w-full min-h-[280px] max-w-[320px] overflow-hidden sm:min-h-[320px] lg:max-w-none lg:min-h-[360px]">
                 <Image
                   src={PRINCIPALS[1].image}

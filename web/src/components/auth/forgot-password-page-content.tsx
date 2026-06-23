@@ -88,7 +88,6 @@ export function ForgotPasswordPageContent() {
       submitLabel={sent ? "Resend link" : "Send reset link"}
       renderFields={renderFields}
       showSocial={false}
-      mobileSubmit="inline"
       hideSubmit={false}
       isSubmitting={isSubmitting}
       onSubmit={onSubmit}

@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { prisma } from "@/lib/db";
-import { sendOtpEmail } from "@/lib/email";
+import { sendOtpEmail, isEmailConfigured } from "@/lib/email";
 
 export const OTP_PREFIX = "otp:";
 export const OTP_SESSION_PREFIX = "otp-session:";
@@ -35,19 +35,25 @@ export async function createAndSendOtp(email: string, name?: string) {
   });
 
   try {
-    await sendOtpEmail(normalizedEmail, code, name);
+    const sent = await sendOtpEmail(normalizedEmail, code, name);
+    if (!sent && process.env.NODE_ENV !== "production") {
+      console.info(`[dev] OTP for ${normalizedEmail}: ${code}`);
+    }
   } catch (error) {
     console.error("OTP email failed:", error);
     if (process.env.NODE_ENV === "production") {
       throw error;
     }
-  }
-
-  if (process.env.NODE_ENV !== "production") {
     console.info(`[dev] OTP for ${normalizedEmail}: ${code}`);
   }
 
-  return { email: normalizedEmail, devCode: process.env.NODE_ENV !== "production" ? code : undefined };
+  const emailConfigured = isEmailConfigured();
+
+  return {
+    email: normalizedEmail,
+    devCode: !emailConfigured && process.env.NODE_ENV !== "production" ? code : undefined,
+    emailSent: emailConfigured,
+  };
 }
 
 export async function verifyOtpCode(email: string, code: string) {

@@ -26,8 +26,7 @@ export function AuthField({
       <label
         htmlFor={id}
         className={cn(
-          "font-medium text-brand-purple",
-          variant === "desktop" ? "text-sm" : "text-xs",
+          "font-medium text-brand-purple text-sm",
         )}
       >
         {label}
@@ -38,7 +37,7 @@ export function AuthField({
         placeholder={placeholder}
         className={cn(
           "w-full rounded-md border border-brand-purple/25 bg-marketing-bg px-3 text-marketing-text outline-none transition-shadow placeholder:text-marketing-muted/70 focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20 disabled:cursor-not-allowed disabled:opacity-60",
-          variant === "desktop" ? "h-11 text-sm" : "h-10 text-sm",
+          variant === "desktop" ? "h-11 text-sm" : "h-11 text-base",
           error && "border-destructive focus:border-destructive focus:ring-destructive/20",
         )}
         {...inputProps}

@@ -27,22 +27,20 @@ const MAP_EMBED_URL =
 
 function ContactHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#4a1ca8] via-brand-purple to-brand-purple/90 py-16 text-center text-white sm:py-20 lg:py-24">
+    <section className="relative overflow-hidden bg-marketing-bg py-16 text-center sm:py-20 lg:py-24">
       <div
         aria-hidden
-        className="pointer-events-none absolute left-0 top-0 h-56 w-56 opacity-40 sm:h-72 sm:w-72"
+        className="pointer-events-none absolute inset-y-0 left-0 w-[min(100%,42rem)] opacity-80"
         style={{
           backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.45) 2px, transparent 2px)",
-          backgroundSize: "14px 14px",
+            "radial-gradient(circle, rgba(93,33,208,0.2) 2px, transparent 2px)",
+          backgroundSize: "16px 16px",
+          maskImage: "linear-gradient(to right, black 55%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, black 55%, transparent 100%)",
         }}
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-16 top-1/4 h-48 w-48 rounded-full bg-brand-orange/20 blur-3xl"
-      />
       <div className="container-content relative">
-        <h1 className="font-display text-4xl font-bold uppercase tracking-[0.12em] sm:text-5xl lg:text-[3.5rem]">
+        <h1 className="font-display text-4xl font-bold uppercase tracking-[0.12em] text-marketing-text sm:text-5xl lg:text-[3.5rem]">
           Contact Us
         </h1>
       </div>
@@ -66,7 +64,7 @@ function LocationCard({
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-purple text-white shadow-marketing sm:h-14 sm:w-14">
         <Building2 className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
       </div>
-      <div className="min-w-0">
+      <div className="flex-1">
         <h3 className="font-display text-lg font-bold text-brand-purple sm:text-xl">{title}</h3>
         <address className="mt-2 space-y-0.5 text-sm not-italic leading-relaxed text-marketing-muted sm:text-base">
           {lines.map((line) => (
@@ -151,10 +149,35 @@ function ContactFormCard() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    toast.success("Message sent! We will get back to you within 1–2 business days.");
-    e.currentTarget.reset();
-    setIsSubmitting(false);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const payload = {
+      name: String(formData.get("name") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      subject: String(formData.get("subject") ?? ""),
+      message: String(formData.get("message") ?? ""),
+    };
+
+    try {
+      const res = await fetch("/api/v1/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = (await res.json()) as { success?: boolean; message?: string; error?: string };
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message ?? json.error ?? "Could not send message");
+      }
+
+      toast.success(json.message ?? "Message sent! We will get back to you within 1–2 business days.");
+      form.reset();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send your message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -222,8 +245,8 @@ export function ContactPageContent() {
 
       <section className="bg-marketing-bg py-14 lg:py-20">
         <div className="container-content">
-          <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-16 xl:gap-20">
-            <div className="min-w-0 flex-1">
+          <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
+            <div className="w-full">
               <h2 className="font-display text-3xl font-bold text-marketing-text sm:text-4xl">
                 Get In Touch
               </h2>
@@ -239,7 +262,7 @@ export function ContactPageContent() {
               </div>
             </div>
 
-            <div className="w-full shrink-0 lg:w-[min(100%,28rem)]">
+            <div className="w-full">
               <ContactFormCard />
             </div>
           </div>

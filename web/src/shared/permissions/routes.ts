@@ -9,6 +9,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Users", path: "/super-admin/users", icon: "Users" },
     { label: "Settings", path: "/super-admin/settings", icon: "Settings" },
     { label: "Audit Logs", path: "/super-admin/audit", icon: "Shield" },
+    { label: "Notifications", path: "/super-admin/notifications", icon: "Bell" },
   ],
 
   [UserRole.ADMIN]: [
@@ -21,6 +22,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Admissions", path: "/admin/admissions", icon: "UserPlus" },
     { label: "Reports", path: "/admin/reports", icon: "BarChart" },
     { label: "Settings", path: "/admin/settings", icon: "Settings" },
+    { label: "Notifications", path: "/admin/notifications", icon: "Bell" },
   ],
 
   [UserRole.ACCOUNTANT]: [
@@ -32,6 +34,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Payroll", path: "/accountant/payroll", icon: "Banknote" },
     { label: "Audit", path: "/accountant/audit", icon: "Shield" },
     { label: "Reports", path: "/accountant/reports", icon: "BarChart" },
+    { label: "Notifications", path: "/accountant/notifications", icon: "Bell" },
   ],
 
   [UserRole.TEACHER]: [
@@ -44,6 +47,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Materials", path: "/teacher/materials", icon: "FolderOpen" },
     { label: "Timetable", path: "/teacher/timetable", icon: "Clock" },
     { label: "Online Classes", path: "/shared/online-classes", icon: "Video" },
+    { label: "Notifications", path: "/teacher/notifications", icon: "Bell" },
   ],
 
   [UserRole.NON_TEACHING_STAFF]: [
@@ -53,12 +57,14 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Hostel", path: "/staff/hostel", icon: "Home" },
     { label: "Inventory", path: "/staff/inventory", icon: "Package" },
     { label: "Leave", path: "/shared/leave", icon: "CalendarOff" },
+    { label: "Notifications", path: "/staff/notifications", icon: "Bell" },
   ],
 
   [UserRole.LIBRARIAN]: [
     { label: "Dashboard", path: "/librarian", icon: "LayoutDashboard" },
     { label: "Books", path: "/librarian/books", icon: "Book" },
     { label: "Issues & Returns", path: "/librarian/issues", icon: "BookMarked" },
+    { label: "Notifications", path: "/librarian/notifications", icon: "Bell" },
   ],
 
   [UserRole.HR]: [
@@ -66,6 +72,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Employees", path: "/hr/employees", icon: "Users" },
     { label: "Leave Management", path: "/hr/leave", icon: "CalendarOff" },
     { label: "Recruitment", path: "/hr/recruitment", icon: "UserPlus" },
+    { label: "Notifications", path: "/hr/notifications", icon: "Bell" },
   ],
 
   [UserRole.RECEPTIONIST]: [
@@ -73,6 +80,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Admissions", path: "/receptionist/admissions", icon: "UserPlus" },
     { label: "Visitors", path: "/receptionist/visitors", icon: "UserCheck" },
     { label: "Support", path: "/shared/support", icon: "Headphones" },
+    { label: "Notifications", path: "/receptionist/notifications", icon: "Bell" },
   ],
 
   [UserRole.STUDENT]: [
@@ -85,6 +93,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Timetable", path: "/student/timetable", icon: "Clock" },
     { label: "Library", path: "/student/library", icon: "Book" },
     { label: "Online Classes", path: "/shared/online-classes", icon: "Video" },
+    { label: "Notifications", path: "/student/notifications", icon: "Bell" },
   ],
 
   [UserRole.PARENT]: [
@@ -94,6 +103,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Attendance", path: "/parent/attendance", icon: "ClipboardCheck" },
     { label: "Grades", path: "/parent/grades", icon: "Award" },
     { label: "Messages", path: "/parent/messages", icon: "MessageSquare" },
+    { label: "Notifications", path: "/parent/notifications", icon: "Bell" },
   ],
 };
 
@@ -102,7 +112,6 @@ export const SHARED_ROUTES = [
   { label: "Calendar", path: "/shared/calendar", icon: "Calendar" },
   { label: "Events", path: "/shared/events", icon: "PartyPopper" },
   { label: "Messages", path: "/shared/messages", icon: "MessageSquare" },
-  { label: "Notifications", path: "/shared/notifications", icon: "Bell" },
   { label: "Support", path: "/shared/support", icon: "Headphones" },
   { label: "Profile", path: "/shared/profile", icon: "User" },
   { label: "Settings", path: "/shared/settings", icon: "Settings" },

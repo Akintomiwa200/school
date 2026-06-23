@@ -43,7 +43,8 @@ export function GoogleSignInButton({
   if (!isGoogleAuthEnabled) {
     return (
       <p className="auth-muted text-center text-xs">
-        Google sign-in is not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file.
+        Google sign-in is not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env
+        file.
       </p>
     );
   }

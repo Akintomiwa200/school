@@ -114,6 +114,14 @@ export const notificationService = {
     }),
 };
 
+export const contactService = {
+  send: (data: unknown) =>
+    request<null>(API_ENDPOINTS.CONTACT, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+};
+
 export const auditService = {
   getAll: () => request(API_ENDPOINTS.AUDIT),
   export: () => request(API_ENDPOINTS.AUDIT_EXPORT),
