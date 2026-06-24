@@ -1,5 +1,5 @@
 import { StudentGrades } from "@/components/dashboard";
 
 export default function Page() {
-  return <StudentGrades view="overview" />;
+  return <StudentGrades view="report-cards" />;
 }

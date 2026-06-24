@@ -68,5 +68,14 @@ export {
   LibraryListSkeleton,
   LibraryDetailSkeleton,
 } from "./library";
+export {
+  StudentGrades,
+  StudentGradesCourseDetail,
+  StudentGradesAssessmentDetail,
+  StudentGradesReportCardDetail,
+  StudentGradesShell,
+  ParentGrades,
+  TeacherGrades,
+} from "./grades";
 export { DASHBOARD_PAGE_META, getDashboardPageMeta } from "./page-meta";
 export type { DashboardPageMeta, DashboardSection, DashboardStat } from "./page-meta";

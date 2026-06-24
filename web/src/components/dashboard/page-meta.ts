@@ -422,11 +422,25 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
   },
   "/student/grades": {
     title: "Grades",
-    description: "Your scores and report summaries.",
+    description: "Your scores, report cards, and academic transcript.",
     sections: [
-      { title: "Current term", description: "Grades by subject." },
-      { title: "History", description: "Previous terms and trends." },
+      { title: "Overview", description: "Term GPA, recent assessments, and course summary." },
+      { title: "Courses", description: "Running grades and assessment breakdown by course." },
+      { title: "Report cards", description: "Published term reports with attendance." },
+      { title: "Transcript", description: "Cumulative record across all terms." },
     ],
+  },
+  "/student/grades/courses": {
+    title: "Course grades",
+    description: "Grades and assessments for each enrolled course.",
+  },
+  "/student/grades/report-cards": {
+    title: "Report cards",
+    description: "Official term report cards and honor roll status.",
+  },
+  "/student/grades/transcript": {
+    title: "Transcript",
+    description: "Full academic transcript with cumulative GPA.",
   },
   "/student/attendance": {
     title: "Attendance",
