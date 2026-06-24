@@ -2,13 +2,18 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Bell, Menu, Search, Settings } from "lucide-react";
+import { Bell, Menu, Settings } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useUIStore } from "@/store/ui.store";
 import { cn } from "@/lib/utils";
 import { NavbarModals, type NavbarModal } from "./navbar-modals";
+import { NavbarSearch } from "./navbar-search";
 import { NotificationDropdown } from "./notification-dropdown";
 import { ProfileDropdown } from "./profile-dropdown";
+import {
+  getUnreadNotificationCount,
+  useNotificationsStore,
+} from "@/components/dashboard/notifications/notifications-live-store";
 
 function getInitials(name?: string | null) {
   if (!name) return "U";
@@ -26,6 +31,8 @@ export function Header() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<NavbarModal>(null);
+  useNotificationsStore();
+  const unreadNotificationCount = getUnreadNotificationCount();
 
   const iconButtonClass = (active: boolean) =>
     cn(
@@ -52,18 +59,7 @@ export function Header() {
               <Menu size={18} />
             </button>
 
-            <label className="relative w-[200px] sm:w-[260px]">
-              <span className="sr-only">Search dashboard</span>
-              <input
-                type="search"
-                placeholder="tap here to search"
-                className="h-11 w-full rounded-full border border-sidebar-border bg-sidebar-accent py-2.5 pl-4 pr-11 text-sm text-sidebar-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/30"
-              />
-              <Search
-                className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                aria-hidden
-              />
-            </label>
+            <NavbarSearch />
           </div>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -80,10 +76,19 @@ export function Header() {
               trigger={
                 <button
                   type="button"
-                  className={iconButtonClass(notificationsOpen)}
-                  aria-label="Notifications"
+                  className={cn(iconButtonClass(notificationsOpen), "relative")}
+                  aria-label={
+                    unreadNotificationCount > 0
+                      ? `Notifications, ${unreadNotificationCount} unread`
+                      : "Notifications"
+                  }
                 >
                   <Bell size={18} />
+                  {unreadNotificationCount > 0 ? (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-sidebar bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
+                      {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                    </span>
+                  ) : null}
                 </button>
               }
             />

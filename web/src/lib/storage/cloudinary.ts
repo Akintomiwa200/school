@@ -16,7 +16,8 @@ export type UploadFolder =
   | "receipts"
   | "announcements"
   | "library"
-  | "general";
+  | "general"
+  | "messages";
 
 export interface CloudinaryUploadResult {
   publicId: string;

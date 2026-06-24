@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { SharedOnlineClasses } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/shared/online-classes" />;
+  return <SharedOnlineClasses />;
 }

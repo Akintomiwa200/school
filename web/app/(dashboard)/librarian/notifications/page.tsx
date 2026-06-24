@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+﻿import { SharedNotifications } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/librarian/notifications" />;
+  return <SharedNotifications />;
 }

@@ -37,5 +37,36 @@ export {
   StudentCourseAssignment,
   StudentCourseMaterials,
 } from "./courses";
+export { StudentMessages } from "./messages";
+export { SharedEvents } from "./events";
+export { SharedNotifications, RealtimeNotificationsBridge } from "./notifications";
+export { SharedAnnouncements, SharedAnnouncementDetail } from "./announcements";
+export {
+  SharedOnlineClasses,
+  OnlineClassDetail,
+  OnlineClassLiveRoom,
+  OnlineClassRecording,
+  OnlineClassesStreamBridge,
+} from "./online-classes";
+export {
+  StudentLibrary,
+  StudentLibraryShell,
+  StudentLibraryBooks,
+  StudentLibraryBookDetail,
+  StudentLibraryReader,
+  StudentLibraryMyBooks,
+  StudentLibraryShop,
+  StudentLibraryShopItem,
+  StudentLibraryAchievements,
+  StudentLibraryOrders,
+  StudentLibraryOrderDetail,
+  StudentLibraryReceipt,
+  StudentLibraryPay,
+  StudentLibraryPayCheckout,
+  StudentLibraryPayConfirmation,
+  LibrarySkeleton,
+  LibraryListSkeleton,
+  LibraryDetailSkeleton,
+} from "./library";
 export { DASHBOARD_PAGE_META, getDashboardPageMeta } from "./page-meta";
 export type { DashboardPageMeta, DashboardSection, DashboardStat } from "./page-meta";

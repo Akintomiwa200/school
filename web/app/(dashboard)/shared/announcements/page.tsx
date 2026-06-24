@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { SharedAnnouncements } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/shared/announcements" />;
+  return <SharedAnnouncements />;
 }

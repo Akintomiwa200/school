@@ -1,5 +1,9 @@
-import { DashboardPage } from "@/components/dashboard";
+import { StudentLibrary, StudentLibraryShell } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/student/library" />;
+  return (
+    <StudentLibraryShell>
+      <StudentLibrary />
+    </StudentLibraryShell>
+  );
 }

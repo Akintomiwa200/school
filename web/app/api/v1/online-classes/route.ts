@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { getClassStats, getSessionsForRole } from "@/lib/online-classes/sessions-hub";
+import { resolveClassUser } from "@/lib/online-classes/class-auth";
 import { createApiResponse } from "@/shared";
 
-export async function GET(request: NextRequest) {
-  return NextResponse.json(createApiResponse([], "online-classes endpoint - GET"));
-}
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  return NextResponse.json(createApiResponse(body, "online-classes endpoint - POST"), { status: 201 });
+export async function GET() {
+  const user = await resolveClassUser();
+  const sessions = getSessionsForRole(user.role);
+  return NextResponse.json(
+    createApiResponse({ sessions, stats: getClassStats(user.role) }, "Online classes loaded"),
+  );
 }

@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
   AUTH_FORGOT_PASSWORD: `${API_BASE}/auth/forgot-password`,
   AUTH_RESET_PASSWORD: `${API_BASE}/auth/reset-password`,
   AUTH_VERIFY_EMAIL: `${API_BASE}/auth/verify-email`,
+  AUTH_VERIFY_CODE: `${API_BASE}/auth/verify-code`,
   AUTH_ME: `${API_BASE}/auth/me`,
 
   // Users

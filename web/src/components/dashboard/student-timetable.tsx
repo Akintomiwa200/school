@@ -240,9 +240,11 @@ function ScheduleSidebar({
             </Link>
           </Button>
         ) : null}
-        <Button className="h-11 rounded-2xl bg-brand-blue text-white hover:bg-brand-blue/90">
-          <MessageCircle className="mr-2 h-4 w-4" />
-          Enter Chat
+        <Button asChild className="h-11 rounded-2xl bg-brand-blue text-white hover:bg-brand-blue/90">
+          <Link href="/shared/messages?chat=conv-cs2026">
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Enter Chat
+          </Link>
         </Button>
       </div>
     </SchedulePanel>

@@ -456,11 +456,36 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
   },
   "/student/library": {
     title: "Library",
-    description: "Books you have borrowed and reservations.",
+    description: "Free and paid books, shop orders, and reading achievements.",
     sections: [
-      { title: "Borrowed", description: "Current loans and due dates." },
-      { title: "Browse catalog", description: "Search available books." },
+      { title: "Browse catalog", description: "Popular, ongoing, free, and paid titles." },
+      { title: "My shelf", description: "Owned books, bookmarks, and reading progress." },
+      { title: "Shop & orders", description: "Purchase physical kits, digital access, and receipts." },
     ],
+  },
+  "/student/library/books": {
+    title: "Browse catalog",
+    description: "Discover free and paid titles across the library.",
+  },
+  "/student/library/my-books": {
+    title: "My shelf",
+    description: "Accessible titles, bookmarks, and books in progress.",
+  },
+  "/student/library/shop": {
+    title: "Library shop",
+    description: "Physical kits, bundles, and digital editions.",
+  },
+  "/student/library/orders": {
+    title: "Library orders",
+    description: "Purchase history and order details.",
+  },
+  "/student/library/achievements": {
+    title: "Reading achievements",
+    description: "Goals, badges, and reading streaks.",
+  },
+  "/student/library/pay": {
+    title: "Library checkout",
+    description: "Review items and pay for shop purchases.",
   },
 
   "/parent": {

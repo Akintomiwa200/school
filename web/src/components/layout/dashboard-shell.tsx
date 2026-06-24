@@ -4,6 +4,8 @@ import { RoleSidebar } from "./role-sidebar";
 import { Header } from "./header";
 import { useUIStore } from "@/store/ui.store";
 import { cn } from "@/lib/utils";
+import { RealtimeNotificationsBridge } from "@/components/dashboard/notifications";
+import { OnlineClassesStreamBridge } from "@/components/dashboard/online-classes";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
@@ -18,7 +20,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <Header />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+        <RealtimeNotificationsBridge />
+        <OnlineClassesStreamBridge />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="mx-auto w-full max-w-7xl">{children}</div>
+        </main>
       </div>
     </div>
   );

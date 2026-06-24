@@ -332,18 +332,22 @@ function calendarFilterLabel(filter: CalendarFilter, count: number): string {
 
 const TEACHERS = [
   {
+    id: "teacher-mary",
     name: "Mary Johnson",
     role: "mentor",
     subject: "Science",
     avatar: "MJ",
     accent: "from-violet-400 to-violet-600",
+    chatId: "conv-mary",
   },
   {
+    id: "teacher-james",
     name: "James Brown",
     role: null,
     subject: "Foreign language (Chinese)",
     avatar: "JB",
     accent: "from-sky-400 to-blue-600",
+    chatId: "conv-james",
   },
 ] as const;
 
@@ -851,20 +855,20 @@ function LinkedTeachersCard({ teachers }: { teachers: readonly Teacher[] }) {
               <p className="truncate text-xs text-muted-foreground">{teacher.subject}</p>
             </div>
             <div className="flex shrink-0 gap-2">
-              <button
-                type="button"
+              <Link
+                href={`/shared/messages?chat=${teacher.chatId}`}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/80 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                aria-label={`Email ${teacher.name}`}
+                aria-label={`Message ${teacher.name}`}
               >
                 <Mail className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
+              </Link>
+              <Link
+                href={`/shared/messages?chat=${teacher.chatId}`}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/80 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label={`Call ${teacher.name}`}
               >
                 <Phone className="h-4 w-4" />
-              </button>
+              </Link>
             </div>
           </div>
         ))}
