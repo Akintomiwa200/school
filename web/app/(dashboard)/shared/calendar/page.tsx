@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { SharedCalendar } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/shared/calendar" />;
+  return <SharedCalendar />;
 }

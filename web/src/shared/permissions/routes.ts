@@ -92,8 +92,9 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Fees", path: "/student/fees", icon: "Receipt" },
     { label: "Timetable", path: "/student/timetable", icon: "Clock" },
     { label: "Library", path: "/student/library", icon: "Book" },
-    { label: "Online Classes", path: "/shared/online-classes", icon: "Video" },
+    { label: "Online Classes", path: "/student/online-classes", icon: "Video" },
     { label: "Notifications", path: "/student/notifications", icon: "Bell" },
+    { label: "Profile", path: "/student/profile", icon: "User" },
   ],
 
   [UserRole.PARENT]: [
@@ -117,8 +118,16 @@ export const SHARED_ROUTES = [
   { label: "Settings", path: "/shared/settings", icon: "Settings" },
 ];
 
+export function getProfilePathForRole(role: UserRole): string {
+  if (role === UserRole.STUDENT) return "/student/profile";
+  return "/shared/profile";
+}
+
 export function getSharedRoutesForRole(role: UserRole) {
   return SHARED_ROUTES.filter((route) => {
+    if (role === UserRole.STUDENT && route.path === "/shared/profile") {
+      return false;
+    }
     const permission = SHARED_ROUTE_PERMISSIONS[route.path];
     if (!permission) return true;
     return hasPermission(role, permission);

@@ -8,7 +8,7 @@ export function CoursesPanel({ className, ...props }: React.HTMLAttributes<HTMLD
   return (
     <div
       className={cn(
-        "rounded-[20px] bg-card p-4 text-card-foreground shadow-float sm:p-5",
+        "min-w-0 rounded-[20px] bg-card p-4 text-card-foreground shadow-float sm:p-5",
         className,
       )}
       {...props}
@@ -69,11 +69,15 @@ export function CourseDotTabs<T extends string>({
   onChange?: (tab: T) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-6">
+    <nav
+      aria-label="Section tabs"
+      className="-mx-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      <div className="flex w-max min-w-full items-center gap-5 sm:gap-6">
       {tabs.map((tab) => {
         const isActive = active === tab.id;
         const className = cn(
-          "flex items-center gap-2 text-sm font-medium transition-colors",
+          "inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-sm font-medium transition-colors",
           isActive ? "text-brand-orange" : "text-muted-foreground hover:text-foreground",
         );
 
@@ -97,7 +101,36 @@ export function CourseDotTabs<T extends string>({
           </span>
         );
       })}
-    </div>
+      </div>
+    </nav>
+  );
+}
+
+/** Full-width action link for course / assignment cards */
+export function CourseActionLink({
+  href,
+  children,
+  variant = "primary",
+  className,
+}: {
+  href: string;
+  children: React.ReactNode;
+  variant?: "primary" | "outline";
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "inline-flex h-10 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
+        variant === "primary"
+          ? "bg-brand-orange text-ink hover:bg-brand-orange/90"
+          : "border border-border bg-background text-foreground hover:bg-muted/60",
+        className,
+      )}
+    >
+      {children}
+    </Link>
   );
 }
 

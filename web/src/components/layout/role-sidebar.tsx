@@ -6,11 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  HelpCircle,
-  LifeBuoy,
   LogOut,
   Menu,
-  MessageSquare,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -69,7 +66,7 @@ export function RoleSidebar() {
   const router = useRouter();
   const { data: session } = useSession();
   const role = (session?.user?.role as UserRole) ?? UserRole.STUDENT;
-  const { sidebarOpen, toggleSidebar, setSidebarOpen } = useUIStore();
+  const { sidebarOpen, toggleSidebar, setSidebarOpen, sidebarBehavior } = useUIStore();
 
   const [isMobile, setIsMobile] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -81,20 +78,19 @@ export function RoleSidebar() {
 
   const quickActions = useMemo(() => {
     const configured = getQuickActionsForRole(role);
-    const extras: QuickAction[] = [
-      { icon: MessageSquare, label: "Messages", href: "/shared/messages" },
-      { icon: HelpCircle, label: "Help", href: "/shared/support" },
-      { icon: LifeBuoy, label: "Support", href: "/shared/support" },
-    ];
-    const merged = [...configured, ...extras].filter(
+    return configured.filter(
       (action, index, list) =>
-        navPaths.has(action.href) &&
+        !navPaths.has(action.href) &&
         list.findIndex((item) => item.href === action.href) === index,
     );
-    return merged.slice(0, 3);
   }, [role, navPaths]);
 
   const isCollapsed = !sidebarOpen;
+
+  const handleSidebarToggle = () => {
+    if (!isMobile && sidebarBehavior !== "auto") return;
+    toggleSidebar();
+  };
 
   useEffect(() => {
     const checkMobile = () => {
@@ -162,12 +158,21 @@ export function RoleSidebar() {
 
             <button
               type="button"
-              onClick={toggleSidebar}
+              onClick={handleSidebarToggle}
               className={cn(
                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-muted-foreground transition-colors hover:bg-sidebar-accent/80 hover:text-sidebar-foreground",
                 !sidebarOpen && "mx-auto",
+                !isMobile && sidebarBehavior !== "auto" && "cursor-default opacity-60",
               )}
-              title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+              title={
+                !isMobile && sidebarBehavior === "expanded"
+                  ? "Sidebar locked expanded in settings"
+                  : !isMobile && sidebarBehavior === "collapsed"
+                    ? "Sidebar locked collapsed in settings"
+                    : sidebarOpen
+                      ? "Collapse sidebar"
+                      : "Expand sidebar"
+              }
             >
               {sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
             </button>

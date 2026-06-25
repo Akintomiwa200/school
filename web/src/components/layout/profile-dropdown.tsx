@@ -8,7 +8,7 @@ import { LogOut, Mail, Settings, Shield, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { UserRole } from "@/shared";
-import { getLoginPathForRole } from "@/shared/permissions";
+import { getLoginPathForRole, getProfilePathForRole } from "@/shared/permissions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,20 +36,13 @@ type ProfileDropdownProps = {
   trigger: React.ReactNode;
 };
 
-const PROFILE_LINKS = [
-  {
-    label: "Personal info",
-    description: "Name, email, and phone",
-    href: "/shared/profile",
-    icon: User,
-  },
-  {
-    label: "Security",
-    description: "Password and sessions",
-    href: "/shared/profile",
-    icon: Shield,
-  },
-] as const;
+function getProfileLinks(role: UserRole) {
+  const base = getProfilePathForRole(role);
+  return [
+    { label: "Personal info", description: "Name, email, and phone", href: `${base}#personal-info`, icon: User },
+    { label: "Security", description: "Password and sessions", href: `${base}#security`, icon: Shield },
+  ] as const;
+}
 
 export function ProfileDropdown({
   open,
@@ -60,6 +53,8 @@ export function ProfileDropdown({
   const router = useRouter();
   const { data: session } = useSession();
   const role = (session?.user?.role as UserRole) ?? UserRole.STUDENT;
+  const profilePath = getProfilePathForRole(role);
+  const profileLinks = getProfileLinks(role);
 
   const handleSignOut = async () => {
     try {
@@ -75,7 +70,7 @@ export function ProfileDropdown({
 
   const handleViewProfile = () => {
     onOpenChange(false);
-    router.push("/shared/profile");
+    router.push(profilePath);
   };
 
   return (
@@ -100,7 +95,7 @@ export function ProfileDropdown({
               <DropdownMenuItem
                 onClick={() => {
                   onOpenChange(false);
-                  router.push("/shared/profile");
+                  router.push(profilePath);
                 }}
               >
                 Edit profile
@@ -152,7 +147,7 @@ export function ProfileDropdown({
         </div>
 
         <div className="max-h-[min(16rem,50vh)] divide-y divide-border overflow-y-auto">
-          {PROFILE_LINKS.map((item) => (
+          {profileLinks.map((item) => (
             <Link
               key={item.label}
               href={item.href}

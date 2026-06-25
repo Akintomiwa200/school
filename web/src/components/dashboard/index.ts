@@ -39,13 +39,19 @@ export {
 } from "./courses";
 export { StudentMessages } from "./messages";
 export { SharedEvents } from "./events";
+export { SharedCalendar } from "./calendar";
+export { SharedProfile, StudentProfile } from "./profile";
+export { SharedSettings } from "./settings";
 export { SharedNotifications, RealtimeNotificationsBridge } from "./notifications";
 export { SharedAnnouncements, SharedAnnouncementDetail } from "./announcements";
 export {
   SharedOnlineClasses,
+  StudentOnlineClasses,
+  StudentOnlineClassesLayout,
   OnlineClassDetail,
   OnlineClassLiveRoom,
   OnlineClassRecording,
+  OnlineClassWaiting,
   OnlineClassesStreamBridge,
 } from "./online-classes";
 export {

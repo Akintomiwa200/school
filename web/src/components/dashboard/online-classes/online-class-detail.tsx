@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CalendarClock, FileText, PlayCircle, Users, Video } from "lucide-react";
+import { FileText, PlayCircle, Users, Video } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,12 @@ import { usePageLoading } from "@/hooks/use-page-loading";
 import { cn } from "@/lib/utils";
 import { UserRole } from "@/shared";
 import { canHostOnlineClasses } from "@/lib/online-classes/class-constants";
+import { useOnlineClassesBase } from "./online-classes-context";
 import {
   canJoinSession,
   classLiveHref,
   classRecordingHref,
+  classWaitingHref,
   formatClassDuration,
   formatClassTimeRange,
   onlineClassesHref,
@@ -33,6 +35,7 @@ function DetailSkeleton() {
 
 export function OnlineClassDetail({ sessionId }: { sessionId: string }) {
   const router = useRouter();
+  const basePath = useOnlineClassesBase();
   const isLoading = usePageLoading();
   const { data: sessionAuth } = useSession();
   const role = (sessionAuth?.user?.role as UserRole) ?? UserRole.STUDENT;
@@ -47,7 +50,7 @@ export function OnlineClassDetail({ sessionId }: { sessionId: string }) {
       <OnlineClassesPanel className="text-center">
         <h2 className="text-lg font-bold">Class not found</h2>
         <Button asChild variant="outline" className="mt-4 rounded-full">
-          <Link href={onlineClassesHref()}>Back to online classes</Link>
+          <Link href={onlineClassesHref(undefined, basePath)}>Back to online classes</Link>
         </Button>
       </OnlineClassesPanel>
     );
@@ -57,7 +60,7 @@ export function OnlineClassDetail({ sessionId }: { sessionId: string }) {
     setJoining(true);
     try {
       await joinClassSessionApi(sessionId);
-      router.push(classLiveHref(sessionId));
+      router.push(classLiveHref(sessionId, basePath));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not join");
     } finally {
@@ -75,12 +78,12 @@ export function OnlineClassDetail({ sessionId }: { sessionId: string }) {
   }
 
   return (
-    <div className="space-y-5">
-      <Link href={onlineClassesHref()} className="inline-flex text-sm font-medium text-muted-foreground hover:text-foreground">
+    <div className="min-w-0 space-y-5">
+      <Link href={onlineClassesHref(undefined, basePath)} className="inline-flex text-sm font-medium text-muted-foreground hover:text-foreground">
         ← Back to online classes
       </Link>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(260px,320px)]">
         <OnlineClassesPanel className="space-y-5">
           <div className={cn("overflow-hidden rounded-[20px] bg-gradient-to-br p-6", session.coverTone)}>
             <ClassStatusBadge status={session.status} />
@@ -90,64 +93,68 @@ export function OnlineClassDetail({ sessionId }: { sessionId: string }) {
 
           <p className="text-sm leading-relaxed text-muted-foreground">{session.description}</p>
 
-          <dl className="grid gap-3 text-sm sm:grid-cols-2">
-            <div className="flex items-start gap-2">
-              <CalendarClock className="mt-0.5 h-4 w-4 text-muted-foreground" />
-              <div>
-                <dt className="text-muted-foreground">Schedule</dt>
-                <dd className="font-medium">{formatClassTimeRange(session.startAt, session.endAt)}</dd>
-              </div>
+          <dl className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl bg-muted/40 px-4 py-3">
+              <dt className="text-xs text-muted-foreground">Schedule</dt>
+              <dd className="mt-1 text-sm font-medium leading-relaxed">
+                {formatClassTimeRange(session.startAt, session.endAt)}
+              </dd>
             </div>
-            <div className="flex items-start gap-2">
-              <Users className="mt-0.5 h-4 w-4 text-muted-foreground" />
-              <div>
-                <dt className="text-muted-foreground">Participants</dt>
-                <dd className="font-medium">
-                  {session.joinCount}/{session.maxParticipants} joined
-                </dd>
-              </div>
+            <div className="rounded-2xl bg-muted/40 px-4 py-3">
+              <dt className="text-xs text-muted-foreground">Participants</dt>
+              <dd className="mt-1 text-sm font-medium">
+                {session.joinCount}/{session.maxParticipants} joined
+              </dd>
             </div>
-            <div>
-              <dt className="text-muted-foreground">Duration</dt>
-              <dd className="font-medium">{formatClassDuration(session.startAt, session.endAt)}</dd>
+            <div className="rounded-2xl bg-muted/40 px-4 py-3">
+              <dt className="text-xs text-muted-foreground">Duration</dt>
+              <dd className="mt-1 text-sm font-medium">
+                {formatClassDuration(session.startAt, session.endAt)}
+              </dd>
             </div>
-            <div>
-              <dt className="text-muted-foreground">Meeting code</dt>
-              <dd className="font-medium">{session.meetingCode}</dd>
+            <div className="rounded-2xl bg-muted/40 px-4 py-3">
+              <dt className="text-xs text-muted-foreground">Meeting code</dt>
+              <dd className="mt-1 text-sm font-medium">{session.meetingCode}</dd>
             </div>
           </dl>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             {session.status === "live" ? (
               <Button
-                className="rounded-full bg-brand-purple text-white hover:bg-brand-purple/90"
+                className="h-10 w-full rounded-full bg-brand-purple text-white hover:bg-brand-purple/90 sm:w-auto"
                 disabled={joining}
                 onClick={() => void handleJoin()}
               >
-                <Video className="mr-2 h-4 w-4" />
+                <Video className="mr-2 h-4 w-4 shrink-0" />
                 Join live class
               </Button>
             ) : session.hasRecording ? (
-              <Button asChild className="rounded-full bg-brand-purple text-white hover:bg-brand-purple/90">
-                <Link href={classRecordingHref(session.id)}>
-                  <PlayCircle className="mr-2 h-4 w-4" />
+              <Button asChild className="h-10 w-full rounded-full bg-brand-purple text-white hover:bg-brand-purple/90 sm:w-auto">
+                <Link href={classRecordingHref(session.id, basePath)} className="inline-flex items-center justify-center">
+                  <PlayCircle className="mr-2 h-4 w-4 shrink-0" />
                   Watch recording
                 </Link>
               </Button>
             ) : canJoinSession(session) ? (
-              <Button variant="outline" className="rounded-full" disabled>
-                Opens at scheduled time
+              <Button asChild variant="outline" className="h-10 w-full rounded-full sm:w-auto">
+                <Link href={classWaitingHref(session.id, basePath)} className="inline-flex items-center justify-center">
+                  Enter waiting room
+                </Link>
               </Button>
             ) : null}
             {canHost && session.status === "scheduled" ? (
-              <Button variant="outline" className="rounded-full" onClick={() => void handleStartEarly()}>
+              <Button
+                variant="outline"
+                className="h-10 w-full rounded-full sm:w-auto"
+                onClick={() => void handleStartEarly()}
+              >
                 Start class now
               </Button>
             ) : null}
           </div>
         </OnlineClassesPanel>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <OnlineClassesPanel>
             <h2 className="text-sm font-bold">Teacher</h2>
             <div className="mt-3 flex items-center gap-3">

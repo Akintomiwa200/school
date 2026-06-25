@@ -1,14 +1,42 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export function NotificationsPanel({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "rounded-[20px] bg-card p-4 text-card-foreground shadow-float sm:p-5",
+        "min-w-0 rounded-[20px] bg-card p-4 text-card-foreground shadow-float sm:p-5",
         className,
       )}
       {...props}
     />
+  );
+}
+
+export function NotificationsActionLink({
+  href,
+  children,
+  variant = "primary",
+  className,
+}: {
+  href: string;
+  children: React.ReactNode;
+  variant?: "primary" | "outline";
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "inline-flex h-10 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
+        variant === "primary"
+          ? "bg-brand-purple text-white hover:bg-brand-purple/90"
+          : "border border-border bg-background text-foreground hover:bg-muted/60",
+        className,
+      )}
+    >
+      {children}
+    </Link>
   );
 }
 

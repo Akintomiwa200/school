@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, Menu, Settings } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useUIStore } from "@/store/ui.store";
 import { cn } from "@/lib/utils";
-import { NavbarModals, type NavbarModal } from "./navbar-modals";
+import { SETTINGS_PATH } from "@/components/dashboard/settings";
 import { NavbarSearch } from "./navbar-search";
 import { NotificationDropdown } from "./notification-dropdown";
 import { ProfileDropdown } from "./profile-dropdown";
@@ -26,13 +27,18 @@ function getInitials(name?: string | null) {
 }
 
 export function Header() {
+  const router = useRouter();
   const { data: session } = useSession();
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [activeModal, setActiveModal] = useState<NavbarModal>(null);
   useNotificationsStore();
   const unreadNotificationCount = getUnreadNotificationCount();
+
+  const openSettings = () => {
+    closePanels();
+    router.push(SETTINGS_PATH);
+  };
 
   const iconButtonClass = (active: boolean) =>
     cn(
@@ -69,10 +75,7 @@ export function Header() {
                 setNotificationsOpen(open);
                 if (open) setProfileOpen(false);
               }}
-              onOpenSettings={() => {
-                closePanels();
-                setActiveModal("settings");
-              }}
+              onOpenSettings={openSettings}
               trigger={
                 <button
                   type="button"
@@ -94,11 +97,8 @@ export function Header() {
             />
             <button
               type="button"
-              onClick={() => {
-                closePanels();
-                setActiveModal("settings");
-              }}
-              className={iconButtonClass(activeModal === "settings")}
+              onClick={openSettings}
+              className={iconButtonClass(false)}
               aria-label="Settings"
             >
               <Settings size={18} />
@@ -109,10 +109,7 @@ export function Header() {
                 setProfileOpen(open);
                 if (open) setNotificationsOpen(false);
               }}
-              onOpenSettings={() => {
-                closePanels();
-                setActiveModal("settings");
-              }}
+              onOpenSettings={openSettings}
               trigger={
                 <button
                   type="button"
@@ -141,8 +138,6 @@ export function Header() {
           </div>
         </div>
       </header>
-
-      <NavbarModals activeModal={activeModal} onOpenChange={setActiveModal} />
     </>
   );
 }

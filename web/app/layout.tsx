@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Hanken_Grotesk, Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import { Providers } from "@/providers";
+import { getAppearanceInitScript } from "@/store/appearance.store";
 import "@/styles/globals.css";
 
 const hanken = Hanken_Grotesk({
@@ -35,7 +36,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className={`${hanken.variable} ${bodyFont.variable} ${geistMono.variable} antialiased`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: getAppearanceInitScript() }} />
+      </head>
+      <body className={`${hanken.variable} ${bodyFont.variable} ${geistMono.variable} app-root antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

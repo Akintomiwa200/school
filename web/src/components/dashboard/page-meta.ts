@@ -460,6 +460,27 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
       { title: "Statement", description: "Full account statement for the term." },
     ],
   },
+  "/student/online-classes": {
+    title: "Online Classes",
+    description: "Join live video classes, chat with teachers, and watch recordings.",
+    sections: [
+      { title: "Overview", description: "Stats, meeting code, and quick links." },
+      { title: "Live now", description: "Sessions in progress — join with one click." },
+      { title: "Recordings", description: "Replay past sessions and materials." },
+    ],
+  },
+  "/student/online-classes/live": {
+    title: "Live classes",
+    description: "Classes happening right now.",
+  },
+  "/student/online-classes/upcoming": {
+    title: "Upcoming classes",
+    description: "Scheduled online sessions.",
+  },
+  "/student/online-classes/recordings": {
+    title: "Class recordings",
+    description: "Replay past online classes.",
+  },
   "/student/timetable": {
     title: "Timetable",
     description: "Your weekly class schedule.",
@@ -608,12 +629,29 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
       { title: "Security", description: "Password and sessions." },
     ],
   },
+  "/student/profile": {
+    title: "Profile",
+    description: "Your learning dashboard, achievements, and account settings.",
+    sections: [
+      { title: "Overview", description: "Courses, points, and learning activity." },
+      { title: "Personal info", description: "Name, email, and phone." },
+      { title: "Security", description: "Password and sessions." },
+    ],
+  },
   "/shared/settings": {
     title: "Settings",
-    description: "Notification and display preferences.",
+    description: "Manage your profile, appearance, privacy, security, and notification settings.",
     sections: [
+      { title: "General Information", description: "Photo, contact details, and address." },
+      { title: "Appearance", description: "Theme, accent color, density, and layout." },
+      { title: "Preferences", description: "Language, timezone, and regional formats." },
+      { title: "Privacy", description: "Profile visibility and messaging controls." },
+      { title: "Accessibility", description: "Motion, contrast, and readability." },
+      { title: "Security", description: "Password, 2FA, and sessions." },
       { title: "Notifications", description: "Email and in-app alerts." },
-      { title: "Language", description: "Interface language." },
+      { title: "Integrations", description: "Google Calendar, Teams, Zoom, and more." },
+      { title: "Account", description: "Membership and account data." },
+      { title: "Billings", description: "Payment methods and billing." },
     ],
   },
   "/shared/online-classes": {

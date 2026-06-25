@@ -1,28 +1,27 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CalendarClock, PlayCircle, Radio, Search, Users, Video } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { cn } from "@/lib/utils";
 import {
-  canJoinSession,
   classLiveHref,
   classRecordingHref,
   classSessionHref,
+  classWaitingHref,
   filterSessionsByTab,
   formatClassDuration,
   formatClassTimeRange,
 } from "./online-classes-data";
+import { useOnlineClassesBase } from "./online-classes-context";
 import {
   getClassStatsFromStore,
   useOnlineClassesStore,
 } from "./online-classes-live-store";
-import { ClassStatusBadge, LiveConnectionBadge, OnlineClassesPanel } from "./online-classes-ui";
+import { ClassStatusBadge, ClassActionLink, LiveConnectionBadge, OnlineClassesPanel } from "./online-classes-ui";
 
-type Tab = "live" | "upcoming" | "recordings";
+export type OnlineClassesTab = "live" | "upcoming" | "recordings";
 
 function ClassesSkeleton() {
   return (
@@ -57,11 +56,11 @@ function StatCard({
         : { card: "border-brand-purple/15 bg-brand-purple/5", icon: "bg-brand-purple/15 text-brand-purple", value: "text-brand-purple" };
 
   return (
-    <OnlineClassesPanel className={cn("flex items-center gap-4 border p-5", styles.card)}>
-      <div className={cn("flex h-12 w-12 items-center justify-center rounded-2xl", styles.icon)}>
+    <OnlineClassesPanel className={cn("flex min-w-0 items-center gap-4 border p-5", styles.card)}>
+      <div className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl", styles.icon)}>
         <Icon className="h-6 w-6" />
       </div>
-      <div>
+      <div className="min-w-0">
         <p className={cn("text-3xl font-bold leading-none", styles.value)}>{value}</p>
         <p className="mt-1.5 text-sm text-muted-foreground">{label}</p>
       </div>
@@ -69,71 +68,112 @@ function StatCard({
   );
 }
 
+export function OnlineClassesStats() {
+  const stats = getClassStatsFromStore();
+  return (
+    <div className="grid gap-4 sm:grid-cols-3">
+      <StatCard value={stats.live} label="Live now" icon={Radio} tone="green" />
+      <StatCard value={stats.upcoming} label="Upcoming" icon={CalendarClock} tone="blue" />
+      <StatCard value={stats.recordings} label="Recordings" icon={PlayCircle} tone="purple" />
+    </div>
+  );
+}
+
 function SessionCard({ session }: { session: ReturnType<typeof filterSessionsByTab>[number] }) {
-  const joinable = canJoinSession(session);
+  const basePath = useOnlineClassesBase();
+
+  const primaryHref =
+    session.status === "live"
+      ? classLiveHref(session.id, basePath)
+      : session.hasRecording
+        ? classRecordingHref(session.id, basePath)
+        : session.status === "scheduled"
+          ? classWaitingHref(session.id, basePath)
+          : classSessionHref(session.id, basePath);
+
+  const primaryLabel =
+    session.status === "live"
+      ? "Join live"
+      : session.hasRecording
+        ? "Recording"
+        : session.status === "scheduled"
+          ? "Waiting room"
+          : "View details";
+
+  const PrimaryIcon =
+    session.status === "live" ? Video : session.hasRecording ? PlayCircle : CalendarClock;
+
+  const canOpen =
+    session.status === "live" || session.hasRecording || session.status === "scheduled";
 
   return (
-    <article className="overflow-hidden rounded-[20px] border border-border bg-card shadow-float">
-      <div className={cn("h-28 bg-gradient-to-br p-5", session.coverTone)}>
-        <div className="flex items-start justify-between gap-3">
+    <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-[20px] border border-border bg-card shadow-float">
+      <div className={cn("h-28 shrink-0 bg-gradient-to-br p-5", session.coverTone)}>
+        <div className="flex items-start justify-between gap-2">
           <ClassStatusBadge status={session.status} />
-          <span className="rounded-full bg-card/90 px-2.5 py-1 text-xs font-semibold text-foreground">
+          <span className="shrink-0 rounded-full bg-card/90 px-2.5 py-1 text-xs font-semibold text-foreground">
             {session.meetingCode}
           </span>
         </div>
       </div>
-      <div className="space-y-3 p-5">
-        <div>
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{session.subject}</p>
           <h3 className="mt-1 text-lg font-bold leading-snug">{session.title}</h3>
           <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{session.description}</p>
         </div>
-        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <CalendarClock className="h-3.5 w-3.5" />
-            {formatClassTimeRange(session.startAt, session.endAt)}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            {session.joinCount}/{session.maxParticipants}
-          </span>
-          <span>{formatClassDuration(session.startAt, session.endAt)}</span>
-        </div>
+        <ul className="space-y-1.5 text-xs text-muted-foreground">
+          <li className="flex items-start gap-2">
+            <CalendarClock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span className="leading-relaxed">{formatClassTimeRange(session.startAt, session.endAt)}</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <Users className="h-3.5 w-3.5 shrink-0" />
+            <span>
+              {session.joinCount}/{session.maxParticipants} participants
+            </span>
+          </li>
+          <li className="pl-5">{formatClassDuration(session.startAt, session.endAt)}</li>
+        </ul>
         <p className="text-sm font-medium text-foreground">{session.teacherName}</p>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild className="rounded-full bg-brand-purple text-white hover:bg-brand-purple/90" disabled={!joinable && !session.hasRecording}>
-            {session.status === "live" ? (
-              <Link href={classLiveHref(session.id)}>
-                <Video className="mr-2 h-4 w-4" />
-                Join live
-              </Link>
-            ) : session.hasRecording ? (
-              <Link href={classRecordingHref(session.id)}>
-                <PlayCircle className="mr-2 h-4 w-4" />
-                Watch recording
-              </Link>
-            ) : (
-              <Link href={classSessionHref(session.id)}>View details</Link>
-            )}
-          </Button>
-          <Button asChild variant="outline" className="rounded-full">
-            <Link href={classSessionHref(session.id)}>Details</Link>
-          </Button>
+        <div className="mt-auto flex flex-col gap-2">
+          {canOpen ? (
+            <ClassActionLink href={primaryHref} variant="primary">
+              <PrimaryIcon className="h-4 w-4 shrink-0" />
+              <span>{primaryLabel}</span>
+            </ClassActionLink>
+          ) : (
+            <span className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-muted px-4 text-sm font-semibold text-muted-foreground">
+              <PrimaryIcon className="h-4 w-4 shrink-0" />
+              <span>{primaryLabel}</span>
+            </span>
+          )}
+          <ClassActionLink href={classSessionHref(session.id, basePath)} variant="outline">
+            Details
+          </ClassActionLink>
         </div>
       </div>
     </article>
   );
 }
 
-export function SharedOnlineClasses() {
+export function OnlineClassesSessionList({
+  fixedTab,
+  hideTabBar = false,
+  title,
+}: {
+  fixedTab?: OnlineClassesTab;
+  hideTabBar?: boolean;
+  title?: string;
+}) {
   const isLoading = usePageLoading();
   const { sessions, connection } = useOnlineClassesStore();
-  const [tab, setTab] = useState<Tab>("live");
+  const [tab, setTab] = useState<OnlineClassesTab>(fixedTab ?? "live");
   const [query, setQuery] = useState("");
-  const stats = getClassStatsFromStore();
+  const activeTab = fixedTab ?? tab;
 
   const filtered = useMemo(() => {
-    const byTab = filterSessionsByTab(sessions, tab);
+    const byTab = filterSessionsByTab(sessions, activeTab);
     const q = query.trim().toLowerCase();
     if (!q) return byTab;
     return byTab.filter(
@@ -142,32 +182,41 @@ export function SharedOnlineClasses() {
         item.subject.toLowerCase().includes(q) ||
         item.teacherName.toLowerCase().includes(q),
     );
-  }, [query, sessions, tab]);
+  }, [activeTab, query, sessions]);
 
   if (isLoading) return <ClassesSkeleton />;
 
+  const tabLabels: Record<OnlineClassesTab, string> = {
+    live: "Live now",
+    upcoming: "Upcoming",
+    recordings: "Recordings",
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Online Classes
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Join live sessions, view upcoming classes, and watch recordings.
-          </p>
+    <OnlineClassesPanel className="space-y-5">
+      <div className="flex flex-col gap-4 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0 space-y-2">
+          {title ? (
+            <div>
+              <h2 className="text-base font-bold">{title}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{tabLabels[activeTab]} classes</p>
+            </div>
+          ) : null}
+          {hideTabBar || fixedTab ? <LiveConnectionBadge status={connection} /> : null}
         </div>
-        <LiveConnectionBadge status={connection} />
+        <div className="relative w-full shrink-0 sm:w-72">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search classes…"
+            className="h-10 w-full rounded-full pl-9"
+          />
+        </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard value={stats.live} label="Live now" icon={Radio} tone="green" />
-        <StatCard value={stats.upcoming} label="Upcoming" icon={CalendarClock} tone="blue" />
-        <StatCard value={stats.recordings} label="Recordings" icon={PlayCircle} tone="purple" />
-      </div>
-
-      <OnlineClassesPanel className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      {!hideTabBar && !fixedTab ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {(
               [
@@ -191,29 +240,46 @@ export function SharedOnlineClasses() {
               </button>
             ))}
           </div>
-          <div className="relative w-full max-w-sm">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search classes…"
-              className="rounded-full pl-9"
-            />
-          </div>
+          <LiveConnectionBadge status={connection} />
         </div>
+      ) : null}
 
-        {filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border px-4 py-12 text-center text-sm text-muted-foreground">
-            {connection === "connecting" ? "Loading live schedule…" : "No classes in this section."}
+      {filtered.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border px-4 py-12 text-center text-sm text-muted-foreground">
+          {connection === "connecting" ? "Loading live schedule…" : "No classes in this section."}
+        </div>
+      ) : (
+        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((session) => (
+            <SessionCard key={session.id} session={session} />
+          ))}
+        </div>
+      )}
+    </OnlineClassesPanel>
+  );
+}
+
+export function SharedOnlineClasses({ embedded = false }: { embedded?: boolean }) {
+  const { connection } = useOnlineClassesStore();
+
+  return (
+    <div className="space-y-6">
+      {!embedded ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              Online Classes
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Join live sessions, view upcoming classes, and watch recordings.
+            </p>
           </div>
-        ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {filtered.map((session) => (
-              <SessionCard key={session.id} session={session} />
-            ))}
-          </div>
-        )}
-      </OnlineClassesPanel>
+          <LiveConnectionBadge status={connection} />
+        </div>
+      ) : null}
+
+      <OnlineClassesStats />
+      <OnlineClassesSessionList />
     </div>
   );
 }

@@ -102,6 +102,9 @@ const DEFAULT_QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export function getQuickActionsForRole(role: UserRole): QuickAction[] {
+  if (role === UserRole.STUDENT) {
+    return [];
+  }
   return DEFAULT_QUICK_ACTIONS;
 }
 

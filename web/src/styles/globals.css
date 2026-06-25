@@ -79,6 +79,10 @@
   --spacing-xxl: 32px;
   --spacing-section: 40px;
 
+  --app-density-scale: 1;
+  --app-main-padding: 1.5rem;
+  --app-content-gap: 1.5rem;
+
   --text-display-xl: 82px;
   --text-display-xl--line-height: 1;
   --text-display-lg: 62px;
@@ -720,4 +724,88 @@
   .auth-page .auth-card form {
     width: 100%;
   }
+}
+
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html.high-contrast {
+  filter: contrast(1.12);
+}
+
+html.large-targets button,
+html.large-targets a,
+html.large-targets [role="switch"] {
+  min-height: 2.75rem;
+}
+
+html.underline-links a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+html.enhanced-focus :focus-visible {
+  outline: 3px solid var(--color-brand-purple, #5d21d0);
+  outline-offset: 2px;
+}
+
+html[data-accent="purple"] {
+  --color-brand-purple: #5d21d0;
+  --color-primary: #5d21d0;
+  --color-ring: #5d21d0;
+  --color-sidebar-primary: #5d21d0;
+}
+
+html[data-accent="blue"] {
+  --color-brand-purple: #2563eb;
+  --color-primary: #2563eb;
+  --color-ring: #2563eb;
+  --color-sidebar-primary: #2563eb;
+}
+
+html[data-accent="green"] {
+  --color-brand-purple: #16a34a;
+  --color-primary: #16a34a;
+  --color-ring: #16a34a;
+  --color-sidebar-primary: #16a34a;
+}
+
+html[data-accent="orange"] {
+  --color-brand-purple: #ea580c;
+  --color-primary: #ea580c;
+  --color-ring: #ea580c;
+  --color-sidebar-primary: #ea580c;
+}
+
+html[data-density="compact"] {
+  --app-content-gap: 1rem;
+}
+
+html[data-density="spacious"] {
+  --app-content-gap: 2rem;
+}
+
+html[data-density="comfortable"],
+html:not([data-density]) {
+  --app-content-gap: 1.5rem;
+}
+
+.app-root {
+  font-size: inherit;
+}
+
+.dashboard-main {
+  padding: max(1rem, var(--app-main-padding, 1.5rem));
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--app-content-gap, 1.5rem) * var(--app-density-scale, 1));
 }

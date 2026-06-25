@@ -137,7 +137,7 @@ let sessions: OnlineClassSession[] = [
     joinCount: 31,
     maxParticipants: 35,
     hasRecording: true,
-    recordingUrl: "/shared/online-classes/cls-end-1/recording",
+    recordingUrl: "/student/online-classes/cls-end-1/recording",
     materials: [{ id: "m1", label: "Chapter notes", href: "/student/library/books/ong-1/read" }],
     tags: ["Recording"],
     coverTone: "from-indigo-200 via-violet-100 to-purple-100",

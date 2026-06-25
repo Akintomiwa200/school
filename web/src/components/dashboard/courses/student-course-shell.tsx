@@ -23,7 +23,7 @@ export function StudentCourseShell({ children }: { children: React.ReactNode }) 
 
   if (!course) {
     return (
-      <div className="mx-auto w-full max-w-7xl space-y-6">
+      <div className="mx-auto min-w-0 w-full max-w-7xl space-y-6">
         <CourseBackLink />
         <CoursesPanel className="text-center">
           <h1 className="text-xl font-bold">Course not found</h1>
@@ -45,7 +45,7 @@ export function StudentCourseShell({ children }: { children: React.ReactNode }) 
   })();
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
+    <div className="mx-auto min-w-0 w-full max-w-7xl space-y-6">
       <CourseBackLink />
 
       <CoursesPanel className="flex flex-col gap-5 sm:flex-row sm:items-center">
