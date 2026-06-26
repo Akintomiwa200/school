@@ -1,11 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse } from "@/shared";
+import { jsonData } from "@/lib/api/route-handlers";
+import { PAYROLL_RUNS } from "@/components/dashboard/accountant/accountant-data";
 
-export async function GET(request: NextRequest) {
-  return NextResponse.json(createApiResponse([], "payroll endpoint - GET"));
-}
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  return NextResponse.json(createApiResponse(body, "payroll endpoint - POST"), { status: 201 });
+export async function GET() {
+  return jsonData(PAYROLL_RUNS, "Payroll runs loaded");
 }

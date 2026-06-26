@@ -35,6 +35,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.SUPPORT_VIEW,
     Permission.SUPPORT_MANAGE,
     Permission.LIBRARY_VIEW,
+    Permission.LIBRARY_MANAGE,
     Permission.TRANSPORT_VIEW,
     Permission.HOSTEL_VIEW,
     Permission.ADMISSIONS_VIEW,
@@ -219,4 +220,5 @@ export function getRoleDashboardPath(role: UserRole): string {
 }
 
 export * from "./routes";
+export * from "./role-paths";
 export * from "./staff-roles";

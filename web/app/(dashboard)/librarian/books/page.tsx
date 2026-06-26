@@ -1,5 +1,12 @@
-import { DashboardPage } from "@/components/dashboard";
+import { Suspense } from "react";
+import { LibraryCatalog } from "@/components/dashboard/librarian";
+
+const BASE = "/librarian";
 
 export default function Page() {
-  return <DashboardPage path="/librarian/books" />;
+  return (
+    <Suspense fallback={<div className="h-64 animate-pulse rounded-[20px] bg-muted" />}>
+      <LibraryCatalog basePath={BASE} />
+    </Suspense>
+  );
 }

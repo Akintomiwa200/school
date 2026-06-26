@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { SharedSettings } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/super-admin/settings" />;
+  return <SharedSettings />;
 }

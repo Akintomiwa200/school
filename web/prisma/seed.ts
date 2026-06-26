@@ -7,7 +7,7 @@ import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/db";
 
-const DEFAULT_PASSWORD = "Password123!";
+const DEFAULT_PASSWORD = "herdey20";
 
 async function upsertStaffUser(
   email: string,
@@ -63,8 +63,9 @@ async function upsertConsumerUser(
   lastName: string,
   role: UserRole,
   onboardingCompleted: boolean,
+  password: string = DEFAULT_PASSWORD,
 ) {
-  const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
+  const hashedPassword = await bcrypt.hash(password, 12);
 
   return prisma.user.upsert({
     where: { email },
@@ -110,7 +111,6 @@ async function main() {
     "EMP-SA-OWNER",
     "Executive",
     "Super Administrator",
-    "herdey20",
   );
 
   const admin = await upsertStaffUser(

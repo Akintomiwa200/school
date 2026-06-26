@@ -1,11 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse } from "@/shared";
+import { jsonData } from "@/lib/api/route-handlers";
+import { SCHOOL_INVOICES } from "@/components/dashboard/accountant/accountant-data";
 
-export async function GET(request: NextRequest) {
-  return NextResponse.json(createApiResponse([], "invoices endpoint - GET"));
-}
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  return NextResponse.json(createApiResponse(body, "invoices endpoint - POST"), { status: 201 });
+export async function GET() {
+  return jsonData(SCHOOL_INVOICES, "Invoices loaded");
 }

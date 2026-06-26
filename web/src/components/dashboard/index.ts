@@ -1,4 +1,44 @@
 export { DashboardPage } from "./dashboard-page";
+export { AdminDashboard, AdminSectionPage } from "./admin";
+export {
+  AdminStudents,
+  AdminStaff,
+  AdminClasses,
+  AdminSubjects,
+  AdminAcademicYears,
+  AdminAdmissions,
+  AdminReports,
+} from "./admin";
+export { SuperAdminDashboard, SuperAdminSectionPage } from "./super-admin";
+export { SuperAdminSchools, SuperAdminUsers, SuperAdminAudit } from "./super-admin";
+export {
+  AccountantDashboard,
+  AccountantFees,
+  AccountantPayments,
+  AccountantPaymentDetail,
+  AccountantExpenses,
+  AccountantInvoices,
+  AccountantInvoiceDetail,
+  AccountantPayroll,
+  AccountantAudit,
+  AccountantReports,
+} from "./accountant";
+export {
+  TeacherDashboard,
+  TeacherClasses,
+  TeacherCourses,
+  TeacherAttendance,
+  TeacherAssignments,
+  TeacherMaterials,
+  TeacherTimetable,
+} from "./teacher";
+export { HrDashboard, HrEmployees, HrLeave, HrRecruitment } from "./hr";
+export { StaffDashboard, StaffTransport, StaffHostel, StaffInventory, StaffAttendance } from "./staff";
+export { LibrarianDashboard, LibrarianBooks, LibrarianIssues } from "./librarian";
+export { ReceptionistDashboard, ReceptionistAdmissions, ReceptionistVisitors } from "./receptionist";
+export { ParentDashboard, ParentChildren, ParentFees, ParentAttendance } from "./parent";
+export { SharedLeave } from "./leave";
+export { SharedSupport } from "./support";
 export { StudentDashboard } from "./student-dashboard";
 export { StudentDashboardSkeleton } from "./student-dashboard-skeleton";
 export { StudentCourses } from "./student-courses";

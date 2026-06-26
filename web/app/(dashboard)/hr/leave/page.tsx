@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { HrLeave } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/hr/leave" />;
+  return <HrLeave />;
 }

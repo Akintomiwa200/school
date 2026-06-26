@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { AccountantFees } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/accountant/fees" />;
+  return <AccountantFees />;
 }

@@ -362,7 +362,7 @@ export function StudentProfile() {
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-bold">Account settings</h2>
-          <Link href="/shared/settings" className="inline-flex items-center gap-1 text-sm font-medium text-brand-purple hover:underline">
+          <Link href="/student/settings" className="inline-flex items-center gap-1 text-sm font-medium text-brand-purple hover:underline">
             Preferences
             <ChevronRight className="h-4 w-4" />
           </Link>

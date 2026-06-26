@@ -6,6 +6,7 @@ import { API_ENDPOINTS } from "@/shared/constants";
 export { useAuth } from "./useAuth";
 export { usePermissions } from "./usePermissions";
 export { useDebounce } from "./useDebounce";
+export * from "./use-dashboard-data";
 
 export function useStudents() {
   const queryClient = useQueryClient();

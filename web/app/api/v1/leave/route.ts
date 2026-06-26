@@ -1,11 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse } from "@/shared";
+import { NextRequest } from "next/server";
+import { jsonData } from "@/lib/api/route-handlers";
+import { LEAVE_BALANCES } from "@/components/dashboard/leave/leave-data";
+import { addLeaveRequest, getMutableLeaveRequests } from "@/lib/api/memory-stores";
 
-export async function GET(request: NextRequest) {
-  return NextResponse.json(createApiResponse([], "leave endpoint - GET"));
+export async function GET() {
+  return jsonData(
+    { balances: LEAVE_BALANCES, requests: getMutableLeaveRequests() },
+    "Leave data loaded",
+  );
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  return NextResponse.json(createApiResponse(body, "leave endpoint - POST"), { status: 201 });
+  const created = addLeaveRequest({
+    type: body.type,
+    from: body.from,
+    to: body.to,
+    reason: body.reason,
+  });
+  return jsonData(created, "Leave request submitted", 201);
 }

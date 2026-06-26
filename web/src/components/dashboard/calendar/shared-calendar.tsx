@@ -177,7 +177,7 @@ function DayDetailList({
   );
 }
 
-export function SharedCalendar() {
+export function SharedCalendar({ eventsPath = "/shared/events" }: { eventsPath?: string }) {
   const isLoading = usePageLoading();
   const now = useCurrentTime();
   const [viewMonth, setViewMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
@@ -209,7 +209,7 @@ export function SharedCalendar() {
           </p>
         </div>
         <Button asChild variant="outline" className="h-9 shrink-0 rounded-full px-4">
-          <Link href="/shared/events" className="inline-flex items-center gap-2">
+          <Link href={eventsPath} className="inline-flex items-center gap-2">
             <PartyPopper className="h-4 w-4 shrink-0" />
             School events
           </Link>
@@ -374,7 +374,7 @@ export function SharedCalendar() {
           <p className="mt-1 text-sm text-muted-foreground">
             Sports, cultural activities, and RSVP for upcoming events.
           </p>
-          <CalendarActionLink href="/shared/events" variant="outline" className="mt-4">
+          <CalendarActionLink href={eventsPath} variant="outline" className="mt-4">
             Browse events
             <ChevronRight className="h-4 w-4 shrink-0" />
           </CalendarActionLink>

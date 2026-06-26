@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { ParentDashboard } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/parent" />;
+  return <ParentDashboard />;
 }

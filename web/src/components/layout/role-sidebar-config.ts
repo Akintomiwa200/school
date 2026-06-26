@@ -88,6 +88,7 @@ export const ROUTE_DESCRIPTIONS: Record<string, string> = {
   "/accountant": "Finance overview",
   "/staff": "Operations overview",
   "/librarian": "Library overview",
+  "/admin/library": "Library catalog & circulation",
   "/hr": "HR overview",
   "/receptionist": "Front desk overview",
   "/shared/support": "Get help & tickets",

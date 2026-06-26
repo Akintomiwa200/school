@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { AdminAcademicYears } from "@/components/dashboard/admin/admin-academic-years";
 
 export default function Page() {
-  return <DashboardPage path="/admin/academic-years" />;
+  return <AdminAcademicYears />;
 }

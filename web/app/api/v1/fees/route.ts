@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse } from "@/shared";
+import { NextRequest } from "next/server";
+import { jsonData } from "@/lib/api/route-handlers";
+import { FEE_PLANS } from "@/components/dashboard/accountant/accountant-data";
+import { PARENT_FEE_ITEMS } from "@/components/dashboard/parent/parent-data";
 
 export async function GET(request: NextRequest) {
-  return NextResponse.json(createApiResponse([], "fees endpoint - GET"));
-}
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  return NextResponse.json(createApiResponse(body, "fees endpoint - POST"), { status: 201 });
+  const scope = request.nextUrl.searchParams.get("scope");
+  if (scope === "parent") {
+    return jsonData(PARENT_FEE_ITEMS, "Parent fees loaded");
+  }
+  return jsonData(FEE_PLANS, "Fee plans loaded");
 }

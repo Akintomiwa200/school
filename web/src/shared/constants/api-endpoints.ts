@@ -91,9 +91,16 @@ export const API_ENDPOINTS = {
 
   // Admissions
   ADMISSIONS: `${API_BASE}/admissions`,
+  ACADEMIC_YEARS: `${API_BASE}/academic-years`,
+  ACADEMIC_YEARS_BY_ID: (id: string) => `${API_BASE}/academic-years/${id}`,
+  SCHOOLS: `${API_BASE}/schools`,
 
   // Reports
   REPORTS: `${API_BASE}/reports`,
+
+  // Parent & HR portals
+  PARENT: `${API_BASE}/parent`,
+  HR: `${API_BASE}/hr`,
 
   // Settings
   SETTINGS: `${API_BASE}/settings`,

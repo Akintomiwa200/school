@@ -1,14 +1,34 @@
 import { UserRole } from "../types";
 import { hasPermission } from "./index";
 import { ROLE_DASHBOARD_PREFIXES, SHARED_ROUTE_PERMISSIONS } from "./staff-roles";
+import {
+  getProfilePathForRole,
+  isSharedPathOverriddenForRole,
+} from "./role-paths";
+
+export {
+  getAnnouncementsPathForRole,
+  getCalendarPathForRole,
+  getEventsPathForRole,
+  getLeavePathForRole,
+  getMessagesPathForRole,
+  getProfilePathForRole,
+  getSettingsPathForRole,
+  getSupportPathForRole,
+} from "./role-paths";
 
 export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: string }[]> = {
   [UserRole.SUPER_ADMIN]: [
     { label: "Dashboard", path: "/super-admin", icon: "LayoutDashboard" },
     { label: "Schools", path: "/super-admin/schools", icon: "Building" },
+    { label: "Admission setup", path: "/super-admin/admissions/settings", icon: "UserPlus" },
     { label: "Users", path: "/super-admin/users", icon: "Users" },
+    { label: "Messages", path: "/super-admin/messages", icon: "MessageSquare" },
+    { label: "Calendar", path: "/super-admin/calendar", icon: "Calendar" },
+    { label: "Announcements", path: "/super-admin/announcements", icon: "Megaphone" },
     { label: "Settings", path: "/super-admin/settings", icon: "Settings" },
     { label: "Audit Logs", path: "/super-admin/audit", icon: "Shield" },
+    { label: "Profile", path: "/super-admin/profile", icon: "User" },
     { label: "Notifications", path: "/super-admin/notifications", icon: "Bell" },
   ],
 
@@ -20,8 +40,13 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Subjects", path: "/admin/subjects", icon: "BookOpen" },
     { label: "Academic Years", path: "/admin/academic-years", icon: "Calendar" },
     { label: "Admissions", path: "/admin/admissions", icon: "UserPlus" },
+    { label: "Library", path: "/admin/library", icon: "Book" },
     { label: "Reports", path: "/admin/reports", icon: "BarChart" },
+    { label: "Messages", path: "/admin/messages", icon: "MessageSquare" },
+    { label: "Calendar", path: "/admin/calendar", icon: "Calendar" },
+    { label: "Announcements", path: "/admin/announcements", icon: "Megaphone" },
     { label: "Settings", path: "/admin/settings", icon: "Settings" },
+    { label: "Profile", path: "/admin/profile", icon: "User" },
     { label: "Notifications", path: "/admin/notifications", icon: "Bell" },
   ],
 
@@ -34,6 +59,8 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Payroll", path: "/accountant/payroll", icon: "Banknote" },
     { label: "Audit", path: "/accountant/audit", icon: "Shield" },
     { label: "Reports", path: "/accountant/reports", icon: "BarChart" },
+    { label: "Settings", path: "/accountant/settings", icon: "Settings" },
+    { label: "Profile", path: "/accountant/profile", icon: "User" },
     { label: "Notifications", path: "/accountant/notifications", icon: "Bell" },
   ],
 
@@ -56,7 +83,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Transport", path: "/staff/transport", icon: "Bus" },
     { label: "Hostel", path: "/staff/hostel", icon: "Home" },
     { label: "Inventory", path: "/staff/inventory", icon: "Package" },
-    { label: "Leave", path: "/shared/leave", icon: "CalendarOff" },
+    { label: "Leave", path: "/staff/leave", icon: "CalendarOff" },
     { label: "Notifications", path: "/staff/notifications", icon: "Bell" },
   ],
 
@@ -79,7 +106,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Dashboard", path: "/receptionist", icon: "LayoutDashboard" },
     { label: "Admissions", path: "/receptionist/admissions", icon: "UserPlus" },
     { label: "Visitors", path: "/receptionist/visitors", icon: "UserCheck" },
-    { label: "Support", path: "/shared/support", icon: "Headphones" },
+    { label: "Support", path: "/receptionist/support", icon: "Headphones" },
     { label: "Notifications", path: "/receptionist/notifications", icon: "Bell" },
   ],
 
@@ -95,6 +122,7 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Online Classes", path: "/student/online-classes", icon: "Video" },
     { label: "Notifications", path: "/student/notifications", icon: "Bell" },
     { label: "Profile", path: "/student/profile", icon: "User" },
+    { label: "Settings", path: "/student/settings", icon: "Settings" },
   ],
 
   [UserRole.PARENT]: [
@@ -104,6 +132,9 @@ export const ROLE_ROUTES: Record<UserRole, { label: string; path: string; icon: 
     { label: "Attendance", path: "/parent/attendance", icon: "ClipboardCheck" },
     { label: "Grades", path: "/parent/grades", icon: "Award" },
     { label: "Messages", path: "/parent/messages", icon: "MessageSquare" },
+    { label: "Support", path: "/parent/support", icon: "Headphones" },
+    { label: "Profile", path: "/parent/profile", icon: "User" },
+    { label: "Settings", path: "/parent/settings", icon: "Settings" },
     { label: "Notifications", path: "/parent/notifications", icon: "Bell" },
   ],
 };
@@ -118,14 +149,9 @@ export const SHARED_ROUTES = [
   { label: "Settings", path: "/shared/settings", icon: "Settings" },
 ];
 
-export function getProfilePathForRole(role: UserRole): string {
-  if (role === UserRole.STUDENT) return "/student/profile";
-  return "/shared/profile";
-}
-
 export function getSharedRoutesForRole(role: UserRole) {
   return SHARED_ROUTES.filter((route) => {
-    if (role === UserRole.STUDENT && route.path === "/shared/profile") {
+    if (isSharedPathOverriddenForRole(role, route.path)) {
       return false;
     }
     const permission = SHARED_ROUTE_PERMISSIONS[route.path];

@@ -7,7 +7,8 @@ import { Bell, Menu, Settings } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useUIStore } from "@/store/ui.store";
 import { cn } from "@/lib/utils";
-import { SETTINGS_PATH } from "@/components/dashboard/settings";
+import { UserRole } from "@/shared";
+import { getSettingsPathForRole } from "@/shared/permissions";
 import { NavbarSearch } from "./navbar-search";
 import { NotificationDropdown } from "./notification-dropdown";
 import { ProfileDropdown } from "./profile-dropdown";
@@ -35,9 +36,11 @@ export function Header() {
   useNotificationsStore();
   const unreadNotificationCount = getUnreadNotificationCount();
 
+  const role = (session?.user?.role as UserRole) ?? UserRole.STUDENT;
+
   const openSettings = () => {
     closePanels();
-    router.push(SETTINGS_PATH);
+    router.push(getSettingsPathForRole(role));
   };
 
   const iconButtonClass = (active: boolean) =>

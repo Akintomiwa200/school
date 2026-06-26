@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse } from "@/shared";
+import { NextRequest } from "next/server";
+import { jsonData } from "@/lib/api/route-handlers";
+import { AUDIT_EVENTS } from "@/components/dashboard/accountant/accountant-data";
+import { PLATFORM_AUDIT } from "@/components/dashboard/super-admin/super-admin-entities-data";
 
 export async function GET(request: NextRequest) {
-  return NextResponse.json(createApiResponse([], "audit endpoint - GET"));
-}
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  return NextResponse.json(createApiResponse(body, "audit endpoint - POST"), { status: 201 });
+  const scope = request.nextUrl.searchParams.get("scope") ?? "platform";
+  const data = scope === "finance" ? AUDIT_EVENTS : PLATFORM_AUDIT;
+  return jsonData(data, "Audit log loaded");
 }

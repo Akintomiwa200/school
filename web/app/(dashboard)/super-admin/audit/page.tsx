@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { SuperAdminAudit } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/super-admin/audit" />;
+  return <SuperAdminAudit />;
 }

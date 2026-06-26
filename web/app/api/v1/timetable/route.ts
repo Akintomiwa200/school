@@ -1,11 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse } from "@/shared";
+import { jsonData } from "@/lib/api/route-handlers";
+import { TEACHER_TIMETABLE } from "@/components/dashboard/teacher/teacher-data";
 
-export async function GET(request: NextRequest) {
-  return NextResponse.json(createApiResponse([], "timetable endpoint - GET"));
-}
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  return NextResponse.json(createApiResponse(body, "timetable endpoint - POST"), { status: 201 });
+export async function GET() {
+  return jsonData(TEACHER_TIMETABLE, "Timetable loaded");
 }

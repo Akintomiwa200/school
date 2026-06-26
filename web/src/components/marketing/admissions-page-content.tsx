@@ -6,23 +6,23 @@ import { MarketingPageHero } from "./page-hero";
 const STEPS = [
   {
     icon: UserPlus,
-    title: "Create an account",
-    description: "Register online with your family details and preferred program.",
+    title: "Choose your intake",
+    description: "Select secondary school (Grades 6–12) or university undergraduate program.",
   },
   {
     icon: FileText,
-    title: "Submit documents",
-    description: "Upload birth certificate, previous school records, and ID where required.",
+    title: "Submit application",
+    description: "Complete the online form with contact details and program or grade choice.",
   },
   {
     icon: ClipboardList,
-    title: "Assessment & interview",
-    description: "We schedule a short meeting to understand learning goals and placement.",
+    title: "Pay fee & sit exam",
+    description: "Pay the application fee, receive your exam slip, and attend the entrance test.",
   },
   {
     icon: CheckCircle2,
-    title: "Enrollment confirmed",
-    description: "Receive your welcome pack, timetable, and platform login details.",
+    title: "Approval & enrollment",
+    description: "After approval, admissions adds you as a student and shares login credentials.",
   },
 ] as const;
 
@@ -116,7 +116,7 @@ export function AdmissionsPageContent() {
             </dl>
 
             <div className="mt-xl flex flex-col gap-sm sm:flex-row">
-              <Link href="/register" className="auth-btn-primary text-center">
+              <Link href="/admissions/apply" className="auth-btn-primary text-center">
                 Apply online
               </Link>
               <Link

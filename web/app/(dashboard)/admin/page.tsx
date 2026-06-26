@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard";
+import { AdminDashboard } from "@/components/dashboard";
 
 export default function Page() {
-  return <DashboardPage path="/admin" />;
+  return <AdminDashboard />;
 }

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { UserRole } from "@/shared";
+import { getNotificationsPathForRole, getSettingsPathForRole } from "@/shared/permissions";
 import { getAccountSummary, getProfileExtras } from "./profile-data";
 import { ProfileAccountSections } from "./profile-account-sections";
 import {
@@ -38,6 +39,8 @@ export function SharedProfile() {
   const role = (session?.user?.role as UserRole) ?? UserRole.STUDENT;
   const extras = getProfileExtras(role);
   const summary = getAccountSummary(role, extras);
+  const settingsPath = getSettingsPathForRole(role);
+  const notificationsPath = getNotificationsPathForRole(role);
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -69,7 +72,7 @@ export function SharedProfile() {
           </p>
         </div>
         <Button asChild variant="outline" className="h-9 shrink-0 rounded-full px-4">
-          <Link href="/shared/settings" className="inline-flex items-center gap-2">
+          <Link href={settingsPath} className="inline-flex items-center gap-2">
             <Settings className="h-4 w-4 shrink-0" />
             Settings
           </Link>
@@ -146,12 +149,12 @@ export function SharedProfile() {
 
           <ProfilePanel className="space-y-3 border border-border">
             <h2 className="text-base font-bold">Quick links</h2>
-            <ProfileActionLink href="/shared/settings">
+            <ProfileActionLink href={settingsPath}>
               <Settings className="h-4 w-4 shrink-0" />
               Account settings
               <ChevronRight className="h-4 w-4 shrink-0" />
             </ProfileActionLink>
-            <ProfileActionLink href="/shared/notifications" variant="outline">
+            <ProfileActionLink href={notificationsPath} variant="outline">
               <Bell className="h-4 w-4 shrink-0" />
               Notifications
             </ProfileActionLink>

@@ -115,6 +115,32 @@ const EXTRA_SEARCH_ITEMS: Partial<Record<UserRole, NavbarSearchItem[]>> = {
       keywords: "group course",
     },
   ],
+  [UserRole.ADMIN]: [
+    {
+      id: "admin-library-catalog",
+      label: "Library catalog",
+      description: "Browse and manage school books",
+      path: "/admin/library/books",
+      category: "Quick actions",
+      keywords: "books isbn shelf catalog",
+    },
+    {
+      id: "admin-library-issue",
+      label: "Issue library book",
+      description: "Check out a title to a borrower",
+      path: "/admin/library/issues/new",
+      category: "Quick actions",
+      keywords: "lend borrow circulation",
+    },
+    {
+      id: "admin-library-circulation",
+      label: "Library circulation",
+      description: "Active loans and returns",
+      path: "/admin/library/issues",
+      category: "Quick actions",
+      keywords: "overdue return issues",
+    },
+  ],
   [UserRole.PARENT]: [
     {
       id: "parent-messages-inbox",

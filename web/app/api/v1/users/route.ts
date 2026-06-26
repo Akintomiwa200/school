@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse } from "@/shared";
+import { NextRequest } from "next/server";
+import { jsonData, jsonList } from "@/lib/api/route-handlers";
+import { PLATFORM_USERS } from "@/components/dashboard/super-admin/super-admin-entities-data";
 
 export async function GET(request: NextRequest) {
-  return NextResponse.json(createApiResponse([], "users endpoint - GET"));
+  return jsonList(PLATFORM_USERS, "Users loaded", request, ["name", "email", "role", "school"]);
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  return NextResponse.json(createApiResponse(body, "users endpoint - POST"), { status: 201 });
+  return jsonData(body, "User created", 201);
 }

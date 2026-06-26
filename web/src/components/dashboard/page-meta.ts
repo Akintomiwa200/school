@@ -118,12 +118,58 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
       { title: "Intake forms", description: "Customize admission requirements." },
     ],
   },
+  "/admin/students/new": {
+    title: "Enroll student",
+    description: "Add a new student to the school roster.",
+    sections: [{ title: "Enrollment form", description: "Student profile and class assignment." }],
+  },
+  "/admin/classes/new": {
+    title: "New class",
+    description: "Create a grade section with homeroom teacher and capacity.",
+    sections: [{ title: "Class setup", description: "Grade, section, teacher, and seats." }],
+  },
+  "/admin/library": {
+    title: "Library administration",
+    description: "Overview of catalog, members, circulation, and revenue.",
+    sections: [
+      { title: "Statistics", description: "Books, members, issues, and overdue counts." },
+      { title: "Activity", description: "Recent loans, popular titles, and top authors." },
+    ],
+  },
+  "/admin/library/books": {
+    title: "Library books",
+    description: "Manage the school library catalog.",
+    sections: [{ title: "Catalog", description: "Search, filter, and add titles." }],
+  },
+  "/admin/library/books/new": {
+    title: "Add book",
+    description: "Add a new title to the library catalog.",
+    sections: [{ title: "Book details", description: "Title, author, ISBN, and copies." }],
+  },
+  "/admin/library/issues": {
+    title: "Library issues",
+    description: "Lend and receive books from students and staff.",
+    sections: [{ title: "Circulation desk", description: "Active loans and returns." }],
+  },
+  "/admin/library/issues/new": {
+    title: "Issue book",
+    description: "Check out a title to a student or staff member.",
+    sections: [{ title: "Circulation", description: "Book, borrower, and due date." }],
+  },
   "/admin/reports": {
     title: "Reports",
     description: "Analytics on attendance, performance, and operations.",
     sections: [
       { title: "Standard reports", description: "Pre-built school-wide summaries." },
       { title: "Custom exports", description: "CSV and PDF downloads." },
+    ],
+  },
+  "/admin/announcements": {
+    title: "Announcements",
+    description: "Publish school-wide updates and track read status.",
+    sections: [
+      { title: "Announcement feed", description: "Search, filter, and open announcements." },
+      { title: "Publish", description: "Send live updates to students, parents, and staff." },
     ],
   },
   "/admin/settings": {
@@ -333,6 +379,16 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
       { title: "Issue book", description: "Check out to a borrower." },
       { title: "Returns", description: "Process returns and fines." },
     ],
+  },
+  "/librarian/books/new": {
+    title: "Add book",
+    description: "Add a new title to the library catalog.",
+    sections: [{ title: "Book details", description: "Title, author, ISBN, and copies." }],
+  },
+  "/librarian/issues/new": {
+    title: "Issue book",
+    description: "Check out a book to a student or staff member.",
+    sections: [{ title: "Circulation", description: "Borrower and due date." }],
   },
 
   "/hr": {
@@ -672,7 +728,28 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
   },
 };
 
+const ADMIN_LIBRARY_BOOK_DETAIL = /^\/admin\/library\/books\/[^/]+$/;
+const ADMIN_LIBRARY_ISSUE_DETAIL = /^\/admin\/library\/issues\/[^/]+$/;
+
 export function getDashboardPageMeta(path: string): DashboardPageMeta {
+  if (ADMIN_LIBRARY_BOOK_DETAIL.test(path) && !path.endsWith("/new")) {
+    return {
+      title: "Book details",
+      description: "View catalog entry, copies, and active loans.",
+      sections: [
+        { title: "Metadata", description: "Title, author, ISBN, and shelf." },
+        { title: "Circulation", description: "Issue or adjust copy count." },
+      ],
+    };
+  }
+  if (ADMIN_LIBRARY_ISSUE_DETAIL.test(path) && !path.endsWith("/new")) {
+    return {
+      title: "Loan details",
+      description: "View borrower, due date, and return status.",
+      sections: [{ title: "Circulation", description: "Mark returned or follow up on overdue." }],
+    };
+  }
+
   if (path.endsWith("/notifications")) {
     return (
       DASHBOARD_PAGE_META[path] ?? {

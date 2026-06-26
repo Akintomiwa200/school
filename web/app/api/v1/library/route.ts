@@ -1,11 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createApiResponse } from "@/shared";
+import { getLibraryStats, getMutableBooks, getMutableIssues } from "@/lib/api/library-entity-store";
 
-export async function GET(request: NextRequest) {
-  return NextResponse.json(createApiResponse([], "library endpoint - GET"));
-}
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  return NextResponse.json(createApiResponse(body, "library endpoint - POST"), { status: 201 });
+export async function GET() {
+  return NextResponse.json(
+    createApiResponse(
+      {
+        books: getMutableBooks(),
+        issues: getMutableIssues(),
+        stats: getLibraryStats(),
+      },
+      "Library data loaded",
+    ),
+  );
 }
