@@ -1,26 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createApiError, createApiResponse } from "@/shared";
+import { getPaymentById } from "@/lib/api/payment-entity-store";
+import { buildReceiptFromPayment } from "@/lib/api/receipt-service";
 
 const RECEIPT_STORE: Record<
   string,
-  {
-    receiptId: string;
-    paymentId: string;
-    studentName: string;
-    studentId: string;
-    date: string;
-    amount: number;
-    method: string;
-    description: string;
-    status: string;
-    feeLines: Array<{ label: string; amount: number }>;
-    generatedAt: string;
-  }
+  ReturnType<typeof buildReceiptFromPayment>
 > = {};
 
 export function registerServerReceipt(
   paymentId: string,
-  data: (typeof RECEIPT_STORE)[string],
+  data: ReturnType<typeof buildReceiptFromPayment>,
 ) {
   RECEIPT_STORE[paymentId] = data;
 }
@@ -35,27 +25,12 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     return NextResponse.json(createApiResponse(stored, "Receipt retrieved"));
   }
 
-  const demoReceipts: Record<string, (typeof RECEIPT_STORE)[string]> = {
-    "pay-001": {
-      receiptId: "RCP-2026-0210",
-      paymentId: "pay-001",
-      studentName: "Alex Johnson",
-      studentId: "STU-2024-118",
-      date: "2026-02-10",
-      amount: 1200,
-      method: "card",
-      description: "Tuition installment — Spring 2026",
-      status: "completed",
-      feeLines: [{ label: "Spring Term Tuition", amount: 1200 }],
-      generatedAt: new Date().toISOString(),
-    },
-  };
-
-  const receipt = demoReceipts[paymentId];
-  if (!receipt) {
+  const payment = getPaymentById(paymentId);
+  if (!payment) {
     return NextResponse.json(createApiError("not_found", "Receipt not found"), { status: 404 });
   }
 
+  const receipt = buildReceiptFromPayment(payment);
   return NextResponse.json(createApiResponse(receipt, "Receipt retrieved"));
 }
 
@@ -63,21 +38,37 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const { paymentId } = await context.params;
   const body = await request.json();
 
-  const receipt = {
-    receiptId: body.receiptId as string,
-    paymentId,
-    studentName: (body.studentName as string) ?? "Alex Johnson",
-    studentId: (body.studentId as string) ?? "STU-2024-118",
-    date: body.date as string,
-    amount: body.amount as number,
-    method: body.method as string,
-    description: body.description as string,
-    status: "completed",
-    feeLines: (body.feeLines as Array<{ label: string; amount: number }>) ?? [],
-    generatedAt: new Date().toISOString(),
+  const payment = getPaymentById(paymentId);
+  const receipt = payment
+    ? buildReceiptFromPayment(payment)
+    : {
+        receiptId: body.receiptId as string,
+        paymentId,
+        transactionRef: paymentId.toUpperCase().replace(/-/g, ""),
+        studentName: (body.studentName as string) ?? "Student",
+        studentId: (body.studentId as string) ?? "STU-0000",
+        date: body.date as string,
+        dateFormatted: body.date as string,
+        amount: body.amount as number,
+        amountFormatted: String(body.amount),
+        method: body.method as "card",
+        methodLabel: String(body.method),
+        description: body.description as string,
+        status: "completed",
+        feeLines: (body.feeLines as Array<{ label: string; amount: number; amountFormatted?: string }>) ?? [],
+        generatedAt: new Date().toISOString(),
+      };
+
+  const normalized = {
+    ...receipt,
+    feeLines: (receipt.feeLines ?? []).map((line) => ({
+      label: line.label,
+      amount: line.amount,
+      amountFormatted: line.amountFormatted ?? String(line.amount),
+    })),
   };
 
-  RECEIPT_STORE[paymentId] = receipt;
+  RECEIPT_STORE[paymentId] = normalized;
 
-  return NextResponse.json(createApiResponse(receipt, "Receipt generated"), { status: 201 });
+  return NextResponse.json(createApiResponse(normalized, "Receipt generated"), { status: 201 });
 }

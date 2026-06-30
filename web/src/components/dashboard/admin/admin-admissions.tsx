@@ -17,7 +17,7 @@ import {
 import { ManagementPageHeader, ManagementPanel, ManagementStatCard } from "../management/management-ui";
 import {
   ADMIN_PAGE_SIZE,
-  AdminFilterPills,
+  AdminFilterSelect,
   AdminSearchBar,
   AdminTablePagination,
 } from "./admin-list-ui";
@@ -95,35 +95,40 @@ export function AdminAdmissions() {
       </div>
 
       <ManagementPanel className="border border-border">
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Pipeline</p>
             <h2 className="mt-1 text-lg font-bold">{filtered.length} applications</h2>
           </div>
-          <AdminSearchBar value={query} onChange={setQuery} placeholder="Search name, reference, email…" />
-          <AdminFilterPills
-            options={[
-              { id: "all", label: "All types" },
-              { id: "secondary", label: "Secondary" },
-              { id: "university", label: "University" },
-            ]}
-            value={typeFilter}
-            onChange={setTypeFilter}
-          />
-          <AdminFilterPills
-            options={[
-              { id: "all", label: "All statuses" },
-              { id: "payment_pending", label: "Payment pending" },
-              { id: "paid", label: "Paid" },
-              { id: "exam_scheduled", label: "Exam scheduled" },
-              { id: "exam_completed", label: "Exam done" },
-              { id: "approved", label: "Approved" },
-              { id: "enrolled", label: "Enrolled" },
-              { id: "rejected", label: "Rejected" },
-            ]}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <AdminSearchBar value={query} onChange={setQuery} placeholder="Search name, reference, email…" className="sm:w-56" />
+            <AdminFilterSelect
+              label="Institution type"
+              value={typeFilter}
+              onChange={setTypeFilter}
+              options={[
+                { id: "all", label: "All types" },
+                { id: "secondary", label: "Secondary" },
+                { id: "university", label: "University" },
+              ]}
+            />
+            <AdminFilterSelect
+              label="Status"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[
+                { id: "all", label: "All statuses" },
+                { id: "payment_pending", label: "Payment pending" },
+                { id: "paid", label: "Paid" },
+                { id: "exam_scheduled", label: "Exam scheduled" },
+                { id: "exam_completed", label: "Exam done" },
+                { id: "approved", label: "Approved" },
+                { id: "enrolled", label: "Enrolled" },
+                { id: "rejected", label: "Rejected" },
+              ]}
+              className="min-w-[180px]"
+            />
+          </div>
         </div>
       </ManagementPanel>
 

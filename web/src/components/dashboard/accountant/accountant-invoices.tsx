@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import { useFinanceInvoices } from "@/hooks/use-dashboard-data";
+import { useBulkBilling, useFinanceInvoices } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { ManagementPageHeader } from "../management/management-ui";
 import {
@@ -14,12 +14,19 @@ import {
   formatDisplayDate,
   invoiceHref,
 } from "./accountant-data";
-import { FinancePanel, formatCurrency } from "./accountant-ui";
+import {
+  FinanceFilterSelect,
+  FinanceListToolbar,
+  FinancePanel,
+  FinanceSearchBar,
+  formatCurrency,
+} from "./accountant-ui";
 
 type InvoiceFilter = "all" | "overdue" | "paid" | "sent";
 
 export function AccountantInvoices() {
   const { data: invoices = SCHOOL_INVOICES, isFetching } = useFinanceInvoices(SCHOOL_INVOICES);
+  const bulkBilling = useBulkBilling();
   const isLoading = usePageLoading() || isFetching;
   const [filter, setFilter] = useState<InvoiceFilter>("all");
   const [query, setQuery] = useState("");
@@ -49,47 +56,37 @@ export function AccountantInvoices() {
         title="Invoices"
         description="Issue and manage student fee invoices — draft, sent, paid, and overdue."
         action={
-          <Button className="h-10 rounded-full bg-brand-purple px-5 text-white hover:bg-brand-purple/90">
-            <Plus className="mr-2 h-4 w-4" />
-            Bulk billing
+          <Button
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-brand-purple px-5 text-white hover:bg-brand-purple/90"
+            disabled={bulkBilling.isPending}
+            onClick={() => bulkBilling.mutate()}
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            {bulkBilling.isPending ? "Issuing…" : "Bulk billing"}
           </Button>
         }
       />
 
-      <FinancePanel className="flex flex-col gap-4 border border-border sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Invoice list</p>
-          <h2 className="mt-1 text-lg font-bold">{filtered.length} invoices</h2>
-        </div>
-        <div className="relative w-full max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search invoices"
-            className="h-9 w-full rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
-      </FinancePanel>
-
-      <div className="flex flex-wrap gap-2">
-        {(["all", "overdue", "sent", "paid"] as const).map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => setFilter(item)}
-            className={cn(
-              "rounded-full px-4 py-2 text-sm font-medium capitalize transition-colors",
-              filter === item
-                ? "bg-brand-purple text-white"
-                : "bg-muted text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {item === "overdue" ? "Overdue / partial" : item}
-          </button>
-        ))}
-      </div>
+      <FinanceListToolbar eyebrow="Invoice list" title={`${filtered.length} invoices`}>
+        <FinanceSearchBar
+          value={query}
+          onChange={setQuery}
+          placeholder="Search invoices"
+          className="sm:w-56"
+        />
+        <FinanceFilterSelect
+          label="Status"
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { id: "all", label: "All status" },
+            { id: "overdue", label: "Overdue / partial" },
+            { id: "sent", label: "Sent" },
+            { id: "paid", label: "Paid" },
+          ]}
+          className="min-w-[180px]"
+        />
+      </FinanceListToolbar>
 
       <FinancePanel className="overflow-x-auto border border-border p-0">
         <table className="w-full min-w-[720px] text-left text-sm">

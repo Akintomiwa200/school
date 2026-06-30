@@ -9,6 +9,7 @@ import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { UserRole } from "@/shared";
 import { getLoginPathForRole, getProfilePathForRole } from "@/shared/permissions";
+import { formatRoleLabel } from "@/components/dashboard/profile/profile-ui";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -139,9 +140,7 @@ export function ProfileDropdown({
                 <Mail size={12} className="shrink-0" />
                 {session?.user?.email ?? "No email on file"}
               </p>
-              <p className="mt-1 text-xs capitalize text-muted-foreground">
-                {role.replace(/_/g, " ").toLowerCase()}
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{formatRoleLabel(role)}</p>
             </div>
           </div>
         </div>

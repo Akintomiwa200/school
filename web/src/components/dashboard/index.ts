@@ -20,7 +20,11 @@ export {
   AccountantInvoices,
   AccountantInvoiceDetail,
   AccountantPayroll,
+  AccountantPayrollDetail,
+  AccountantPayslipDetail,
   AccountantAudit,
+  AccountantAuditDetail,
+  AccountantReconciliation,
   AccountantReports,
 } from "./accountant";
 export {

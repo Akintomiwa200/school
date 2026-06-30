@@ -14,7 +14,7 @@ import {
 } from "../management/management-ui";
 import {
   ADMIN_PAGE_SIZE,
-  AdminFilterPills,
+  AdminFilterSelect,
   AdminSearchBar,
   AdminTablePagination,
 } from "./admin-list-ui";
@@ -103,33 +103,40 @@ export function AdminStaff() {
       <ManagementPanel className="space-y-4 border border-border">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="text-lg font-bold">{filtered.length} staff members</h2>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <AdminSearchBar value={query} onChange={setQuery} placeholder="Search staff" />
-            <Button variant="outline" className="h-10 shrink-0 rounded-full px-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <AdminSearchBar value={query} onChange={setQuery} placeholder="Search staff" className="sm:w-56" />
+            <AdminFilterSelect
+              label="Status"
+              value={statusFilter}
+              onChange={(value) => {
+                setStatusFilter(value);
+                setPage(1);
+              }}
+              options={[
+                { id: "all", label: "All status" },
+                { id: "active", label: "Active" },
+                { id: "on_leave", label: "On leave" },
+                { id: "inactive", label: "Inactive" },
+              ]}
+            />
+            <AdminFilterSelect
+              label="Role"
+              value={roleFilter}
+              onChange={(value) => {
+                setRoleFilter(value);
+                setPage(1);
+              }}
+              options={[
+                { id: "all", label: "All roles" },
+                ...STAFF_ROLES.map((role) => ({ id: role, label: role })),
+              ]}
+              className="min-w-[160px]"
+            />
+            <Button variant="outline" className="h-9 shrink-0 rounded-full px-4">
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <AdminFilterPills
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { id: "all", label: "All status" },
-              { id: "active", label: "Active" },
-              { id: "on_leave", label: "On leave" },
-              { id: "inactive", label: "Inactive" },
-            ]}
-          />
-          <AdminFilterPills
-            value={roleFilter}
-            onChange={setRoleFilter}
-            options={[
-              { id: "all", label: "All roles" },
-              ...STAFF_ROLES.map((role) => ({ id: role, label: role })),
-            ]}
-          />
         </div>
       </ManagementPanel>
 

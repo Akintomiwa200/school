@@ -3,9 +3,10 @@ import {
   ROLE_ROUTES,
   canRoleAccessDashboardPath,
   getSharedRoutesForRole,
+  resolveSharedPathForRole,
 } from "@/shared/permissions";
 import { DASHBOARD_PAGE_META } from "@/components/dashboard/page-meta";
-import { ROUTE_DESCRIPTIONS } from "./role-sidebar-config";
+import { ROLE_SIDEBAR_BRANDING, ROUTE_DESCRIPTIONS } from "./role-sidebar-config";
 
 export type NavbarSearchItem = {
   id: string;
@@ -94,7 +95,7 @@ const EXTRA_SEARCH_ITEMS: Partial<Record<UserRole, NavbarSearchItem[]>> = {
       id: "chat-mary",
       label: "Mary Johnson",
       description: "Science mentor · Messages",
-      path: "/shared/messages?chat=conv-mary",
+      path: "/student/messages?chat=conv-mary",
       category: "Chats",
       keywords: "teacher message chat",
     },
@@ -102,7 +103,7 @@ const EXTRA_SEARCH_ITEMS: Partial<Record<UserRole, NavbarSearchItem[]>> = {
       id: "chat-james",
       label: "James Brown",
       description: "Chinese · Messages",
-      path: "/shared/messages?chat=conv-james",
+      path: "/student/messages?chat=conv-james",
       category: "Chats",
       keywords: "teacher message chat",
     },
@@ -110,7 +111,7 @@ const EXTRA_SEARCH_ITEMS: Partial<Record<UserRole, NavbarSearchItem[]>> = {
       id: "chat-cs",
       label: "CS-2026 Class",
       description: "Class group chat",
-      path: "/shared/messages?chat=conv-cs2026",
+      path: "/student/messages?chat=conv-cs2026",
       category: "Chats",
       keywords: "group course",
     },
@@ -156,7 +157,7 @@ const EXTRA_SEARCH_ITEMS: Partial<Record<UserRole, NavbarSearchItem[]>> = {
       id: "teacher-messages",
       label: "Messages",
       description: "Chat with students and parents",
-      path: "/shared/messages",
+      path: "/teacher/messages",
       category: "Chats",
       keywords: "inbox chat",
     },
@@ -179,6 +180,8 @@ export function getNavbarSearchItems(role: UserRole): NavbarSearchItem[] {
     items.push(item);
   };
 
+  const portalCategory = ROLE_SIDEBAR_BRANDING[role]?.title ?? "Navigation";
+
   for (const route of ROLE_ROUTES[role] ?? []) {
     const meta = DASHBOARD_PAGE_META[route.path];
     add({
@@ -191,22 +194,26 @@ export function getNavbarSearchItems(role: UserRole): NavbarSearchItem[] {
   }
 
   for (const route of getSharedRoutesForRole(role)) {
-    const meta = DASHBOARD_PAGE_META[route.path];
+    const sharedKey = Object.entries(DASHBOARD_PAGE_META).find(
+      ([key]) => resolveSharedPathForRole(key, role) === route.path,
+    )?.[0];
+    const meta = sharedKey ? DASHBOARD_PAGE_META[sharedKey] : undefined;
     add({
       id: route.path,
       label: route.label,
       description: meta?.description,
       path: route.path,
-      category: "Shared",
+      category: portalCategory,
     });
   }
 
   for (const [path, meta] of Object.entries(DASHBOARD_PAGE_META)) {
+    const resolvedPath = path.startsWith("/shared/") ? resolveSharedPathForRole(path, role) : path;
     add({
-      id: path,
+      id: resolvedPath,
       label: meta.title,
       description: meta.description,
-      path,
+      path: resolvedPath,
       category: "Pages",
     });
   }

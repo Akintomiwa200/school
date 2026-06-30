@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Menu, Settings } from "lucide-react";
+import { Bell, LayoutGrid, Menu, Settings } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useUIStore } from "@/store/ui.store";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ import { getSettingsPathForRole } from "@/shared/permissions";
 import { NavbarSearch } from "./navbar-search";
 import { NotificationDropdown } from "./notification-dropdown";
 import { ProfileDropdown } from "./profile-dropdown";
+import { AppLauncher } from "./app-launcher";
 import {
   getUnreadNotificationCount,
   useNotificationsStore,
@@ -33,6 +34,7 @@ export function Header() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [launcherOpen, setLauncherOpen] = useState(false);
   useNotificationsStore();
   const unreadNotificationCount = getUnreadNotificationCount();
 
@@ -52,6 +54,7 @@ export function Header() {
   const closePanels = () => {
     setNotificationsOpen(false);
     setProfileOpen(false);
+    setLauncherOpen(false);
   };
 
   return (
@@ -76,7 +79,10 @@ export function Header() {
               open={notificationsOpen}
               onOpenChange={(open) => {
                 setNotificationsOpen(open);
-                if (open) setProfileOpen(false);
+                if (open) {
+                  setProfileOpen(false);
+                  setLauncherOpen(false);
+                }
               }}
               onOpenSettings={openSettings}
               trigger={
@@ -106,11 +112,33 @@ export function Header() {
             >
               <Settings size={18} />
             </button>
+            <AppLauncher
+              open={launcherOpen}
+              onOpenChange={(open) => {
+                setLauncherOpen(open);
+                if (open) {
+                  setNotificationsOpen(false);
+                  setProfileOpen(false);
+                }
+              }}
+              trigger={
+                <button
+                  type="button"
+                  className={iconButtonClass(launcherOpen)}
+                  aria-label="App launcher"
+                >
+                  <LayoutGrid size={18} />
+                </button>
+              }
+            />
             <ProfileDropdown
               open={profileOpen}
               onOpenChange={(open) => {
                 setProfileOpen(open);
-                if (open) setNotificationsOpen(false);
+                if (open) {
+                  setNotificationsOpen(false);
+                  setLauncherOpen(false);
+                }
               }}
               onOpenSettings={openSettings}
               trigger={

@@ -19,7 +19,7 @@ import {
 } from "../management/management-ui";
 import {
   ADMIN_PAGE_SIZE,
-  AdminFilterPills,
+  AdminFilterSelect,
   AdminSearchBar,
   AdminTablePagination,
 } from "../admin/admin-list-ui";
@@ -155,39 +155,35 @@ export function SharedAnnouncements({
       <div className="grid gap-5 xl:grid-cols-12 xl:items-start">
         <div className="space-y-5 xl:col-span-8">
           <ManagementPanel className="border border-border">
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Announcement feed</p>
                 <h2 className="mt-1 text-lg font-bold text-foreground">{filtered.length} announcements</h2>
               </div>
-              <AdminSearchBar value={query} onChange={setQuery} placeholder="Search title, body, author…" />
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <AdminFilterPills
+                <AdminSearchBar value={query} onChange={setQuery} placeholder="Search title, body, author…" className="sm:w-56" />
+                <AdminFilterSelect
+                  label="View"
+                  value={statusFilter}
+                  onChange={setStatusFilter}
                   options={[
                     { id: "all", label: "All" },
                     { id: "unread", label: "Unread" },
                     { id: "pinned", label: "Pinned" },
                   ]}
-                  value={statusFilter}
-                  onChange={setStatusFilter}
                 />
-                <div className="flex flex-wrap gap-2">
-                  {(["all", "normal", "important", "urgent"] as const).map((level) => (
-                    <button
-                      key={level}
-                      type="button"
-                      onClick={() => setPriorityFilter(level)}
-                      className={cn(
-                        "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition-colors",
-                        priorityFilter === level
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:text-foreground",
-                      )}
-                    >
-                      {level}
-                    </button>
-                  ))}
-                </div>
+                <AdminFilterSelect
+                  label="Priority"
+                  value={priorityFilter}
+                  onChange={setPriorityFilter}
+                  options={[
+                    { id: "all", label: "All priorities" },
+                    { id: "normal", label: "Normal" },
+                    { id: "important", label: "Important" },
+                    { id: "urgent", label: "Urgent" },
+                  ]}
+                  className="min-w-[160px]"
+                />
               </div>
             </div>
           </ManagementPanel>

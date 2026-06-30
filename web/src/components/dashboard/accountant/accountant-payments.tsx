@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Download, Search } from "lucide-react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import { useFinancePayments } from "@/hooks/use-dashboard-data";
+import {
+  downloadPaymentsCsv,
+  useFinancePayments,
+} from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { useLiveFeePayments } from "../fees/fees-live-store";
 import { ManagementPageHeader } from "../management/management-ui";
@@ -16,7 +19,13 @@ import {
   paymentHref,
   type LedgerPayment,
 } from "./accountant-data";
-import { FinancePanel, formatCurrency } from "./accountant-ui";
+import {
+  FinanceFilterSelect,
+  FinanceListToolbar,
+  FinancePanel,
+  FinanceSearchBar,
+  formatCurrency,
+} from "./accountant-ui";
 
 type PaymentFilter = "all" | "completed" | "pending";
 
@@ -61,49 +70,41 @@ export function AccountantPayments() {
         description="Record and reconcile fee payments across all students."
       />
 
-      <FinancePanel className="flex flex-col gap-4 border border-border sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Payment ledger</p>
-          <h2 className="mt-1 text-lg font-bold">{filtered.length} transactions</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Completed total: <span className="font-semibold text-green">{formatCurrency(totalCompleted)}</span>
-          </p>
-        </div>
-        <Button variant="outline" className="shrink-0 rounded-full px-4">
-          <Download className="mr-2 h-4 w-4" />
+      <FinanceListToolbar
+        eyebrow="Payment ledger"
+        title={`${filtered.length} transactions`}
+        hint={
+          <>
+            Completed total:{" "}
+            <span className="font-semibold text-green">{formatCurrency(totalCompleted)}</span>
+          </>
+        }
+      >
+        <FinanceSearchBar
+          value={query}
+          onChange={setQuery}
+          placeholder="Search student or receipt"
+          className="sm:w-56"
+        />
+        <FinanceFilterSelect
+          label="Status"
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { id: "all", label: "All status" },
+            { id: "completed", label: "Completed" },
+            { id: "pending", label: "Pending" },
+          ]}
+        />
+        <Button
+          variant="outline"
+          className="inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-4"
+          onClick={downloadPaymentsCsv}
+        >
+          <Download className="h-4 w-4 shrink-0" />
           Export CSV
         </Button>
-      </FinancePanel>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-2">
-          {(["all", "completed", "pending"] as const).map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setFilter(item)}
-              className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium capitalize transition-colors",
-                filter === item
-                  ? "bg-brand-purple text-white"
-                  : "bg-muted text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-        <div className="relative w-full max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search student or receipt"
-            className="h-9 w-full rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
-      </div>
+      </FinanceListToolbar>
 
       <FinancePanel className="overflow-x-auto border border-border p-0">
         <table className="w-full min-w-[720px] text-left text-sm">

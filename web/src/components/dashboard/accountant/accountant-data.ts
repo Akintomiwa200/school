@@ -5,7 +5,7 @@ import { formatDisplayDate as formatFeeDate } from "../fees/student-fees-data";
 export type FeePlanStatus = "active" | "draft" | "archived";
 export type ExpenseStatus = "pending" | "approved" | "rejected" | "paid";
 export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "partial";
-export type PayrollStatus = "draft" | "processing" | "completed";
+export type PayrollStatus = "draft" | "processing" | "completed" | "cancelled";
 export type AuditAction =
   | "payment_recorded"
   | "invoice_issued"
@@ -13,6 +13,21 @@ export type AuditAction =
   | "payroll_run"
   | "reconciliation"
   | "fee_updated";
+
+export type AuditEntityType =
+  | "payment"
+  | "invoice"
+  | "expense"
+  | "payroll"
+  | "fee_plan"
+  | "reconciliation"
+  | "other";
+
+export type AuditChange = {
+  field: string;
+  before: string;
+  after: string;
+};
 
 export type FeePlan = {
   id: string;
@@ -63,6 +78,39 @@ export type PayrollRun = {
   totalAmount: number;
   status: PayrollStatus;
   processedDate?: string;
+  createdAt?: string;
+  finalizedBy?: string;
+  notes?: string;
+  disbursementRef?: string;
+  payPeriodStart?: string;
+  payPeriodEnd?: string;
+};
+
+export type PayslipStatus = "pending" | "paid";
+
+export type PayslipLine = {
+  label: string;
+  amount: number;
+};
+
+export type Payslip = {
+  id: string;
+  runId: string;
+  staffId: string;
+  employeeId: string;
+  staffName: string;
+  department: string;
+  designation: string;
+  period: string;
+  grossPay: number;
+  earnings: PayslipLine[];
+  deductions: PayslipLine[];
+  netPay: number;
+  status: PayslipStatus;
+  paidDate?: string;
+  ytdGross?: number;
+  ytdNet?: number;
+  disbursementRef?: string;
 };
 
 export type AuditEvent = {
@@ -70,10 +118,33 @@ export type AuditEvent = {
   timestamp: string;
   action: AuditAction;
   actor: string;
+  actorEmail?: string;
   reference: string;
+  entityType: AuditEntityType;
+  entityId?: string;
   amount?: number;
   details: string;
+  ipAddress?: string;
+  metadata?: Record<string, string>;
+  changes?: AuditChange[];
 };
+
+export type ReconciliationItemStatus = "unmatched" | "matched" | "flagged";
+
+export type ReconciliationItem = {
+  id: string;
+  period: string;
+  bankDate: string;
+  bankDescription: string;
+  bankAmount: number;
+  bankReference: string;
+  status: ReconciliationItemStatus;
+  matchedPaymentId?: string;
+  matchedReceiptId?: string;
+  flagReason?: string;
+};
+
+export const RECONCILIATION_PERIOD = "MAR-2026";
 
 export const FEE_PLANS: FeePlan[] = [
   { id: "fp-tuition", name: "Spring Tuition", category: "Tuition", amount: 3200, term: "Spring 2026", grades: "All grades", status: "active", dueDate: "2026-03-15" },
@@ -124,12 +195,137 @@ export const PAYROLL_RUNS: PayrollRun[] = [
 ];
 
 export const AUDIT_EVENTS: AuditEvent[] = [
-  { id: "aud-001", timestamp: "2026-03-05T14:22:00", action: "payment_recorded", actor: "J. Accountant", reference: "RCP-20260301-004", amount: 450, details: "Bank transfer pending verification for lab fee" },
-  { id: "aud-002", timestamp: "2026-03-04T09:15:00", action: "expense_approved", actor: "Finance Manager", reference: "exp-001", amount: 1240, details: "Classroom stationery approved for payment" },
-  { id: "aud-003", timestamp: "2026-03-03T16:40:00", action: "invoice_issued", actor: "System", reference: "INV-2026-0168", amount: 600, details: "Transport invoice marked paid" },
-  { id: "aud-004", timestamp: "2026-03-02T11:00:00", action: "reconciliation", actor: "J. Accountant", reference: "MAR-2026", details: "Monthly bank reconciliation — 3 items flagged" },
-  { id: "aud-005", timestamp: "2026-02-28T17:30:00", action: "payroll_run", actor: "HR + Finance", reference: "pr-2026-02", amount: 412500, details: "February payroll completed — 84 staff" },
-  { id: "aud-006", timestamp: "2026-02-25T10:05:00", action: "fee_updated", actor: "Admin", reference: "fp-activities", details: "Activities fee due date extended to April 1" },
+  {
+    id: "aud-001",
+    timestamp: "2026-03-05T14:22:00",
+    action: "payment_recorded",
+    actor: "J. Accountant",
+    actorEmail: "accountant@school.com",
+    reference: "RCP-20260301-004",
+    entityType: "payment",
+    entityId: "pay-004",
+    amount: 450,
+    details: "Bank transfer pending verification for lab fee",
+    ipAddress: "192.168.1.42",
+    metadata: { method: "bank", studentId: "STU-2023-201" },
+  },
+  {
+    id: "aud-002",
+    timestamp: "2026-03-04T09:15:00",
+    action: "expense_approved",
+    actor: "Finance Manager",
+    actorEmail: "finance@school.com",
+    reference: "exp-001",
+    entityType: "expense",
+    entityId: "exp-001",
+    amount: 1240,
+    details: "Classroom stationery approved for payment",
+    ipAddress: "10.0.0.18",
+    changes: [{ field: "status", before: "pending", after: "approved" }],
+  },
+  {
+    id: "aud-003",
+    timestamp: "2026-03-03T16:40:00",
+    action: "invoice_issued",
+    actor: "System",
+    reference: "INV-2026-0168",
+    entityType: "invoice",
+    entityId: "inv-005",
+    amount: 600,
+    details: "Transport invoice marked paid",
+    metadata: { term: "Spring 2026", studentId: "STU-2024-156" },
+  },
+  {
+    id: "aud-004",
+    timestamp: "2026-03-02T11:00:00",
+    action: "reconciliation",
+    actor: "J. Accountant",
+    actorEmail: "accountant@school.com",
+    reference: RECONCILIATION_PERIOD,
+    entityType: "reconciliation",
+    entityId: RECONCILIATION_PERIOD,
+    details: "Monthly bank reconciliation started — 4 items need review",
+    ipAddress: "192.168.1.42",
+    metadata: { period: RECONCILIATION_PERIOD, flagged: "4" },
+  },
+  {
+    id: "aud-005",
+    timestamp: "2026-02-28T17:30:00",
+    action: "payroll_run",
+    actor: "HR + Finance",
+    reference: "pr-2026-02",
+    entityType: "payroll",
+    entityId: "pr-2026-02",
+    amount: 412500,
+    details: "February payroll completed — 84 staff",
+    metadata: { staffCount: "84" },
+  },
+  {
+    id: "aud-006",
+    timestamp: "2026-02-25T10:05:00",
+    action: "fee_updated",
+    actor: "Admin",
+    actorEmail: "principal@school.com",
+    reference: "fp-activities",
+    entityType: "fee_plan",
+    entityId: "fp-activities",
+    details: "Activities fee due date extended to April 1",
+    changes: [{ field: "dueDate", before: "2026-03-15", after: "2026-04-01" }],
+  },
+];
+
+export const RECONCILIATION_ITEMS: ReconciliationItem[] = [
+  {
+    id: "rec-001",
+    period: RECONCILIATION_PERIOD,
+    bankDate: "2026-03-01",
+    bankDescription: "WIRE DEPOSIT — MAYA CHEN",
+    bankAmount: 180,
+    bankReference: "BNK-0301-001",
+    status: "matched",
+    matchedPaymentId: "pay-002",
+    matchedReceiptId: "RCP-20260215-002",
+  },
+  {
+    id: "rec-002",
+    period: RECONCILIATION_PERIOD,
+    bankDate: "2026-03-02",
+    bankDescription: "ACH CREDIT TUITION",
+    bankAmount: 2000,
+    bankReference: "BNK-0302-002",
+    status: "flagged",
+    flagReason: "Amount differs from nearest payment by $50",
+  },
+  {
+    id: "rec-003",
+    period: RECONCILIATION_PERIOD,
+    bankDate: "2026-03-03",
+    bankDescription: "CASH DEPOSIT BRANCH",
+    bankAmount: 600,
+    bankReference: "BNK-0303-003",
+    status: "unmatched",
+  },
+  {
+    id: "rec-004",
+    period: RECONCILIATION_PERIOD,
+    bankDate: "2026-03-04",
+    bankDescription: "CARD SETTLEMENT BATCH",
+    bankAmount: 450,
+    bankReference: "BNK-0304-004",
+    status: "unmatched",
+  },
+  {
+    id: "rec-005",
+    period: RECONCILIATION_PERIOD,
+    bankDate: "2026-03-05",
+    bankDescription: "TRANSFER LAB FEE",
+    bankAmount: 450,
+    bankReference: "BNK-0305-005",
+    status: "flagged",
+    flagReason: "Possible duplicate — payment pending verification",
+    matchedPaymentId: "pay-004",
+    matchedReceiptId: "RCP-20260301-004",
+  },
 ];
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentRecord["method"], string> = {
@@ -165,6 +361,7 @@ export const ACCOUNTANT_QUICK_ACTIONS = [
   { href: "/accountant/payments", label: "Record payment", description: "Log cash, card, or transfer", iconName: "CreditCard" },
   { href: "/accountant/invoices", label: "Issue invoice", description: "Bill students by class or term", iconName: "FileText" },
   { href: "/accountant/expenses", label: "Review expenses", description: "Approve pending requests", iconName: "Wallet" },
+  { href: "/accountant/payroll", label: "Process payroll", description: "Monthly salary runs and payslips", iconName: "Banknote" },
   { href: "/accountant/reports", label: "Finance reports", description: "Collections and cash flow", iconName: "BarChart" },
 ];
 
@@ -181,6 +378,64 @@ export function invoiceHref(invoiceId: string) {
   return accountantHref(`invoices/${invoiceId}`);
 }
 
+export function auditHref(auditId: string) {
+  return accountantHref(`audit/${auditId}`);
+}
+
+export function reconciliationHref() {
+  return accountantHref("audit/reconciliation");
+}
+
+export function payrollHref(runId: string) {
+  return accountantHref(`payroll/${runId}`);
+}
+
+export function payslipHref(runId: string, payslipId: string) {
+  return accountantHref(`payroll/${runId}/payslips/${payslipId}`);
+}
+
+export function getPayrollRunById(id: string): PayrollRun | undefined {
+  return PAYROLL_RUNS.find((run) => run.id === id);
+}
+
+export function getAuditEventById(id: string): AuditEvent | undefined {
+  return AUDIT_EVENTS.find((event) => event.id === id);
+}
+
+export function resolveAuditEntityHref(event: AuditEvent): string | undefined {
+  if (!event.entityId) return undefined;
+
+  switch (event.entityType) {
+    case "payment":
+      return paymentHref(event.entityId);
+    case "invoice":
+      return invoiceHref(event.entityId);
+    case "reconciliation":
+      return reconciliationHref();
+    case "payroll":
+      return payrollHref(event.entityId);
+    default:
+      return undefined;
+  }
+}
+
+export function getAuditStatsFromEvents(events: AuditEvent[]) {
+  const now = Date.now();
+  const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+  const eventsThisWeek = events.filter(
+    (event) => new Date(event.timestamp).getTime() >= weekAgo,
+  ).length;
+
+  return {
+    totalEvents: events.length,
+    eventsThisWeek,
+    flaggedReconciliation: RECONCILIATION_ITEMS.filter(
+      (item) => item.status === "flagged" || item.status === "unmatched",
+    ).length,
+    reconciliationPeriod: RECONCILIATION_PERIOD,
+  };
+}
+
 export function formatDisplayDate(dateKey: string) {
   return formatFeeDate(dateKey);
 }
@@ -188,6 +443,10 @@ export function formatDisplayDate(dateKey: string) {
 function enrichPayment(payment: PaymentRecord, index: number): LedgerPayment {
   const meta = BASE_LEDGER[index % BASE_LEDGER.length];
   return { ...payment, ...meta };
+}
+
+export function getSeedLedgerPayments(): LedgerPayment[] {
+  return DEMO_PAYMENTS.map((payment, index) => enrichPayment(payment, index));
 }
 
 export function getLedgerPayments(): LedgerPayment[] {

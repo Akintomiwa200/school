@@ -14,7 +14,7 @@ import {
 } from "../management/management-ui";
 import {
   ADMIN_PAGE_SIZE,
-  AdminFilterPills,
+  AdminFilterSelect,
   AdminSearchBar,
   AdminTablePagination,
 } from "./admin-list-ui";
@@ -107,32 +107,39 @@ export function AdminSubjects() {
       <ManagementPanel className="space-y-4 border border-border">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="text-lg font-bold">{filtered.length} subjects</h2>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <AdminSearchBar value={query} onChange={setQuery} placeholder="Search subjects" />
-            <Button variant="outline" className="h-10 shrink-0 rounded-full px-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <AdminSearchBar value={query} onChange={setQuery} placeholder="Search subjects" className="sm:w-56" />
+            <AdminFilterSelect
+              label="Status"
+              value={statusFilter}
+              onChange={(value) => {
+                setStatusFilter(value);
+                setPage(1);
+              }}
+              options={[
+                { id: "all", label: "All status" },
+                { id: "active", label: "Active" },
+                { id: "archived", label: "Archived" },
+              ]}
+            />
+            <AdminFilterSelect
+              label="Department"
+              value={departmentFilter}
+              onChange={(value) => {
+                setDepartmentFilter(value);
+                setPage(1);
+              }}
+              options={[
+                { id: "all", label: "All departments" },
+                ...STAFF_DEPARTMENTS.map((dept) => ({ id: dept, label: dept })),
+              ]}
+              className="min-w-[180px]"
+            />
+            <Button variant="outline" className="h-9 shrink-0 rounded-full px-4">
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <AdminFilterPills
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { id: "all", label: "All status" },
-              { id: "active", label: "Active" },
-              { id: "archived", label: "Archived" },
-            ]}
-          />
-          <AdminFilterPills
-            value={departmentFilter}
-            onChange={setDepartmentFilter}
-            options={[
-              { id: "all", label: "All departments" },
-              ...STAFF_DEPARTMENTS.map((dept) => ({ id: dept, label: dept })),
-            ]}
-          />
         </div>
       </ManagementPanel>
 

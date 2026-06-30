@@ -1,4 +1,5 @@
 import { NotificationType, UserRole } from "@/shared";
+import { resolveSharedPathForRole } from "@/shared/permissions";
 
 export type Audience = UserRole[] | "all";
 
@@ -196,13 +197,23 @@ function withUserReadState(items: HubNotification[], userId: string) {
   }));
 }
 
+function withRoleScopedLinks(items: HubNotification[], role: UserRole) {
+  return items.map((item) => ({
+    ...item,
+    link: item.link ? resolveSharedPathForRole(item.link, role) : item.link,
+  }));
+}
+
 export function getNotificationsForUser(userId: string, role: UserRole) {
-  return withUserReadState(
-    notifications
-      .filter((item) => item.userId === "*" || item.userId === userId)
-      .filter((item) => matchesAudience(item.audience, role)),
-    userId,
-  ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return withRoleScopedLinks(
+    withUserReadState(
+      notifications
+        .filter((item) => item.userId === "*" || item.userId === userId)
+        .filter((item) => matchesAudience(item.audience, role)),
+      userId,
+    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    role,
+  );
 }
 
 export function getAnnouncementsForUser(userId: string, role: UserRole) {

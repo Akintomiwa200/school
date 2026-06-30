@@ -1,5 +1,5 @@
 import { UserRole } from "@/shared";
-import { getLoginPathForRole } from "@/shared/permissions";
+import { getLoginPathForRole, getSupportPathForRole } from "@/shared/permissions";
 import { HelpCircle, LifeBuoy, MessageSquare } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -106,7 +106,11 @@ export function getQuickActionsForRole(role: UserRole): QuickAction[] {
   if (role === UserRole.STUDENT) {
     return [];
   }
-  return DEFAULT_QUICK_ACTIONS;
+  const supportPath = getSupportPathForRole(role);
+  return DEFAULT_QUICK_ACTIONS.map((action) => ({
+    ...action,
+    href: action.href === "/shared/support" ? supportPath : action.href,
+  }));
 }
 
 export function getLogoutRedirect(role: UserRole): string {

@@ -177,7 +177,7 @@ function DayDetailList({
   );
 }
 
-export function SharedCalendar({ eventsPath = "/shared/events" }: { eventsPath?: string }) {
+export function SharedCalendar({ eventsPath }: { eventsPath?: string }) {
   const isLoading = usePageLoading();
   const now = useCurrentTime();
   const [viewMonth, setViewMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
@@ -208,12 +208,14 @@ export function SharedCalendar({ eventsPath = "/shared/events" }: { eventsPath?:
             Events, exams, and school holidays in one month view.
           </p>
         </div>
-        <Button asChild variant="outline" className="h-9 shrink-0 rounded-full px-4">
-          <Link href={eventsPath} className="inline-flex items-center gap-2">
-            <PartyPopper className="h-4 w-4 shrink-0" />
-            School events
-          </Link>
-        </Button>
+        {eventsPath ? (
+          <Button asChild variant="outline" className="h-9 shrink-0 rounded-full px-4">
+            <Link href={eventsPath} className="inline-flex items-center gap-2">
+              <PartyPopper className="h-4 w-4 shrink-0" />
+              School events
+            </Link>
+          </Button>
+        ) : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -374,10 +376,12 @@ export function SharedCalendar({ eventsPath = "/shared/events" }: { eventsPath?:
           <p className="mt-1 text-sm text-muted-foreground">
             Sports, cultural activities, and RSVP for upcoming events.
           </p>
-          <CalendarActionLink href={eventsPath} variant="outline" className="mt-4">
-            Browse events
-            <ChevronRight className="h-4 w-4 shrink-0" />
-          </CalendarActionLink>
+          {eventsPath ? (
+            <CalendarActionLink href={eventsPath} variant="outline" className="mt-4">
+              Browse events
+              <ChevronRight className="h-4 w-4 shrink-0" />
+            </CalendarActionLink>
+          ) : null}
         </CalendarPanel>
       </div>
     </div>

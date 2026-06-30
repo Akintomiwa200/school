@@ -1,1 +1,10 @@
-export { TeacherDashboard, TeacherClasses, TeacherCourses, TeacherAttendance, TeacherAssignments, TeacherMaterials, TeacherTimetable } from "./teacher-sections";
+export { TeacherDashboard } from "./teacher-dashboard";
+export { TeacherClasses } from "./teacher-classes-overview";
+export { TeacherAssignmentDetail } from "./teacher-assignment-detail";
+export { TeacherAttendanceDetail } from "./teacher-attendance-detail";
+export { TeacherClassDetail } from "./teacher-class-detail";
+export { TeacherCourseDetail } from "./teacher-course-detail";
+export { TeacherMaterialDetail } from "./teacher-material-detail";
+export { TeacherStudentDetail } from "./teacher-student-detail";
+export { TeacherStudents } from "./teacher-students";
+export { TeacherCourses, TeacherAttendance, TeacherAssignments, TeacherMaterials, TeacherTimetable } from "./teacher-sections";

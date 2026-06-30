@@ -6,7 +6,7 @@ import { Check, Settings } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { UserRole } from "@/shared";
-import { getNotificationsPathForRole } from "@/shared/permissions";
+import { getAnnouncementsPathForRole, getNotificationsPathForRole, resolveSharedPathForRole } from "@/shared/permissions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -94,6 +94,7 @@ export function NotificationDropdown({
   const { data: session } = useSession();
   const role = (session?.user?.role as UserRole) ?? UserRole.STUDENT;
   const notificationsPath = getNotificationsPathForRole(role);
+  const announcementsPath = getAnnouncementsPathForRole(role);
   const { notifications, connection } = useNotificationsStore();
 
   const unreadCount = getUnreadNotificationCount();
@@ -182,7 +183,7 @@ export function NotificationDropdown({
                 avatar={item.actorAvatar ?? "NT"}
                 toneClass={getNotificationTone(item.type)}
                 typeName={item.type.toLowerCase()}
-                onClick={() => handleNotificationClick(item.id, item.link ?? notificationsPath)}
+                onClick={() => handleNotificationClick(item.id, item.link ? resolveSharedPathForRole(item.link, role) : notificationsPath)}
               />
             ))
           ) : (
@@ -196,7 +197,7 @@ export function NotificationDropdown({
           <Button type="button" variant="link" className="h-auto p-0 text-sm font-medium" onClick={handleViewAll}>
             View all
           </Button>
-          <Button type="button" variant="ghost-sm" size="sm" onClick={() => router.push("/shared/announcements")}>
+          <Button type="button" variant="ghost-sm" size="sm" onClick={() => router.push(announcementsPath)}>
             Announcements
           </Button>
         </div>

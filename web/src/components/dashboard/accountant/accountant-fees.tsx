@@ -1,23 +1,39 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import { useFinanceFees } from "@/hooks/use-dashboard-data";
+import { useCreateFeePlan, useFinanceFees } from "@/hooks/use-dashboard-data";
+import { AuditPageShell } from "./accountant-audit-ui";
 import { cn } from "@/lib/utils";
 import { ManagementPageHeader } from "../management/management-ui";
 import { FEE_PLANS, formatDisplayDate } from "./accountant-data";
-import { FinancePanel } from "./accountant-ui";
-import { formatCurrency } from "./accountant-ui";
+import {
+  FinanceFilterSelect,
+  FinanceListToolbar,
+  FinancePanel,
+  FinanceSearchBar,
+  formatCurrency,
+} from "./accountant-ui";
 
 type StatusFilter = "all" | "active" | "draft";
 
 export function AccountantFees() {
   const { data: feePlans = FEE_PLANS, isFetching } = useFinanceFees(FEE_PLANS);
+  const createFeePlan = useCreateFeePlan();
   const isLoading = usePageLoading() || isFetching;
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [query, setQuery] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    category: "Tuition",
+    amount: "",
+    term: "Spring 2026",
+    grades: "All grades",
+    dueDate: "2026-04-01",
+  });
 
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -32,57 +48,103 @@ export function AccountantFees() {
     });
   }, [feePlans, filter, query]);
 
+  async function handleCreateFeePlan() {
+    if (!form.name || !form.amount) return;
+    await createFeePlan.mutateAsync({
+      name: form.name,
+      category: form.category,
+      amount: Number(form.amount),
+      term: form.term,
+      grades: form.grades,
+      dueDate: form.dueDate,
+      status: "draft",
+    });
+    setShowForm(false);
+    setForm({ name: "", category: "Tuition", amount: "", term: "Spring 2026", grades: "All grades", dueDate: "2026-04-01" });
+  }
+
   if (isLoading) {
-    return <div className="h-64 animate-pulse rounded-[20px] bg-muted" />;
+    return (
+      <AuditPageShell>
+        <div className="h-64 animate-pulse rounded-[20px] bg-muted" />
+      </AuditPageShell>
+    );
   }
 
   return (
-    <div className="space-y-6">
+    <AuditPageShell>
       <ManagementPageHeader
         title="Fee structure"
         description="Define fee types, amounts, and billing schedules by grade and term."
         action={
-          <Button className="h-10 rounded-full bg-brand-purple px-5 text-white hover:bg-brand-purple/90">
-            <Plus className="mr-2 h-4 w-4" />
+          <Button
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-brand-purple px-5 text-white hover:bg-brand-purple/90"
+            onClick={() => setShowForm((open) => !open)}
+          >
+            <Plus className="h-4 w-4 shrink-0" />
             New fee plan
           </Button>
         }
       />
 
-      <FinancePanel className="flex flex-col gap-4 border border-border sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active plans</p>
-          <h2 className="mt-1 text-lg font-bold">{filtered.length} fee plans</h2>
-        </div>
-        <div className="relative w-full max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search plans"
-            className="h-9 w-full rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
-      </FinancePanel>
-
-      <div className="flex flex-wrap gap-2">
-        {(["all", "active", "draft"] as const).map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => setFilter(item)}
-            className={cn(
-              "rounded-full px-4 py-2 text-sm font-medium capitalize transition-colors",
-              filter === item
-                ? "bg-brand-purple text-white"
-                : "bg-muted text-muted-foreground hover:text-foreground",
-            )}
+      {showForm ? (
+        <FinancePanel className="border border-border">
+          <h2 className="text-base font-bold">Create fee plan</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <label className="block text-sm">
+              <span className="text-muted-foreground">Name</span>
+              <input
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                className="mt-1 h-10 w-full rounded-xl border border-border px-3"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-muted-foreground">Category</span>
+              <input
+                value={form.category}
+                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                className="mt-1 h-10 w-full rounded-xl border border-border px-3"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-muted-foreground">Amount</span>
+              <input
+                type="number"
+                value={form.amount}
+                onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+                className="mt-1 h-10 w-full rounded-xl border border-border px-3"
+              />
+            </label>
+          </div>
+          <Button
+            className="mt-4 inline-flex h-10 shrink-0 rounded-full bg-brand-purple px-5 text-white"
+            disabled={createFeePlan.isPending}
+            onClick={handleCreateFeePlan}
           >
-            {item}
-          </button>
-        ))}
-      </div>
+            {createFeePlan.isPending ? "Saving…" : "Save fee plan"}
+          </Button>
+        </FinancePanel>
+      ) : null}
+
+      <FinanceListToolbar eyebrow="Active plans" title={`${filtered.length} fee plans`}>
+        <FinanceSearchBar
+          value={query}
+          onChange={setQuery}
+          placeholder="Search plans"
+          className="sm:w-56"
+        />
+        <FinanceFilterSelect
+          label="Status"
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { id: "all", label: "All status" },
+            { id: "active", label: "Active" },
+            { id: "draft", label: "Draft" },
+          ]}
+        />
+      </FinanceListToolbar>
 
       <FinancePanel className="overflow-x-auto border border-border p-0">
         <table className="w-full min-w-[640px] text-left text-sm">
@@ -126,6 +188,6 @@ export function AccountantFees() {
           </tbody>
         </table>
       </FinancePanel>
-    </div>
+    </AuditPageShell>
   );
 }

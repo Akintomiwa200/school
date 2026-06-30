@@ -230,12 +230,36 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
       { title: "Payslips", description: "Download and distribute to staff." },
     ],
   },
+  "/accountant/payroll/[runId]": {
+    title: "Payroll Run",
+    description: "Review staff payslips and finalize the monthly run.",
+    sections: [
+      { title: "Run summary", description: "Period totals and processing status." },
+      { title: "Staff payslips", description: "Individual salary breakdowns." },
+    ],
+  },
+  "/accountant/payroll/[runId]/payslips/[payslipId]": {
+    title: "Payslip",
+    description: "Staff earnings, deductions, and net pay.",
+    sections: [
+      { title: "Earnings", description: "Base salary and allowances." },
+      { title: "Deductions", description: "Tax, pension, and benefits." },
+    ],
+  },
   "/accountant/audit": {
     title: "Finance Audit",
     description: "Financial audit trail and reconciliation.",
     sections: [
       { title: "Transaction log", description: "Immutable finance activity history." },
-      { title: "Reconciliation", description: "Match payments to invoices." },
+      { title: "Reconciliation", description: "Match payments to bank deposits." },
+    ],
+  },
+  "/accountant/audit/reconciliation": {
+    title: "Bank Reconciliation",
+    description: "Match bank statement lines to recorded payments.",
+    sections: [
+      { title: "Bank lines", description: "Imported deposits from the bank statement." },
+      { title: "Payment matching", description: "Link each line to a recorded payment." },
     ],
   },
   "/accountant/reports": {
@@ -246,22 +270,57 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
       { title: "Statements", description: "Balance and cash-flow views." },
     ],
   },
+  "/accountant/settings": {
+    title: "Settings",
+    description: "Manage your profile, appearance, privacy, security, and notification settings.",
+  },
+  "/accountant/profile": {
+    title: "Profile",
+    description: "Your account details and avatar.",
+  },
+  "/accountant/notifications": {
+    title: "Notifications",
+    description: "Alerts about grades, fees, attendance, and more.",
+  },
+  "/accountant/announcements": {
+    title: "Announcements",
+    description: "School-wide news and updates.",
+  },
+  "/accountant/calendar": {
+    title: "Calendar",
+    description: "Events, exams, and school holidays.",
+  },
+  "/accountant/messages": {
+    title: "Messages",
+    description: "Secure messaging within the school community.",
+  },
+  "/accountant/support": {
+    title: "Support",
+    description: "Open tickets and get help from the school team.",
+  },
 
   "/teacher": {
     title: "Teacher Dashboard",
-    description: "Your classes, assignments, and teaching schedule.",
+    description: "Class performance, student proficiency, and teaching overview.",
     stats: [
-      { label: "Classes", value: "—", hint: "Assigned sections" },
-      { label: "Assignments", value: "—", hint: "Active tasks" },
-      { label: "Students", value: "—", hint: "Under your care" },
+      { label: "Class score", value: "68%", hint: "Overall average" },
+      { label: "Work assigned", value: "36", hint: "Active items" },
+      { label: "Alerts", value: "2", hint: "Need review" },
     ],
   },
   "/teacher/classes": {
-    title: "My Classes",
-    description: "Classes and sections you teach.",
+    title: "Course Overview",
+    description: "Classes, top performers, and upcoming assignments.",
     sections: [
-      { title: "Class roster", description: "Students per section." },
-      { title: "Class resources", description: "Shared materials per class." },
+      { title: "Your classes", description: "Course cards with progress and roster size." },
+      { title: "Best performers", description: "Top students by points and completion." },
+    ],
+  },
+  "/teacher/students": {
+    title: "Students",
+    description: "Roster and performance across all classes.",
+    sections: [
+      { title: "Student list", description: "Filter by class and open profiles." },
     ],
   },
   "/teacher/courses": {
@@ -731,6 +790,26 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
 const ADMIN_LIBRARY_BOOK_DETAIL = /^\/admin\/library\/books\/[^/]+$/;
 const ADMIN_LIBRARY_ISSUE_DETAIL = /^\/admin\/library\/issues\/[^/]+$/;
 
+const SHARED_META_ALIASES: Record<string, string> = {
+  announcements: "/shared/announcements",
+  calendar: "/shared/calendar",
+  events: "/shared/events",
+  messages: "/shared/messages",
+  support: "/shared/support",
+  profile: "/shared/profile",
+  settings: "/shared/settings",
+  notifications: "/shared/notifications",
+};
+
+function metaFromRolePath(path: string): DashboardPageMeta | null {
+  const segments = path.split("/").filter(Boolean);
+  if (segments.length < 2) return null;
+  const section = segments[1];
+  const sharedKey = section ? SHARED_META_ALIASES[section] : undefined;
+  if (!sharedKey) return null;
+  return DASHBOARD_PAGE_META[sharedKey] ?? null;
+}
+
 export function getDashboardPageMeta(path: string): DashboardPageMeta {
   if (ADMIN_LIBRARY_BOOK_DETAIL.test(path) && !path.endsWith("/new")) {
     return {
@@ -764,7 +843,8 @@ export function getDashboardPageMeta(path: string): DashboardPageMeta {
   }
 
   return (
-    DASHBOARD_PAGE_META[path] ?? {
+    DASHBOARD_PAGE_META[path] ??
+    metaFromRolePath(path) ?? {
       title: "Dashboard",
       description: "Manage and view this section.",
       sections: [{ title: "Content", description: "This module is ready for data integration." }],

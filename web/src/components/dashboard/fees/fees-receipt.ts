@@ -1,6 +1,7 @@
 import type { PaymentRecord } from "./student-fees-data";
 import { formatDisplayDate } from "./student-fees-data";
 import { formatCurrency } from "./fee-ui";
+import { API_ENDPOINTS } from "@/shared/constants/api-endpoints";
 
 export type ReceiptData = {
   receiptId: string;
@@ -108,12 +109,102 @@ export function receiptPrintHtml(receipt: ReceiptData) {
 </html>`;
 }
 
-export function downloadReceiptPdf(receipt: ReceiptData) {
+export function downloadReceiptHtml(receipt: ReceiptData) {
   const html = receiptPrintHtml(receipt);
-  const printWindow = window.open("", "_blank", "noopener,noreferrer,width=800,height=900");
-  if (!printWindow) return;
-  printWindow.document.write(html);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `receipt-${receipt.receiptId}.html`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export function printReceipt(receipt: ReceiptData) {
+  const html = receiptPrintHtml(receipt);
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("title", `Print receipt ${receipt.receiptId}`);
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentDocument ?? iframe.contentWindow?.document;
+  if (!doc) {
+    document.body.removeChild(iframe);
+    return;
+  }
+
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  iframe.onload = () => {
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+    window.setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
+  };
+}
+
+/** @deprecated Use downloadReceiptHtml — kept for student fees pages */
+export function downloadReceiptPdf(receipt: ReceiptData) {
+  downloadReceiptHtml(receipt);
+}
+
+export async function fetchPaymentReceipt(paymentId: string): Promise<ReceiptData> {
+  const res = await fetch(API_ENDPOINTS.PAYMENT_RECEIPT(paymentId));
+  const json = (await res.json()) as { success?: boolean; data?: ReceiptData };
+  if (!res.ok || !json.success || !json.data) {
+    throw new Error("Unable to load receipt");
+  }
+  return json.data;
+}
+
+export function downloadPaymentReceiptFromApi(paymentId: string) {
+  const link = document.createElement("a");
+  link.href = `${API_ENDPOINTS.PAYMENT_RECEIPT(paymentId)}?format=download`;
+  link.download = "";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+export async function printPaymentReceiptFromApi(paymentId: string) {
+  const res = await fetch(`${API_ENDPOINTS.PAYMENT_RECEIPT(paymentId)}?format=html`);
+  if (!res.ok) throw new Error("Unable to load receipt for printing");
+  const html = await res.text();
+
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("title", "Print receipt");
+  iframe.style.position = "fixed";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentDocument ?? iframe.contentWindow?.document;
+  if (!doc) {
+    document.body.removeChild(iframe);
+    throw new Error("Unable to open print preview");
+  }
+
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  await new Promise<void>((resolve) => {
+    iframe.onload = () => resolve();
+    window.setTimeout(() => resolve(), 300);
+  });
+
+  iframe.contentWindow?.focus();
+  iframe.contentWindow?.print();
+  window.setTimeout(() => document.body.removeChild(iframe), 1000);
 }

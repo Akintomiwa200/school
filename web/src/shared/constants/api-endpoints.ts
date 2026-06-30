@@ -51,15 +51,27 @@ export const API_ENDPOINTS = {
   FEES_BY_ID: (id: string) => `${API_BASE}/fees/${id}`,
   PAYMENTS: `${API_BASE}/payments`,
   PAYMENTS_BY_ID: (id: string) => `${API_BASE}/payments/${id}`,
+  PAYMENT_RECEIPT: (id: string) => `${API_BASE}/payments/${id}/receipt`,
   EXPENSES: `${API_BASE}/expenses`,
   EXPENSES_BY_ID: (id: string) => `${API_BASE}/expenses/${id}`,
   INVOICES: `${API_BASE}/invoices`,
   INVOICES_BY_ID: (id: string) => `${API_BASE}/invoices/${id}`,
   PAYROLL: `${API_BASE}/payroll`,
+  PAYROLL_REPORTS: `${API_BASE}/payroll/reports`,
+  PAYROLL_SETTINGS: `${API_BASE}/payroll/settings`,
+  PAYROLL_BY_ID: (id: string) => `${API_BASE}/payroll/${id}`,
+  PAYROLL_PAYSLIPS: (runId: string) => `${API_BASE}/payroll/${runId}/payslips`,
+  PAYROLL_PAYSLIP: (runId: string, payslipId: string) =>
+    `${API_BASE}/payroll/${runId}/payslips/${payslipId}`,
+  FINANCE_SUMMARY: `${API_BASE}/finance/summary`,
 
   // Audit
   AUDIT: `${API_BASE}/audit`,
+  AUDIT_BY_ID: (id: string) => `${API_BASE}/audit/${id}`,
   AUDIT_EXPORT: `${API_BASE}/audit/export`,
+  AUDIT_STATS: `${API_BASE}/audit/stats`,
+  AUDIT_RECONCILIATION: `${API_BASE}/audit/reconciliation`,
+  AUDIT_RECONCILIATION_ITEM: (id: string) => `${API_BASE}/audit/reconciliation/${id}`,
 
   // Materials
   MATERIALS: `${API_BASE}/materials`,
@@ -113,6 +125,18 @@ export const API_ENDPOINTS = {
 
   // Timetable
   TIMETABLE: `${API_BASE}/timetable`,
+
+  // Teacher portal
+  TEACHER_DASHBOARD: `${API_BASE}/teacher/dashboard`,
+  TEACHER_GRADEBOOK: `${API_BASE}/teacher/gradebook`,
+  TEACHER_GRADES_PUBLISH: `${API_BASE}/teacher/grades/publish`,
+  TEACHER_CLASS: (id: string) => `${API_BASE}/teacher/classes/${id}`,
+  TEACHER_CLASSES_OVERVIEW: `${API_BASE}/teacher/classes/overview`,
+  TEACHER_STUDENTS: `${API_BASE}/teacher/students`,
+  TEACHER_STUDENT: (id: string) => `${API_BASE}/teacher/students/${id}`,
+  TEACHER_ATTENDANCE: `${API_BASE}/teacher/attendance`,
+  TEACHER_ATTENDANCE_DETAIL: (id: string) => `${API_BASE}/teacher/attendance/${id}`,
+  ATTENDANCE_SESSION: (id: string) => `${API_BASE}/attendance/${id}`,
 
   // Leave & HR
   LEAVE: `${API_BASE}/leave`,

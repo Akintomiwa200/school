@@ -57,3 +57,11 @@ export async function apiPatch<T, B = unknown>(url: string, body: B): Promise<T>
   }
   return json.data;
 }
+
+export async function apiDelete<T>(url: string): Promise<T> {
+  const json = await apiRequest<T>(url, { method: "DELETE" });
+  if (json.data === undefined) {
+    throw new ApiClientError("No data in response");
+  }
+  return json.data;
+}

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ChevronDown,
   Download,
   LayoutGrid,
   Plus,
@@ -22,7 +21,7 @@ import {
 } from "../management/management-ui";
 import {
   ADMIN_PAGE_SIZE,
-  AdminFilterPills,
+  AdminFilterSelect,
   AdminSearchBar,
   AdminTablePagination,
 } from "./admin-list-ui";
@@ -155,56 +154,34 @@ export function AdminClasses() {
             <h2 className="mt-1 text-lg font-bold text-foreground">{filtered.length} classes</h2>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto] sm:items-center">
-            <AdminSearchBar value={query} onChange={setQuery} placeholder="Search class, teacher…" />
-            <div className="relative w-full shrink-0 sm:w-[148px]">
-              <select
-                value={gradeFilter}
-                onChange={(e) => setGradeFilter(e.target.value as typeof gradeFilter)}
-                className="h-9 w-full appearance-none rounded-xl border border-border bg-background pl-3 pr-8 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="all">All grades</option>
-                {ADMIN_STUDENT_GRADES.map((grade) => (
-                  <option key={grade} value={grade}>
-                    Grade {grade}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            </div>
-            <div className="relative w-full shrink-0 sm:w-[132px]">
-              <select
-                value={sectionFilter}
-                onChange={(e) => setSectionFilter(e.target.value as typeof sectionFilter)}
-                className="h-9 w-full appearance-none rounded-xl border border-border bg-background pl-3 pr-8 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="all">All sections</option>
-                {(["A", "B", "C", "D", "E"] as const).map((section) => (
-                  <option key={section} value={section}>
-                    Section {section}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 w-full shrink-0 whitespace-nowrap rounded-xl px-4 sm:w-auto"
-            >
-              <Download className="mr-1.5 h-4 w-4 shrink-0" />
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <AdminSearchBar value={query} onChange={setQuery} placeholder="Search class, teacher…" className="sm:min-w-[200px] sm:flex-1" />
+            <AdminFilterSelect
+              label="Grade"
+              value={gradeFilter}
+              onChange={setGradeFilter}
+              options={[
+                { id: "all", label: "All grades" },
+                ...ADMIN_STUDENT_GRADES.map((grade) => ({ id: grade, label: `Grade ${grade}` })),
+              ]}
+            />
+            <AdminFilterSelect
+              label="Section"
+              value={sectionFilter}
+              onChange={setSectionFilter}
+              options={[
+                { id: "all", label: "All sections" },
+                ...(["A", "B", "C", "D", "E"] as const).map((section) => ({
+                  id: section,
+                  label: `Section ${section}`,
+                })),
+              ]}
+            />
+            <Button variant="outline" className="h-9 shrink-0 rounded-full px-4">
+              <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
           </div>
-
-          <AdminFilterPills
-            options={[
-              { id: "all", label: "All grades" },
-              ...ADMIN_STUDENT_GRADES.map((grade) => ({ id: grade, label: `Grade ${grade}` })),
-            ]}
-            value={gradeFilter}
-            onChange={setGradeFilter}
-          />
         </div>
       </ManagementPanel>
 

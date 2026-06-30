@@ -10,6 +10,11 @@ import { usePageLoading } from "@/hooks/use-page-loading";
 import { cn } from "@/lib/utils";
 import { NotificationType, UserRole } from "@/shared";
 import {
+  getAnnouncementsPathForRole,
+  getNotificationsPathForRole,
+  resolveSharedPathForRole,
+} from "@/shared/permissions";
+import {
   clearNotificationsApi,
   formatRelativeTime,
   getNotificationTone,
@@ -38,6 +43,8 @@ export function SharedNotifications() {
   const isLoading = usePageLoading();
   const { data: session } = useSession();
   const role = (session?.user?.role as UserRole) ?? UserRole.STUDENT;
+  const announcementsPath = getAnnouncementsPathForRole(role);
+  const notificationsPath = getNotificationsPathForRole(role);
   const { notifications, announcements, connection } = useNotificationsStore();
   const [filter, setFilter] = useState<Filter>("all");
 
@@ -53,7 +60,7 @@ export function SharedNotifications() {
         message: item.body.slice(0, 160) + (item.body.length > 160 ? "…" : ""),
         createdAt: item.createdAt,
         isRead: item.isRead,
-        link: `/shared/announcements/${item.id}`,
+        link: `${announcementsPath}/${item.id}`,
         type: NotificationType.ANNOUNCEMENT,
         actorName: item.authorName,
         actorAvatar: item.authorName
@@ -73,7 +80,7 @@ export function SharedNotifications() {
       message: item.message,
       createdAt: item.createdAt,
       isRead: item.isRead,
-      link: item.link ?? "/shared/notifications",
+      link: item.link ? resolveSharedPathForRole(item.link, role) : notificationsPath,
       type: item.type,
       actorName: item.actorName,
       actorAvatar: item.actorAvatar,
@@ -82,7 +89,7 @@ export function SharedNotifications() {
 
     if (filter === "unread") return list.filter((item) => !item.isRead);
     return list;
-  }, [announcements, filter, notifications]);
+  }, [announcements, announcementsPath, filter, notifications, notificationsPath, role]);
 
   async function handleOpen(item: (typeof items)[number]) {
     if (item.kind === "notification") {
@@ -171,7 +178,7 @@ export function SharedNotifications() {
               Clear
             </Button>
             <Button asChild size="sm" className="rounded-full bg-brand-purple text-white hover:bg-brand-purple/90">
-              <Link href="/shared/announcements">
+              <Link href={announcementsPath}>
                 <Megaphone className="mr-2 h-4 w-4" />
                 Announcements
               </Link>
