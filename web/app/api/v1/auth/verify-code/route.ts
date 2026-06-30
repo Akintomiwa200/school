@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendWelcomeEmail } from "@/lib/email";
 import { createAndSendOtp, createOtpSessionToken, verifyOtpCode } from "@/lib/auth/otp";
-import { clearPendingAuth, getPendingAuth } from "@/lib/auth/pending-auth";
+import { clearPendingAuth, getPendingAuthFromRequest } from "@/lib/auth/pending-auth";
 import { createApiError, createApiResponse, verifyCodeSchema } from "@/shared";
 
-export async function GET() {
-  const pending = await getPendingAuth();
+export async function GET(request: NextRequest) {
+  const pending = await getPendingAuthFromRequest(request);
   if (!pending) {
     return NextResponse.json(createApiError("no_pending_auth", "No verification in progress"), {
       status: 401,
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const pending = await getPendingAuth();
+    const pending = await getPendingAuthFromRequest(request);
     if (!pending) {
       return NextResponse.json(createApiError("no_pending_auth", "Verification session expired"), {
         status: 401,
@@ -84,9 +84,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function PUT() {
+export async function PUT(request: NextRequest) {
   try {
-    const pending = await getPendingAuth();
+    const pending = await getPendingAuthFromRequest(request);
     if (!pending) {
       return NextResponse.json(createApiError("no_pending_auth", "Verification session expired"), {
         status: 401,

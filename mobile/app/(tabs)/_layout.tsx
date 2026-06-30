@@ -1,11 +1,33 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
+import { useThemeColors } from "@/hooks/use-theme-colors";
+import { useBootstrap } from "@/providers/bootstrap-context";
+
 export default function TabsLayout() {
+  const colors = useThemeColors();
+  const { isReady, isAuthenticated } = useBootstrap();
+
+  if (isReady && !isAuthenticated) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#2563eb",
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.muted,
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+        },
+        headerStyle: {
+          backgroundColor: colors.card,
+        },
+        headerTintColor: colors.text,
+        headerTitleStyle: {
+          color: colors.text,
+        },
         headerShown: true,
       }}
     >

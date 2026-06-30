@@ -1,23 +1,45 @@
 import { mobileConfig } from "@/config";
 
+export type ApiResult<T> = {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+};
+
+export class NetworkError extends Error {
+  constructor(message = "No internet connection") {
+    super(message);
+    this.name = "NetworkError";
+  }
+}
+
 export async function apiRequest<T>(
   endpoint: string,
-  options?: RequestInit & { token?: string }
-): Promise<T> {
-  const { token, ...fetchOptions } = options ?? {};
-  const res = await fetch(`${mobileConfig.apiUrl}${endpoint}`, {
-    ...fetchOptions,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...fetchOptions.headers,
-    },
-  });
+  options?: RequestInit & { token?: string; pendingToken?: string },
+): Promise<ApiResult<T>> {
+  const { token, pendingToken, ...fetchOptions } = options ?? {};
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: "Request failed" }));
-    throw new Error(error.message ?? `HTTP ${res.status}`);
+  let res: Response;
+  try {
+    res = await fetch(`${mobileConfig.apiUrl}${endpoint}`, {
+      ...fetchOptions,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...(pendingToken && { "X-Pending-Auth": pendingToken }),
+        ...fetchOptions.headers,
+      },
+    });
+  } catch {
+    throw new NetworkError();
   }
 
-  return res.json();
+  const json = (await res.json().catch(() => ({}))) as ApiResult<T>;
+
+  if (!res.ok || !json.success) {
+    throw new Error(json.message ?? json.error ?? `Request failed: ${res.status}`);
+  }
+
+  return json;
 }

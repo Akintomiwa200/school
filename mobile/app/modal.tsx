@@ -14,8 +14,13 @@ export default function ModalScreen() {
         Use modals for quick flows — confirmations, previews, or short forms.
       </Text>
       <Link href="/" dismissTo asChild>
-        <Pressable style={({ pressed }) => [styles.link, { opacity: pressed ? 0.85 : 1 }]}>
-          <Text style={styles.linkText}>Go to home</Text>
+        <Pressable
+          style={({ pressed }) => [
+            styles.link,
+            { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <Text style={[styles.linkText, { color: colors.primaryForeground }]}>Go to home</Text>
         </Pressable>
       </Link>
     </View>
@@ -40,13 +45,11 @@ const styles = StyleSheet.create({
   link: {
     marginTop: 8,
     alignSelf: "flex-start",
-    backgroundColor: "#0a7ea4",
     borderRadius: 999,
     paddingHorizontal: 18,
     paddingVertical: 10,
   },
   linkText: {
-    color: "#fff",
     fontWeight: "700",
   },
 });

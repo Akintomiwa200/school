@@ -1,5 +1,6 @@
-# Web + Mobile (no root package.json — each project is independent)
+# Web + Mobile — independent apps (no root package.json)
 
+node_modules/
 web/node_modules/
 mobile/node_modules/
 .DS_Store

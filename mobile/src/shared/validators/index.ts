@@ -11,10 +11,13 @@ export const loginSchema = z.object({
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
+  fullName: z.string().min(2, "Full name is required"),
   phone: z.string().optional(),
   role: z.enum(userRoleValues).optional(),
+});
+
+export const verifyCodeSchema = z.object({
+  code: z.string().length(6, "Enter the 6-digit code"),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -112,6 +115,9 @@ export const announcementSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 export type StudentInput = z.infer<typeof studentSchema>;
 export type FeeInput = z.infer<typeof feeSchema>;
 export type PaymentInput = z.infer<typeof paymentSchema>;

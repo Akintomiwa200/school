@@ -1,5 +1,5 @@
-import { Redirect } from "expo-router";
+import { StartupRouter } from "@/components/startup/startup-router";
 
 export default function Index() {
-  return <Redirect href="/(auth)/login" />;
+  return <StartupRouter />;
 }
