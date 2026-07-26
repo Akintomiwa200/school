@@ -1,29 +1,42 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { BookOpen, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useLibraryShopItem, type LibraryShopItemDetail } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
-import {
-  bookHref,
-  formatLibraryPrice,
-  getBookById,
-  getSaleItemById,
-  payHref,
-  shopHref,
-} from "./library-data";
+import { bookHref, formatLibraryPrice, payHref, shopHref } from "./library-data";
 import { LibraryBackLink, LibraryPanel } from "./library-ui";
 import { LibraryDetailSkeleton } from "./library-skeleton";
 
+const EMPTY_ITEM: LibraryShopItemDetail | null = null;
+
 export function StudentLibraryShopItem({ itemId }: { itemId: string }) {
   const isLoading = usePageLoading();
-  const item = getSaleItemById(itemId);
-  const linkedBook = item?.bookId ? getBookById(item.bookId) : undefined;
+  const { data: item } = useLibraryShopItem(itemId, EMPTY_ITEM);
 
-  if (!item) return null;
   if (isLoading) return <LibraryDetailSkeleton />;
+  if (!item) {
+    return (
+      <div className="space-y-5">
+        <LibraryBackLink href={shopHref()}>← Back to shop</LibraryBackLink>
+        <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-12 py-20 text-center">
+          <div className="flex h-24 w-24 items-center justify-center rounded-[28px] bg-muted/60">
+            <span className="text-5xl">🛍️</span>
+          </div>
+          <h2 className="mt-8 text-2xl font-bold text-foreground">Item not found</h2>
+          <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
+            This shop item may have been removed or the link is invalid.
+          </p>
+          <Button asChild variant="outline" className="mt-8 rounded-full">
+            <Link href={shopHref()}>Browse shop</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -47,21 +60,29 @@ export function StudentLibraryShopItem({ itemId }: { itemId: string }) {
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                 {item.rating.toFixed(1)} rating
               </p>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+              {item.description && (
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+              )}
             </div>
           </div>
 
-          {linkedBook ? (
+          {item.linkedBook ? (
             <div className="flex items-center gap-3 rounded-xl border border-border p-3">
-              <div className="relative h-16 w-12 overflow-hidden rounded-lg">
-                <Image src={linkedBook.image} alt="" fill className="object-cover" sizes="48px" />
+              <div className="relative h-16 w-12 overflow-hidden rounded-lg bg-muted">
+                {item.linkedBook.coverImage ? (
+                  <Image src={item.linkedBook.coverImage} alt="" fill className="object-cover" sizes="48px" />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <BookOpen className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-muted-foreground">Includes digital book</p>
-                <p className="font-medium">{linkedBook.title}</p>
+                <p className="font-medium">{item.linkedBook.title}</p>
               </div>
               <Button asChild variant="outline" size="sm" className="rounded-full">
-                <Link href={bookHref(linkedBook.id)}>
+                <Link href={bookHref(item.linkedBook.id)}>
                   <BookOpen className="mr-1 h-4 w-4" />
                   Preview
                 </Link>

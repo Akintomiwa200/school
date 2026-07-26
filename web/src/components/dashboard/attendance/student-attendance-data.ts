@@ -288,10 +288,17 @@ export function getAttendanceRecordByDate(dateKey: string) {
   return ALL_RECORDS.find((record) => record.date === dateKey);
 }
 
-export function getCalendarMonthDays(year: number, month: number) {
+export function getCalendarMonthDays(year: number, month: number, apiRecords?: StudentAttendanceRecord[]) {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const startOffset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
+  const recordsByDate = new Map<string, StudentAttendanceRecord>();
+  const sourceRecords = apiRecords ?? ALL_RECORDS;
+  for (const record of sourceRecords) {
+    recordsByDate.set(record.date, record);
+  }
+
   const days: Array<{
     date: number;
     dateKey: string;
@@ -301,34 +308,21 @@ export function getCalendarMonthDays(year: number, month: number) {
 
   for (let i = 0; i < startOffset; i += 1) {
     const date = addDays(firstDay, -(startOffset - i));
-    days.push({
-      date: date.getDate(),
-      dateKey: formatDateKey(date),
-      inMonth: false,
-      record: getAttendanceRecordByDate(formatDateKey(date)),
-    });
+    const dk = formatDateKey(date);
+    days.push({ date: date.getDate(), dateKey: dk, inMonth: false, record: recordsByDate.get(dk) });
   }
 
   for (let day = 1; day <= lastDay.getDate(); day += 1) {
     const date = new Date(year, month, day);
-    const dateKey = formatDateKey(date);
-    days.push({
-      date: day,
-      dateKey,
-      inMonth: true,
-      record: getAttendanceRecordByDate(dateKey),
-    });
+    const dk = formatDateKey(date);
+    days.push({ date: day, dateKey: dk, inMonth: true, record: recordsByDate.get(dk) });
   }
 
   while (days.length % 7 !== 0) {
     const last = days[days.length - 1];
     const next = addDays(new Date(last.dateKey), 1);
-    days.push({
-      date: next.getDate(),
-      dateKey: formatDateKey(next),
-      inMonth: false,
-      record: getAttendanceRecordByDate(formatDateKey(next)),
-    });
+    const dk = formatDateKey(next);
+    days.push({ date: next.getDate(), dateKey: dk, inMonth: false, record: recordsByDate.get(dk) });
   }
 
   return days;

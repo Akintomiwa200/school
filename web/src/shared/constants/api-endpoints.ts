@@ -139,6 +139,20 @@ export const API_ENDPOINTS = {
   TEACHER_ATTENDANCE_DETAIL: (id: string) => `${API_BASE}/teacher/attendance/${id}`,
   ATTENDANCE_SESSION: (id: string) => `${API_BASE}/attendance/${id}`,
 
+  // Student portal
+  STUDENT_DASHBOARD: `${API_BASE}/student/dashboard`,
+  STUDENT_COURSES: `${API_BASE}/student/courses`,
+  STUDENT_GRADES: `${API_BASE}/student/grades`,
+  STUDENT_ATTENDANCE: `${API_BASE}/student/attendance`,
+  STUDENT_TIMETABLE: `${API_BASE}/student/timetable`,
+  STUDENT_FEES: `${API_BASE}/student/fees`,
+  STUDENT_MESSAGES: `${API_BASE}/student/messages`,
+  STUDENT_ANNOUNCEMENTS: `${API_BASE}/student/announcements`,
+  STUDENT_NOTIFICATIONS: `${API_BASE}/student/notifications`,
+  STUDENT_LIBRARY: `${API_BASE}/student/library`,
+  STUDENT_LIBRARY_BOOKS: `${API_BASE}/student/library/books`,
+  STUDENT_LIBRARY_SHOP: `${API_BASE}/student/library/shop`,
+
   // Leave & HR
   LEAVE: `${API_BASE}/leave`,
   INVENTORY: `${API_BASE}/inventory`,

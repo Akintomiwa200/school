@@ -646,17 +646,39 @@ model SupportReply {
 // ============================================
 
 model Book {
-  id          String   @id @default(cuid())
-  title       String
-  author      String
-  isbn        String?  @unique
-  category    String?
-  quantity    Int      @default(1)
-  available   Int      @default(1)
+  id            String   @id @default(cuid())
+  title         String
+  author        String
+  isbn          String?  @unique
+  category      String?
+  description   String?
+  coverImage    String?
+  coverTone     String?
+  bookAccess    String   @default("free")
+  price         Decimal? @db.Decimal(10, 2)
+  format        String   @default("eBook")
+  pages         Int      @default(0)
+  quantity      Int      @default(1)
+  available     Int      @default(1)
   shelfLocation String?
-  createdAt   DateTime @default(now())
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  issues      LibraryIssue[]
+  issues   LibraryIssue[]
+  chapters BookChapter[]
+}
+
+model BookChapter {
+  id        String @id @default(cuid())
+  bookId    String
+  title     String
+  content   String
+  position  Int    @default(0)
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
 }
 
 model LibraryIssue {
@@ -670,6 +692,21 @@ model LibraryIssue {
 
   book       Book      @relation(fields: [bookId], references: [id])
   student    Student   @relation(fields: [studentId], references: [id])
+}
+
+model LibraryShopItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  rating      Float    @default(0)
+  icon        String
+  thumbTone   String   @default("from-muted/30 to-muted/50")
+  price       Decimal  @db.Decimal(10, 2)
+  format      String   @default("digital")
+  bookId      String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ============================================

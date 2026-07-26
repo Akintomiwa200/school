@@ -445,6 +445,79 @@ export function buildWeekdayMonthGrid(viewDate: Date): (Date | null)[][] {
   return weeks;
 }
 
+export type ApiTimetableItem = {
+  id: string;
+  subject: string;
+  subjectCode: string;
+  dayOfWeek: number;
+  dayName: string;
+  startTime: string;
+  endTime: string;
+  room: string | null;
+};
+
+export function buildEventsFromApiData(
+  apiTimetable: ApiTimetableItem[],
+  viewDate: Date,
+): ScheduleEvent[] {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const allEvents: ScheduleEvent[] = [];
+
+  for (let day = 1; day <= lastDay; day++) {
+    const date = new Date(year, month, day);
+    const dow = date.getDay();
+    if (dow === 0 || dow === 6) continue;
+
+    const dateKey = formatDateKey(date);
+    const dayEntries = apiTimetable.filter((t) => t.dayOfWeek === dow);
+
+    dayEntries.forEach((entry, index) => {
+      const startsAt = entry.startTime.length === 5 ? entry.startTime : entry.startTime.slice(0, 5);
+      const endsAt = entry.endTime.length === 5 ? entry.endTime : entry.endTime.slice(0, 5);
+      allEvents.push({
+        id: `api-${dateKey}-${entry.id}-${index}`,
+        dateKey,
+        type: "class",
+        label: entry.subject,
+        sessionTitle: entry.subject,
+        description: `${entry.subject} (${entry.subjectCode}) — Room ${entry.room ?? "TBA"}`,
+        startsAt,
+        endsAt,
+        courseId: entry.subjectCode,
+        emoji: "📚",
+        teacher: { name: entry.room ?? "TBA", initials: entry.subjectCode?.slice(0, 2).toUpperCase() ?? "NA" },
+        groupInitials: [],
+        registered: true,
+      });
+    });
+  }
+
+  return allEvents;
+}
+
+export function buildAttendanceMetaFromApi(
+  apiAttendance: { date: string; status: string }[],
+  viewDate: Date,
+): ScheduleDayMeta[] {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}`;
+
+  return apiAttendance
+    .filter((r) => r.date.startsWith(monthPrefix))
+    .map((r) => {
+      const dayNum = parseInt(r.date.split("-")[2], 10);
+      if (dayNum > lastDay) return null;
+      const status: DayAttendanceStatus =
+        r.status === "present" || r.status === "absent" ? r.status : "present";
+      return { dateKey: formatDateKey(new Date(year, month, dayNum)), attendance: status };
+    })
+    .filter((item): item is ScheduleDayMeta => item !== null);
+}
+
 export function getScheduleEvents(viewDate: Date): ScheduleEvent[] {
   return buildMonthPattern(viewDate.getFullYear(), viewDate.getMonth());
 }

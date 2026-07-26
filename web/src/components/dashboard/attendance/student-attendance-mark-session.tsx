@@ -19,17 +19,21 @@ import { formatDistance, getDistanceMeters } from "@/lib/attendance-geolocation"
 import { cn } from "@/lib/utils";
 import {
   addLiveAttendanceMark,
-  buildDemoSessions,
+  buildSessionsFromTimetable,
   formatSessionTimeRange,
   getLiveMarkForSession,
   getSessionWindowState,
   hasMarkedSession,
   resolveAttendanceStatus,
   useLiveAttendanceMarks,
+  type ApiTimetableEntry,
 } from "./attendance-live-store";
 import { AttendancePanel, AttendanceStatusBadge, attendanceHref } from "./attendance-ui";
 import { attendanceMarkHref } from "./student-attendance-data";
+import { useStudentTimetable, type StudentTimetableItem } from "@/hooks/use-dashboard-data";
 import { StudentAttendanceListSkeleton } from "./student-attendance-skeleton";
+
+const EMPTY_TIMETABLE: StudentTimetableItem[] = [];
 
 type HybridChannel = "physical" | "virtual";
 
@@ -42,6 +46,7 @@ export function StudentAttendanceMarkSession({ sessionId }: MarkSessionProps) {
   const now = useCurrentTime();
   const liveMarks = useLiveAttendanceMarks();
   const { state: geoState, requestLocation, reset: resetGeo } = useGeolocation();
+  const { data: apiTimetable } = useStudentTimetable(EMPTY_TIMETABLE);
 
   const [hybridChannel, setHybridChannel] = useState<HybridChannel>("physical");
   const [virtualCode, setVirtualCode] = useState("");
@@ -49,9 +54,25 @@ export function StudentAttendanceMarkSession({ sessionId }: MarkSessionProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const session = useMemo(() => {
-    const sessions = buildDemoSessions(now);
+    const timetable = apiTimetable ?? EMPTY_TIMETABLE;
+    let sessions;
+    if (timetable.length > 0) {
+      const apiEntries: ApiTimetableEntry[] = timetable.map((t) => ({
+        id: t.id,
+        subject: t.subject,
+        subjectCode: t.subjectCode,
+        dayOfWeek: t.dayOfWeek,
+        dayName: t.dayName,
+        startTime: t.startTime,
+        endTime: t.endTime,
+        room: t.room,
+      }));
+      sessions = buildSessionsFromTimetable(apiEntries, now);
+    } else {
+      sessions = buildSessionsFromTimetable(undefined, now);
+    }
     return sessions.find((item) => item.id === sessionId);
-  }, [sessionId, now.toDateString()]);
+  }, [sessionId, now.toDateString(), apiTimetable]);
 
   const marked = hasMarkedSession(sessionId);
   const liveMark = getLiveMarkForSession(sessionId);

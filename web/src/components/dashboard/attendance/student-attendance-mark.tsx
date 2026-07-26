@@ -13,15 +13,19 @@ import { useCurrentTime } from "@/hooks/use-current-time";
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { cn } from "@/lib/utils";
 import {
-  buildDemoSessions,
+  buildSessionsFromTimetable,
   formatSessionTimeRange,
   getSessionWindowState,
   hasMarkedSession,
   useLiveAttendanceMarks,
+  type ApiTimetableEntry,
 } from "./attendance-live-store";
 import { AttendancePanel } from "./attendance-ui";
 import { attendanceMarkHref } from "./student-attendance-data";
+import { useStudentTimetable, type StudentTimetableItem } from "@/hooks/use-dashboard-data";
 import { StudentAttendanceListSkeleton } from "./student-attendance-skeleton";
+
+const EMPTY_TIMETABLE: StudentTimetableItem[] = [];
 
 const MODE_META = {
   physical: { label: "Physical", icon: MapPin, tone: "text-brand-blue bg-brand-blue/10" },
@@ -40,8 +44,25 @@ export function StudentAttendanceMark() {
   const isLoading = usePageLoading();
   const now = useCurrentTime();
   const liveMarks = useLiveAttendanceMarks();
+  const { data: apiTimetable } = useStudentTimetable(EMPTY_TIMETABLE);
 
-  const sessions = useMemo(() => buildDemoSessions(now), [now.toDateString()]);
+  const sessions = useMemo(() => {
+    const timetable = apiTimetable ?? EMPTY_TIMETABLE;
+    if (timetable.length > 0) {
+      const apiEntries: ApiTimetableEntry[] = timetable.map((t) => ({
+        id: t.id,
+        subject: t.subject,
+        subjectCode: t.subjectCode,
+        dayOfWeek: t.dayOfWeek,
+        dayName: t.dayName,
+        startTime: t.startTime,
+        endTime: t.endTime,
+        room: t.room,
+      }));
+      return buildSessionsFromTimetable(apiEntries, now);
+    }
+    return buildSessionsFromTimetable(undefined, now);
+  }, [apiTimetable, now.toDateString()]);
 
   const sorted = useMemo(
     () =>

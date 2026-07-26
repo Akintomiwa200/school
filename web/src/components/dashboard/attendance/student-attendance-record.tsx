@@ -3,16 +3,21 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useStudentAttendance, type StudentAttendanceData } from "@/hooks/use-dashboard-data";
 import { AttendancePanel, AttendanceStatusBadge, attendanceHref } from "./attendance-ui";
 import {
   formatDisplayDate,
-  getAttendanceRecordById,
 } from "./student-attendance-data";
 import { StudentAttendanceListSkeleton } from "./student-attendance-skeleton";
 
+const EMPTY_ATTENDANCE: StudentAttendanceData = { records: [], stats: { totalClasses: 0, present: 0, absent: 0, late: 0, excused: 0, halfDay: 0, attendanceRate: 0 }, monthlyData: {} };
+
 export function StudentAttendanceRecord({ recordId }: { recordId: string }) {
   const isLoading = usePageLoading();
-  const record = getAttendanceRecordById(recordId);
+  const { data: attendanceData } = useStudentAttendance(EMPTY_ATTENDANCE);
+  const data = attendanceData ?? EMPTY_ATTENDANCE;
+
+  const record = data.records.find((r) => r.id === recordId);
 
   if (isLoading) {
     return <StudentAttendanceListSkeleton />;
@@ -50,7 +55,7 @@ export function StudentAttendanceRecord({ recordId }: { recordId: string }) {
             <h2 className="mt-1 text-xl font-bold">{formatDisplayDate(record.date)}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{record.className}</p>
           </div>
-          <AttendanceStatusBadge status={record.status} />
+          <AttendanceStatusBadge status={record.status as any} />
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">

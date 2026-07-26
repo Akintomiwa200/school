@@ -5,10 +5,9 @@ import { useMemo, useState } from "react";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useCurrentTime } from "@/hooks/use-current-time";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import { getActiveScheduleItemId } from "@/lib/schedule-time";
 import { cn } from "@/lib/utils";
+import { useStudentCourses, type StudentCourseItem } from "@/hooks/use-dashboard-data";
 import {
   CourseDotTabs,
   CourseIllustration,
@@ -16,15 +15,9 @@ import {
   CourseRating,
   CoursesPanel,
 } from "./courses/course-ui";
-import {
-  STUDENT_COURSES,
-  courseHref,
-  getCourseScheduleItems,
-  getDatePrefix,
-  type CourseTab,
-  type StudentCourseListItem,
-} from "./courses/student-course-data";
 import { StudentCoursesSkeleton } from "./student-courses-skeleton";
+
+type CourseTab = "all" | "active" | "upcoming" | "completed";
 
 const TABS: { id: CourseTab; label: string }[] = [
   { id: "all", label: "All" },
@@ -35,15 +28,50 @@ const TABS: { id: CourseTab; label: string }[] = [
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
-function CourseCard({ course }: { course: StudentCourseListItem }) {
-  const datePrefix = getDatePrefix(course.status);
+const ILLUSTRATIONS = [
+  { bg: "bg-brand-yellow/35", accent: "bg-brand-yellow", emoji: "👩‍🎓" },
+  { bg: "bg-brand-blue/30", accent: "bg-brand-blue", emoji: "🧤" },
+  { bg: "bg-brand-pink/30", accent: "bg-brand-pink", emoji: "👨‍💼" },
+  { bg: "bg-brand-purple/20", accent: "bg-brand-purple", emoji: "⚙️" },
+  { bg: "bg-green/25", accent: "bg-green", emoji: "🗄️" },
+];
+
+function mapCourseStatus(status: string): CourseTab {
+  const s = status.toLowerCase();
+  if (s === "published" || s === "active") return "active";
+  if (s === "archived" || s === "completed") return "completed";
+  if (s === "draft" || s === "upcoming") return "upcoming";
+  return "active";
+}
+
+function getDateString(course: StudentCourseItem): string {
+  const date = course.startDate ?? course.endDate;
+  if (!date) return "TBA";
+  return new Date(date).toLocaleDateString("en-US", { day: "numeric", month: "short" });
+}
+
+function getDatePrefix(status: CourseTab): string {
+  if (status === "upcoming") return "Start";
+  if (status === "completed") return "Taken";
+  return "Started";
+}
+
+function courseHref(courseId: string, segment?: string) {
+  const base = `/student/courses/${courseId}`;
+  return segment ? `${base}/${segment}` : base;
+}
+
+function CourseCard({ course, index }: { course: StudentCourseItem; index: number }) {
+  const status = mapCourseStatus(course.status);
+  const datePrefix = getDatePrefix(status);
   const href = courseHref(course.id);
+  const illustration = ILLUSTRATIONS[index % ILLUSTRATIONS.length];
 
   return (
     <CoursesPanel className="flex gap-4 sm:gap-5">
       <Link href={href} className="shrink-0">
         <CourseIllustration
-          illustration={course.illustration}
+          illustration={illustration}
           className="h-[104px] w-[104px] transition-opacity hover:opacity-90 sm:h-[118px] sm:w-[118px]"
         />
       </Link>
@@ -53,28 +81,28 @@ function CourseCard({ course }: { course: StudentCourseListItem }) {
           <Link href={href} className="min-w-0 hover:text-brand-orange">
             <h2 className="text-heading-sm font-bold leading-snug text-card-foreground">{course.title}</h2>
           </Link>
-          <CourseRating rating={course.rating} />
+          <CourseRating rating={course.averageScore ? Math.round(course.averageScore / 20 * 10) / 10 : 4.0} />
         </div>
 
         <p className="mt-1.5 line-clamp-2 text-type-link-sm leading-relaxed text-muted-foreground">
-          {course.description}
+          {course.description ?? "Course description not available."}
         </p>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {course.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground"
-            >
-              {tag}
+          <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
+            {course.subject}
+          </span>
+          {course.mode && (
+            <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
+              {course.mode}
             </span>
-          ))}
+          )}
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <p className="text-type-link-sm">
             <span className="text-muted-foreground">{datePrefix}: </span>
-            <span className="font-medium text-card-foreground">{course.dateValue}</span>
+            <span className="font-medium text-card-foreground">{getDateString(course)}</span>
           </p>
           <CoursePrimaryButton href={href}>Open course</CoursePrimaryButton>
         </div>
@@ -114,13 +142,8 @@ function CoursesCalendar() {
     return today;
   });
 
-  const monthLabel = focusDate.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-
+  const monthLabel = focusDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
   const weekDays = useMemo(() => getWeekDays(focusDate), [focusDate]);
-
   const shiftMonth = (delta: number) => {
     setFocusDate((current) => {
       const next = new Date(current);
@@ -134,20 +157,10 @@ function CoursesCalendar() {
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-card-foreground">{monthLabel}</h3>
         <div className="flex items-center gap-0.5">
-          <button
-            type="button"
-            onClick={() => shiftMonth(-1)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Previous month"
-          >
+          <button type="button" onClick={() => shiftMonth(-1)} className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Previous month">
             <ChevronLeft size={15} />
           </button>
-          <button
-            type="button"
-            onClick={() => shiftMonth(1)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Next month"
-          >
+          <button type="button" onClick={() => shiftMonth(1)} className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Next month">
             <ChevronRight size={15} />
           </button>
         </div>
@@ -155,27 +168,12 @@ function CoursesCalendar() {
 
       <div className="mt-4 grid grid-cols-7 gap-1 text-center">
         {weekDays.map((day) => (
-          <button
-            key={`${day.year}-${day.month}-${day.date}`}
-            type="button"
-            onClick={() => setFocusDate(new Date(day.year, day.month, day.date))}
-            className="flex flex-col items-center gap-1.5 py-0.5"
-          >
+          <button key={`${day.year}-${day.month}-${day.date}`} type="button" onClick={() => setFocusDate(new Date(day.year, day.month, day.date))} className="flex flex-col items-center gap-1.5 py-0.5">
             <span className="text-[10px] font-medium text-muted-foreground">{day.label}</span>
-            <span
-              className={cn(
-                "text-sm font-semibold transition-colors",
-                day.isSelected ? "text-brand-orange" : "text-card-foreground",
-                day.month !== focusDate.getMonth() && "text-muted-foreground/70",
-              )}
-            >
+            <span className={cn("text-sm font-semibold transition-colors", day.isSelected ? "text-brand-orange" : "text-card-foreground", day.month !== focusDate.getMonth() && "text-muted-foreground/70")}>
               {day.date}
             </span>
-            {day.isSelected ? (
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-orange" />
-            ) : (
-              <span className="h-1.5 w-1.5" />
-            )}
+            {day.isSelected ? <span className="h-1.5 w-1.5 rounded-full bg-brand-orange" /> : <span className="h-1.5 w-1.5" />}
           </button>
         ))}
       </div>
@@ -183,93 +181,64 @@ function CoursesCalendar() {
   );
 }
 
-function CoursesSchedule({
-  items,
-}: {
-  items: ReturnType<typeof getCourseScheduleItems>;
-}) {
-  const now = useCurrentTime();
-  const activeId = useMemo(() => getActiveScheduleItemId(items, now), [items, now]);
+function CoursesSchedule({ courses }: { courses: StudentCourseItem[] }) {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dayOfWeek];
 
   return (
     <CoursesPanel className="bg-muted">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-foreground">Schedule</h3>
-        <Link
-          href="/student/timetable"
-          className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
+        <Link href="/student/timetable" className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
           See All
         </Link>
       </div>
 
-      {items.length === 0 ? (
-        <EmptyState
-          icon={BookOpen}
-          title="No schedule yet"
-          description="Your class schedule will appear here once courses are assigned."
-          className="mt-4 border-none bg-transparent py-8"
-        />
+      {courses.length === 0 ? (
+        <EmptyState icon={BookOpen} title="No schedule yet" description="Your class schedule will appear here once courses are assigned." className="mt-4 border-none bg-transparent py-8" />
       ) : (
         <div className="mt-4 space-y-1.5">
-          {items.map((item) => {
-            const isActive = item.id === activeId;
-
-            return (
-              <Link
-                key={item.id}
-                href={courseHref(item.courseId)}
-                className={cn(
-                  "flex min-h-[5rem] items-center gap-3 transition-colors",
-                  isActive
-                    ? "rounded-lg bg-card px-3 py-5 text-card-foreground shadow-float"
-                    : "rounded-lg px-1 py-3 hover:bg-card/60",
-                )}
-              >
-                <span className="w-9 shrink-0 text-center text-xl font-bold leading-none tabular-nums text-foreground">
-                  {String(item.day).padStart(2, "0")}
-                </span>
-
-                <div
-                  className="h-16 w-px shrink-0 border-l border-dashed border-border"
-                  aria-hidden
-                />
-
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-foreground">{item.title}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{item.progress}</p>
-                </div>
-
-                <p className="shrink-0 text-xs font-medium text-muted-foreground">{item.time}</p>
-              </Link>
-            );
-          })}
+          {courses.slice(0, 5).map((course, index) => (
+            <Link key={course.id} href={courseHref(course.id)} className="flex min-h-[5rem] items-center gap-3 rounded-lg px-1 py-3 transition-colors hover:bg-card/60">
+              <span className="w-9 shrink-0 text-center text-xl font-bold leading-none tabular-nums text-foreground">
+                {String(today.getDate()).padStart(2, "0")}
+              </span>
+              <div className="h-16 w-px shrink-0 border-l border-dashed border-border" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-foreground">{course.title}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{course.subject}</p>
+              </div>
+              <p className="shrink-0 text-xs font-medium text-muted-foreground">{dayName}</p>
+            </Link>
+          ))}
         </div>
       )}
     </CoursesPanel>
   );
 }
 
-function CoursesSidebar({ schedule }: { schedule: ReturnType<typeof getCourseScheduleItems> }) {
+function CoursesSidebar({ courses }: { courses: StudentCourseItem[] }) {
   return (
     <aside className="h-fit space-y-4 lg:sticky lg:top-24">
       <CoursesCalendar />
-      <CoursesSchedule items={schedule} />
+      <CoursesSchedule courses={courses} />
     </aside>
   );
 }
 
+const EMPTY_COURSES: StudentCourseItem[] = [];
+
 export function StudentCourses() {
   const isLoading = usePageLoading();
-  const now = useCurrentTime();
-  const [activeTab, setActiveTab] = useState<CourseTab>("upcoming");
-  const dayKey = now.toDateString();
-  const scheduleItems = useMemo(() => getCourseScheduleItems(now), [dayKey]);
+  const { data: courses } = useStudentCourses(EMPTY_COURSES);
+  const [activeTab, setActiveTab] = useState<CourseTab>("all");
 
   const filteredCourses = useMemo(() => {
-    if (activeTab === "all") return STUDENT_COURSES;
-    return STUDENT_COURSES.filter((course) => course.status === activeTab);
-  }, [activeTab]);
+    const list = courses ?? [];
+    if (activeTab === "all") return list;
+    return list.filter((course) => mapCourseStatus(course.status) === activeTab);
+  }, [activeTab, courses]);
 
   if (isLoading) {
     return <StudentCoursesSkeleton />;
@@ -287,7 +256,7 @@ export function StudentCourses() {
 
           <div className="space-y-5">
             {filteredCourses.length > 0 ? (
-              filteredCourses.map((course) => <CourseCard key={course.id} course={course} />)
+              filteredCourses.map((course, i) => <CourseCard key={course.id} course={course} index={i} />)
             ) : (
               <EmptyState
                 icon={BookOpen}
@@ -305,7 +274,7 @@ export function StudentCourses() {
           </div>
         </div>
 
-        <CoursesSidebar schedule={scheduleItems} />
+        <CoursesSidebar courses={courses ?? []} />
       </div>
     </div>
   );

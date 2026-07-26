@@ -1,27 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Glasses, Star } from "lucide-react";
+import { BookOpen, Glasses, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useStudentLibraryBooks, useLibraryShopItems, type LibraryBookItem } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { LibraryBookCard } from "./library-book-card";
-import {
-  BEST_SALES,
-  booksHref,
-  formatLibraryPrice,
-  libraryHref,
-  ONGOING_BOOKS,
-  payHref,
-  POPULAR_BOOKS,
-  READING_ACHIEVEMENTS,
-  shopHref,
-} from "./library-data";
+import { booksHref, libraryHref, payHref, shopHref, READING_ACHIEVEMENTS } from "./library-data";
 import { LibraryPanel } from "./library-ui";
 import { LibrarySkeleton } from "./library-skeleton";
-import Image from "next/image";
+
+const EMPTY_BOOKS: LibraryBookItem[] = [];
 
 function LibraryHeroBooksLeft() {
   return (
@@ -80,7 +73,7 @@ function LibraryHero({ name }: { name: string }) {
   );
 }
 
-function BookSection({ title, books, viewAllHref }: { title: string; books: typeof POPULAR_BOOKS; viewAllHref: string }) {
+function BookSection({ title, books, viewAllHref }: { title: string; books: LibraryBookItem[]; viewAllHref: string }) {
   return (
     <section className="min-w-0">
       <div className="mb-5 flex items-center justify-between gap-3">
@@ -94,7 +87,15 @@ function BookSection({ title, books, viewAllHref }: { title: string; books: type
       </div>
       <div className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 xl:grid-cols-4">
         {books.map((book) => (
-          <LibraryBookCard key={book.id} book={book} showProgress />
+          <LibraryBookCard
+            key={book.id}
+            book={{
+              ...book,
+              image: book.coverImage ?? "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80",
+              coverTone: book.coverTone ?? "from-violet-200 via-purple-100 to-fuchsia-100",
+            }}
+            showProgress
+          />
         ))}
       </div>
     </section>
@@ -155,6 +156,7 @@ function AchievementWidget() {
 }
 
 function BestSalesWidget() {
+  const { data: shopItems } = useLibraryShopItems([]);
   return (
     <LibraryPanel>
       <div className="mb-5 flex items-center justify-between gap-3">
@@ -164,7 +166,7 @@ function BestSalesWidget() {
         </Link>
       </div>
       <ul className="space-y-3">
-        {BEST_SALES.slice(0, 5).map((item) => (
+        {shopItems.slice(0, 5).map((item) => (
           <li key={item.id} className="flex items-center gap-3 rounded-[18px] bg-card p-3 shadow-float ring-1 ring-border">
             <div className={cn("flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-[26px]", item.thumbTone)}>
               <span aria-hidden>{item.icon}</span>
@@ -193,16 +195,42 @@ export function StudentLibrary() {
   const isLoading = usePageLoading();
   const { data: session } = useSession();
   const displayName = session?.user?.name ?? "Student";
+  const { data } = useStudentLibraryBooks(EMPTY_BOOKS);
+  const allBooks = data ?? EMPTY_BOOKS;
 
   if (isLoading) return <LibrarySkeleton />;
+
+  const freeBooks = allBooks.filter((b) => b.access === "free");
+  const paidBooks = allBooks.filter((b) => b.access === "paid");
+  const displayBooks = allBooks.slice(0, 4);
 
   return (
     <div className="space-y-6">
       <LibraryHero name={displayName} />
       <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
         <div className="space-y-8">
-          <BookSection title="Popular" books={POPULAR_BOOKS} viewAllHref={booksHref({ category: "popular" })} />
-          <BookSection title="Ongoing" books={ONGOING_BOOKS} viewAllHref={booksHref({ category: "ongoing" })} />
+          {displayBooks.length > 0 ? (
+            <BookSection title="All books" books={displayBooks} viewAllHref={booksHref()} />
+          ) : (
+            <section className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-12 py-20 text-center">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/60">
+                <BookOpen className="h-10 w-10 text-muted-foreground/60" />
+              </div>
+              <h2 className="mt-6 text-2xl font-bold text-foreground">No books in the library yet</h2>
+              <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
+                The library catalog is being curated. Check back soon for free and premium titles.
+              </p>
+              <Button asChild variant="outline" className="mt-7 rounded-full">
+                <Link href={booksHref()}>Browse catalog</Link>
+              </Button>
+            </section>
+          )}
+          {freeBooks.length > 0 && (
+            <BookSection title="Free reads" books={freeBooks.slice(0, 4)} viewAllHref={booksHref({ access: "free" })} />
+          )}
+          {paidBooks.length > 0 && (
+            <BookSection title="Premium titles" books={paidBooks.slice(0, 4)} viewAllHref={booksHref({ access: "paid" })} />
+          )}
         </div>
         <aside className="space-y-6">
           <AchievementWidget />

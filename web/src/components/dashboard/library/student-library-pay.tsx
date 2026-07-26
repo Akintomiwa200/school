@@ -6,16 +6,11 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useLibraryShopItems, type LibraryShopItemData } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { saveLibraryCheckoutDraft } from "./library-checkout-storage";
 import { LibraryPaySteps } from "./library-pay-steps";
-import {
-  BEST_SALES,
-  formatLibraryPrice,
-  getSaleItemById,
-  libraryHref,
-  payCheckoutHref,
-} from "./library-data";
+import { formatLibraryPrice, libraryHref, payCheckoutHref } from "./library-data";
 import { LibraryBackLink, LibraryPanel } from "./library-ui";
 import { LibraryListSkeleton } from "./library-skeleton";
 
@@ -24,17 +19,18 @@ function LibraryPayContent() {
   const searchParams = useSearchParams();
   const preselect = searchParams.get("item");
   const isLoading = usePageLoading();
+  const { data: allItems } = useLibraryShopItems([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (preselect && getSaleItemById(preselect)) {
+    if (preselect && allItems.some((i) => i.id === preselect)) {
       setSelectedIds(new Set([preselect]));
     }
-  }, [preselect]);
+  }, [preselect, allItems]);
 
   const selectedItems = useMemo(
-    () => BEST_SALES.filter((item) => selectedIds.has(item.id)),
-    [selectedIds],
+    () => allItems.filter((item) => selectedIds.has(item.id)),
+    [selectedIds, allItems],
   );
   const total = selectedItems.reduce((sum, item) => sum + item.price, 0);
 
@@ -73,7 +69,7 @@ function LibraryPayContent() {
             </p>
           </div>
           <div className="space-y-2">
-            {BEST_SALES.map((item) => {
+            {allItems.map((item) => {
               const checked = selectedIds.has(item.id);
               return (
                 <label

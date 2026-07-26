@@ -1193,6 +1193,265 @@ export function useAdmissionByReference(reference: string, enabled = true) {
   });
 }
 
+// ─── Student Portal Hooks ──────────────────────────────────────────────
+
+export type StudentDashboardData = {
+  student: {
+    id: string;
+    admissionNumber: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatar: string | null;
+    phone: string | null;
+    className: string;
+    classSection: string | null;
+    bloodGroup: string | null;
+    dateOfAdmission: Date;
+  };
+  subjects: { id: string; name: string; code: string }[];
+  teachers: { id: string; name: string; avatar: string | null; department: string; designation: string; initials: string }[];
+  performance: { id: string; name: string; code: string; score: number }[];
+  attendance: { totalClasses: number; present: number; absent: number; late: number; rate: number };
+  timetable: { id: string; subject: string; subjectCode: string; dayOfWeek: number; startTime: string; endTime: string; room: string | null }[];
+  events: { id: string; title: string; description: string | null; startDate: Date; endDate: Date; location: string | null }[];
+  pendingAssignments: { id: string; assignmentTitle: string; courseTitle: string; dueDate: Date }[];
+  unreadNotificationCount: number;
+  recentAnnouncements: { id: string; title: string; content: string; author: string; createdAt: Date; isPinned: boolean }[];
+};
+
+export function useStudentDashboard(fallback: StudentDashboardData) {
+  return useApiData<StudentDashboardData>(["student", "dashboard"], API_ENDPOINTS.STUDENT_DASHBOARD, fallback);
+}
+
+export type StudentCourseItem = {
+  id: string;
+  title: string;
+  description: string | null;
+  mode: string;
+  status: string;
+  subject: string;
+  subjectCode: string;
+  teacher: string;
+  thumbnail: string | null;
+  materialCount: number;
+  assignmentCount: number;
+  averageScore: number | null;
+  startDate: Date | null;
+  endDate: Date | null;
+};
+
+export function useStudentCourses(fallback: StudentCourseItem[]) {
+  return useApiData<StudentCourseItem[]>(["student", "courses"], API_ENDPOINTS.STUDENT_COURSES, fallback);
+}
+
+export type StudentGradesData = {
+  courseGrades: {
+    courseId: string;
+    courseName: string;
+    subject: string;
+    subjectCode: string;
+    letterGrade: string | null;
+    percentage: number | null;
+    totalSubmissions: number;
+    gradedSubmissions: number;
+  }[];
+  summary: { gpa: number; averageScore: number; totalCourses: number; gradedCourses: number };
+  recentAssessments: {
+    id: string;
+    title: string;
+    courseName: string;
+    subject: string;
+    score: number | null;
+    maxScore: number;
+    status: string;
+    feedback: string | null;
+    submittedAt: Date | null;
+    gradedAt: Date | null;
+  }[];
+};
+
+export function useStudentGrades(fallback: StudentGradesData) {
+  return useApiData<StudentGradesData>(["student", "grades"], API_ENDPOINTS.STUDENT_GRADES, fallback);
+}
+
+export type StudentAttendanceData = {
+  records: { id: string; date: string; status: string; className: string; checkIn: string | null; checkOut: string | null; remarks: string | null }[];
+  stats: { totalClasses: number; present: number; absent: number; late: number; excused: number; halfDay: number; attendanceRate: number };
+  monthlyData: Record<string, { present: number; absent: number; late: number; total: number }>;
+};
+
+export function useStudentAttendance(fallback: StudentAttendanceData) {
+  return useApiData<StudentAttendanceData>(["student", "attendance"], API_ENDPOINTS.STUDENT_ATTENDANCE, fallback);
+}
+
+export type StudentTimetableItem = {
+  id: string;
+  subject: string;
+  subjectCode: string;
+  dayOfWeek: number;
+  dayName: string;
+  startTime: string;
+  endTime: string;
+  room: string | null;
+};
+
+export function useStudentTimetable(fallback: StudentTimetableItem[]) {
+  return useApiData<StudentTimetableItem[]>(["student", "timetable"], API_ENDPOINTS.STUDENT_TIMETABLE, fallback);
+}
+
+export type StudentFeesData = {
+  summary: { totalFees: number; totalPaid: number; totalOutstanding: number };
+  feeItems: { id: string; name: string; description: string | null; amount: number; paidAmount: number; status: string; dueDate: Date }[];
+  paymentHistory: { id: string; amount: number; method: string; status: string; receiptNumber: string; paidAt: Date | null; createdAt: Date }[];
+};
+
+export function useStudentFees(fallback: StudentFeesData) {
+  return useApiData<StudentFeesData>(["student", "fees"], API_ENDPOINTS.STUDENT_FEES, fallback);
+}
+
+export type StudentMessage = {
+  id: string;
+  subject: string | null;
+  content: string;
+  isRead: boolean;
+  createdAt: Date;
+  sender: { id: string; name: string; avatar: string | null; initials: string };
+};
+
+export type StudentMessagesData = {
+  messages: StudentMessage[];
+  unreadCount: number;
+};
+
+export function useStudentMessages(fallback: StudentMessagesData) {
+  return useApiData<StudentMessagesData>(["student", "messages"], API_ENDPOINTS.STUDENT_MESSAGES, fallback);
+}
+
+export type StudentNotification = {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  link: string | null;
+  isRead: boolean;
+  createdAt: Date;
+};
+
+export type StudentNotificationsData = {
+  notifications: StudentNotification[];
+  unreadCount: number;
+};
+
+export function useStudentNotifications(fallback: StudentNotificationsData) {
+  return useApiData<StudentNotificationsData>(["student", "notifications"], API_ENDPOINTS.STUDENT_NOTIFICATIONS, fallback);
+}
+
+export type StudentAnnouncement = {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  authorRole: string;
+  isPinned: boolean;
+  publishedAt: Date;
+  createdAt: Date;
+};
+
+export function useStudentAnnouncements(fallback: StudentAnnouncement[]) {
+  return useApiData<StudentAnnouncement[]>(["student", "announcements"], API_ENDPOINTS.STUDENT_ANNOUNCEMENTS, fallback);
+}
+
+export type StudentLibraryData = {
+  myBooks: { id: string; bookTitle: string; author: string; isbn: string | null; issuedAt: Date; dueDate: Date; returnedAt: Date | null; fine: number | null; isReturned: boolean; isOverdue: boolean }[];
+  availableBooks: { id: string; title: string; author: string; isbn: string | null; category: string | null; available: number; quantity: number; shelfLocation: string | null }[];
+};
+
+export function useStudentLibrary(fallback: StudentLibraryData) {
+  return useApiData<StudentLibraryData>(["student", "library"], API_ENDPOINTS.STUDENT_LIBRARY, fallback);
+}
+
+export type LibraryBookItem = {
+  id: string;
+  title: string;
+  author: string;
+  isbn: string | null;
+  category: string | null;
+  description: string | null;
+  coverImage: string | null;
+  coverTone: string | null;
+  access: string;
+  price: number | null;
+  format: string;
+  pages: number;
+  chapterCount: number;
+  quantity: number;
+  available: number;
+};
+
+export type LibraryBookDetail = LibraryBookItem & {
+  shelfLocation: string | null;
+  chapters: { id: string; title: string; content: string; position: number }[];
+};
+
+export function useStudentLibraryBooks(fallback: LibraryBookItem[]) {
+  const { data, ...rest } = useQuery<LibraryBookItem[]>({
+    queryKey: ["student", "library", "books"],
+    queryFn: () => apiGet<LibraryBookItem[]>(API_ENDPOINTS.STUDENT_LIBRARY_BOOKS),
+    placeholderData: fallback,
+    staleTime: 30_000,
+  });
+  return { data: data ?? fallback, ...rest };
+}
+
+export function useStudentLibraryBook(bookId: string, fallback: LibraryBookDetail | null) {
+  const { data, ...rest } = useQuery<LibraryBookDetail | null>({
+    queryKey: ["student", "library", "books", bookId],
+    queryFn: () => apiGet<LibraryBookDetail | null>(`${API_ENDPOINTS.STUDENT_LIBRARY_BOOKS}/${bookId}`),
+    enabled: !!bookId,
+    placeholderData: fallback,
+    staleTime: 30_000,
+  });
+  return { data: data ?? fallback, ...rest };
+}
+
+export type LibraryShopItemData = {
+  id: string;
+  title: string;
+  description: string | null;
+  rating: number;
+  icon: string;
+  thumbTone: string;
+  price: number;
+  format: string;
+  bookId: string | null;
+};
+
+export type LibraryShopItemDetail = LibraryShopItemData & {
+  linkedBook: { id: string; title: string; coverImage: string | null; coverTone: string | null } | null;
+};
+
+export function useLibraryShopItems(fallback: LibraryShopItemData[]) {
+  const { data, ...rest } = useQuery<LibraryShopItemData[]>({
+    queryKey: ["student", "library", "shop"],
+    queryFn: () => apiGet<LibraryShopItemData[]>(API_ENDPOINTS.STUDENT_LIBRARY_SHOP),
+    placeholderData: fallback,
+    staleTime: 30_000,
+  });
+  return { data: data ?? fallback, ...rest };
+}
+
+export function useLibraryShopItem(itemId: string, fallback: LibraryShopItemDetail | null) {
+  const { data, ...rest } = useQuery<LibraryShopItemDetail | null>({
+    queryKey: ["student", "library", "shop", itemId],
+    queryFn: () => apiGet<LibraryShopItemDetail | null>(`${API_ENDPOINTS.STUDENT_LIBRARY_SHOP}/${itemId}`),
+    enabled: !!itemId,
+    placeholderData: fallback,
+    staleTime: 30_000,
+  });
+  return { data: data ?? fallback, ...rest };
+}
+
 export function usePayAdmissionByReference(reference: string) {
   const queryClient = useQueryClient();
   return useMutation({

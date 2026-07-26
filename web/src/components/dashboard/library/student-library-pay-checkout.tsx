@@ -7,6 +7,7 @@ import { Building2, CreditCard, Loader2, Lock, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useLibraryShopItems, type LibraryShopItemData } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import {
   clearLibraryCheckoutDraft,
@@ -15,12 +16,7 @@ import {
 } from "./library-checkout-storage";
 import { LibraryPaySteps } from "./library-pay-steps";
 import { addLiveLibraryOrder } from "./library-live-store";
-import {
-  formatLibraryPrice,
-  getSaleItemById,
-  payConfirmationHref,
-  payHref,
-} from "./library-data";
+import { formatLibraryPrice, payConfirmationHref, payHref } from "./library-data";
 import { LibraryBackLink, LibraryPanel } from "./library-ui";
 import { LibraryListSkeleton } from "./library-skeleton";
 
@@ -47,6 +43,8 @@ function CheckoutContent() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const { data: shopItems } = useLibraryShopItems([]);
+
   useEffect(() => {
     const draft = readLibraryCheckoutDraft();
     if (itemIdsFromUrl.length > 0) {
@@ -58,8 +56,8 @@ function CheckoutContent() {
   }, [itemIdsFromUrl.join(",")]);
 
   const selectedItems = useMemo(
-    () => itemIds.map((id) => getSaleItemById(id)).filter((item) => item != null),
-    [itemIds],
+    () => itemIds.map((id) => shopItems.find((s) => s.id === id)).filter((item): item is LibraryShopItemData => item != null),
+    [itemIds, shopItems],
   );
   const totalAmount = selectedItems.reduce((sum, item) => sum + item.price, 0);
 

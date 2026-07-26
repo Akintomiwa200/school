@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Award, BookOpen, GraduationCap, TrendingUp } from "lucide-react";
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { cn } from "@/lib/utils";
+import { useStudentGrades, type StudentGradesData } from "@/hooks/use-dashboard-data";
 import {
   GradesPanel,
   formatGpa,
@@ -11,17 +12,6 @@ import {
   getLetterGradeStyle,
   gradesHref,
 } from "./grade-ui";
-import {
-  ASSESSMENT_TYPE_LABELS,
-  CURRENT_TERM_LABEL,
-  assessmentHref,
-  courseGradeHref,
-  formatAssessmentScore,
-  getAssessmentPercentage,
-  getGradeStats,
-  getRecentAssessments,
-  getGradedCoursesForTerm,
-} from "./student-grades-data";
 import { StudentGradesSkeleton } from "./student-grades-skeleton";
 
 function StatCard({
@@ -56,22 +46,27 @@ function StatCard({
   );
 }
 
+const EMPTY_GRADES: StudentGradesData = {
+  courseGrades: [],
+  summary: { gpa: 0, averageScore: 0, totalCourses: 0, gradedCourses: 0 },
+  recentAssessments: [],
+};
+
 export function StudentGradesOverview() {
   const isLoading = usePageLoading();
-  const stats = getGradeStats();
-  const recent = getRecentAssessments(6);
-  const courses = getGradedCoursesForTerm();
+  const { data: gradesData } = useStudentGrades(EMPTY_GRADES);
+  const data = gradesData ?? EMPTY_GRADES;
 
   if (isLoading) return <StudentGradesSkeleton />;
 
   return (
     <div className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard value={formatGpa(stats.termGpa)} label={`Term GPA · ${CURRENT_TERM_LABEL}`} icon={GraduationCap} tone="purple" />
-        <StatCard value={formatGpa(stats.cumulativeGpa)} label="Cumulative GPA" icon={Award} tone="blue" />
-        <StatCard value={formatPercentage(stats.averageScore)} label="Average score" icon={TrendingUp} tone="green" />
+        <StatCard value={formatGpa(data.summary.gpa)} label="Term GPA" icon={GraduationCap} tone="purple" />
+        <StatCard value={formatGpa(data.summary.gpa)} label="Cumulative GPA" icon={Award} tone="blue" />
+        <StatCard value={formatPercentage(data.summary.averageScore)} label="Average score" icon={TrendingUp} tone="green" />
         <StatCard
-          value={`${stats.coursesGraded}/${stats.totalCourses}`}
+          value={`${data.summary.gradedCourses}/${data.summary.totalCourses}`}
           label="Courses with grades"
           icon={BookOpen}
           tone="orange"
@@ -82,7 +77,7 @@ export function StudentGradesOverview() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-base font-bold">Current term by course</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{CURRENT_TERM_LABEL} grades and running averages</p>
+            <p className="mt-1 text-sm text-muted-foreground">Grades and running averages</p>
           </div>
           <Link href={gradesHref("courses")} className="text-sm font-medium text-brand-purple hover:underline">
             View all courses →
@@ -94,37 +89,39 @@ export function StudentGradesOverview() {
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="pb-3 pr-4 font-medium">Course</th>
-                <th className="pb-3 pr-4 font-medium">Teacher</th>
+                <th className="pb-3 pr-4 font-medium">Subject</th>
                 <th className="pb-3 pr-4 font-medium">Score</th>
                 <th className="pb-3 font-medium">Grade</th>
               </tr>
             </thead>
             <tbody>
-              {courses.map((entry) => {
-                if (!entry) return null;
-                const { course, grade } = entry;
-                const pct = grade.percentage ?? null;
-                return (
-                  <tr key={course.id} className="border-b border-border/60 last:border-none">
-                    <td className="py-3 pr-4">
-                      <Link href={courseGradeHref(course.id)} className="font-medium hover:text-brand-purple">
-                        {course.title}
-                      </Link>
-                    </td>
-                    <td className="py-3 pr-4 text-muted-foreground">{course.teacher}</td>
-                    <td className="py-3 pr-4">{pct !== null ? formatPercentage(pct) : "In progress"}</td>
-                    <td className="py-3">
-                      {grade.letterGrade ? (
-                        <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold", getLetterGradeStyle(grade.letterGrade))}>
-                          {grade.letterGrade}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Pending</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {data.courseGrades.map((cg) => (
+                <tr key={cg.courseId} className="border-b border-border/60 last:border-none">
+                  <td className="py-3 pr-4">
+                    <Link href={`/student/grades/courses/${cg.courseId}`} className="font-medium hover:text-brand-purple">
+                      {cg.courseName}
+                    </Link>
+                  </td>
+                  <td className="py-3 pr-4 text-muted-foreground">{cg.subject}</td>
+                  <td className="py-3 pr-4">{cg.percentage !== null ? formatPercentage(cg.percentage) : "In progress"}</td>
+                  <td className="py-3">
+                    {cg.letterGrade ? (
+                      <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold", getLetterGradeStyle(cg.letterGrade))}>
+                        {cg.letterGrade}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Pending</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {data.courseGrades.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                    No grades available yet. Complete assignments to see your grades here.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -138,29 +135,30 @@ export function StudentGradesOverview() {
           </div>
         </div>
         <div className="mt-4 space-y-2">
-          {recent.map((assessment) => {
-            const pct = getAssessmentPercentage(assessment);
+          {data.recentAssessments.map((assessment) => {
+            const pct = assessment.score !== null ? Math.round((assessment.score / assessment.maxScore) * 100) : null;
             return (
               <Link
                 key={assessment.id}
-                href={assessmentHref(assessment.id)}
+                href={`/student/grades/assessments/${assessment.id}`}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-muted/40 px-4 py-3 transition-colors hover:bg-muted/70"
               >
                 <div className="min-w-0">
                   <p className="font-medium">{assessment.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {ASSESSMENT_TYPE_LABELS[assessment.type]} · {assessment.status}
+                    {assessment.subject} · {assessment.status}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">{formatAssessmentScore(assessment)}</p>
-                  {pct !== null ? (
-                    <p className="text-xs text-muted-foreground">{formatPercentage(pct)}</p>
-                  ) : null}
+                  <p className="font-semibold">{assessment.score !== null ? `${assessment.score}/${assessment.maxScore}` : "—"}</p>
+                  {pct !== null ? <p className="text-xs text-muted-foreground">{formatPercentage(pct)}</p> : null}
                 </div>
               </Link>
             );
           })}
+          {data.recentAssessments.length === 0 && (
+            <p className="py-8 text-center text-sm text-muted-foreground">No assessments yet.</p>
+          )}
         </div>
       </GradesPanel>
     </div>

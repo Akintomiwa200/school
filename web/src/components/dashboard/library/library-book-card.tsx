@@ -4,23 +4,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookMarked, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  bookHref,
-  type LibraryBook,
-} from "./library-data";
-import {
-  isBookmarked,
-  isLiked,
-  toggleBookmark,
-  toggleLike,
-  useLibraryShelf,
-} from "./library-live-store";
+import { bookHref, type LibraryBook } from "./library-data";
+import { isBookmarked, isLiked, toggleBookmark, toggleLike, useLibraryShelf } from "./library-live-store";
+import type { LibraryBookItem } from "@/hooks/use-dashboard-data";
 
-export function LibraryBookCard({ book, showProgress }: { book: LibraryBook; showProgress?: boolean }) {
+type BookCardBook = LibraryBook | (LibraryBookItem & { image?: string });
+
+function bookImage(book: BookCardBook): string {
+  if ("image" in book && book.image) return book.image;
+  if ("coverImage" in book && (book as LibraryBookItem).coverImage) return (book as LibraryBookItem).coverImage!;
+  return "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80";
+}
+
+export function LibraryBookCard({ book, showProgress }: { book: BookCardBook; showProgress?: boolean }) {
   const shelf = useLibraryShelf();
   const bookmarked = isBookmarked(book.id) || shelf.bookmarkedIds.includes(book.id);
   const liked = isLiked(book.id) || shelf.likedIds.includes(book.id);
-  const progress = shelf.readingProgress[book.id] ?? book.readingProgress ?? 0;
+  const progress = shelf.readingProgress[book.id] ?? ("readingProgress" in book ? book.readingProgress : undefined) ?? 0;
+  const coverTone = "coverTone" in book ? book.coverTone : "from-violet-200 via-purple-100 to-fuchsia-100";
+  const access = "access" in book ? book.access : "free";
+  const description = "description" in book ? (book.description || "") : "";
 
   return (
     <article className="w-full min-w-0">
@@ -28,12 +31,12 @@ export function LibraryBookCard({ book, showProgress }: { book: LibraryBook; sho
         <div
           className={cn(
             "relative aspect-square w-full overflow-hidden rounded-[24px] bg-gradient-to-br p-3 shadow-[0_10px_28px_rgba(15,23,42,0.06)] transition-transform group-hover:scale-[1.01] sm:p-3.5",
-            book.coverTone,
+            coverTone,
           )}
         >
           <div className="relative h-full w-full overflow-hidden rounded-[18px] bg-white/25">
             <Image
-              src={book.image}
+              src={bookImage(book)}
               alt={book.title}
               fill
               className="object-cover"
@@ -44,10 +47,10 @@ export function LibraryBookCard({ book, showProgress }: { book: LibraryBook; sho
             <span
               className={cn(
                 "rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
-                book.access === "free" ? "bg-green/90 text-white" : "bg-brand-purple/90 text-white",
+                access === "free" ? "bg-green/90 text-white" : "bg-brand-purple/90 text-white",
               )}
             >
-              {book.access === "free" ? "Free" : "Paid"}
+              {access === "free" ? "Free" : "Paid"}
             </span>
           </div>
           {showProgress && progress > 0 ? (
@@ -91,7 +94,7 @@ export function LibraryBookCard({ book, showProgress }: { book: LibraryBook; sho
         <h3 className="mt-4 text-[15px] font-bold leading-snug text-foreground group-hover:text-primary sm:text-base">
           {book.title}
         </h3>
-        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{book.description}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
       </Link>
     </article>
   );

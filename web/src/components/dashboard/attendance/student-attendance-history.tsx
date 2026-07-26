@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { ClipboardList } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useStudentAttendance, type StudentAttendanceData } from "@/hooks/use-dashboard-data";
 import {
   AttendancePanel,
   AttendanceStatusBadge,
@@ -13,7 +14,6 @@ import { CourseDotTabs } from "../courses/course-ui";
 import {
   attendanceHistoryHref,
   formatDisplayDate,
-  getAttendanceRecords,
   type AttendancePeriod,
   type StudentAttendanceStatus,
 } from "./student-attendance-data";
@@ -34,6 +34,8 @@ type StudentAttendanceHistoryProps = {
   initialStatus?: string;
 };
 
+const EMPTY_ATTENDANCE: StudentAttendanceData = { records: [], stats: { totalClasses: 0, present: 0, absent: 0, late: 0, excused: 0, halfDay: 0, attendanceRate: 0 }, monthlyData: {} };
+
 function resolveStatusFilter(value?: string): StatusFilter {
   if (value && STATUS_TABS.some((tab) => tab.id === value)) {
     return value as StatusFilter;
@@ -44,15 +46,32 @@ function resolveStatusFilter(value?: string): StatusFilter {
 export function StudentAttendanceHistory({ period, initialStatus }: StudentAttendanceHistoryProps) {
   const isLoading = usePageLoading();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => resolveStatusFilter(initialStatus));
+  const { data: attendanceData } = useStudentAttendance(EMPTY_ATTENDANCE);
+  const data = attendanceData ?? EMPTY_ATTENDANCE;
 
-  const records = useMemo(
-    () =>
-      getAttendanceRecords({
-        period,
-        status: statusFilter,
-      }),
-    [period, statusFilter],
-  );
+  const records = useMemo(() => {
+    let filtered = data.records.map((r) => ({
+      id: r.id,
+      date: r.date,
+      status: r.status as StudentAttendanceStatus,
+      className: r.className,
+      checkIn: r.checkIn ?? undefined,
+      checkOut: r.checkOut ?? undefined,
+      remarks: r.remarks ?? undefined,
+    }));
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((r) => r.status === statusFilter);
+    }
+
+    if (period === "Weekly") {
+      filtered = filtered.slice(-5);
+    } else if (period === "Monthly") {
+      filtered = filtered.slice(-23);
+    }
+
+    return filtered.sort((a, b) => b.date.localeCompare(a.date));
+  }, [data.records, statusFilter, period]);
 
   if (isLoading) {
     return <StudentAttendanceListSkeleton />;

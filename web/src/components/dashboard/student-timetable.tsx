@@ -13,9 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCurrentTime } from "@/hooks/use-current-time";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useStudentTimetable, useStudentAttendance, type StudentTimetableItem } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import {
   EVENT_TYPE_STYLES,
+  buildEventsFromApiData,
+  buildAttendanceMetaFromApi,
   buildWeekdayMonthGrid,
   courseMaterialsHref,
   filterEvents,
@@ -31,6 +34,9 @@ import {
   type ScheduleFilter,
 } from "./timetable/student-timetable-data";
 import { StudentTimetableSkeleton } from "./timetable/student-timetable-skeleton";
+
+const EMPTY_TIMETABLE: StudentTimetableItem[] = [];
+const EMPTY_ATTENDANCE = { records: [], stats: { totalClasses: 0, present: 0, absent: 0, late: 0, excused: 0, halfDay: 0, attendanceRate: 0 }, monthlyData: {} };
 
 const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
 
@@ -260,9 +266,24 @@ export function StudentTimetable() {
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
-  const allEvents = useMemo(() => getScheduleEvents(viewMonth), [viewMonth]);
+  const { data: apiTimetable } = useStudentTimetable(EMPTY_TIMETABLE);
+  const { data: apiAttendance } = useStudentAttendance(EMPTY_ATTENDANCE);
+
+  const allEvents = useMemo(() => {
+    const timetable = apiTimetable ?? EMPTY_TIMETABLE;
+    if (timetable.length > 0) {
+      return buildEventsFromApiData(timetable, viewMonth);
+    }
+    return getScheduleEvents(viewMonth);
+  }, [viewMonth, apiTimetable]);
   const events = useMemo(() => filterEvents(allEvents, filter), [allEvents, filter]);
-  const dayMeta = useMemo(() => getScheduleDayMeta(viewMonth), [viewMonth]);
+  const dayMeta = useMemo(() => {
+    const attendance = apiAttendance?.records ?? [];
+    if (attendance.length > 0) {
+      return buildAttendanceMetaFromApi(attendance, viewMonth);
+    }
+    return getScheduleDayMeta(viewMonth);
+  }, [viewMonth, apiAttendance]);
   const weeks = useMemo(() => buildWeekdayMonthGrid(viewMonth), [viewMonth]);
 
   const attendanceByDate = useMemo(

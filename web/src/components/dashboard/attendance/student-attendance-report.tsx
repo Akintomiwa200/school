@@ -4,11 +4,9 @@ import { useMemo } from "react";
 import { Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useStudentAttendance, type StudentAttendanceData } from "@/hooks/use-dashboard-data";
 import { AttendancePanel } from "./attendance-ui";
 import {
-  MONTHLY_RATES,
-  getAttendanceRecords,
-  getAttendanceStats,
   type AttendancePeriod,
 } from "./student-attendance-data";
 import { StudentAttendanceSkeleton } from "./student-attendance-skeleton";
@@ -18,10 +16,39 @@ type StudentAttendanceReportProps = {
   studentName: string;
 };
 
+const EMPTY_ATTENDANCE: StudentAttendanceData = { records: [], stats: { totalClasses: 0, present: 0, absent: 0, late: 0, excused: 0, halfDay: 0, attendanceRate: 0 }, monthlyData: {} };
+
 export function StudentAttendanceReport({ period, studentName }: StudentAttendanceReportProps) {
   const isLoading = usePageLoading();
-  const stats = useMemo(() => getAttendanceStats(period), [period]);
-  const records = useMemo(() => getAttendanceRecords({ period }), [period]);
+  const { data: attendanceData } = useStudentAttendance(EMPTY_ATTENDANCE);
+  const data = attendanceData ?? EMPTY_ATTENDANCE;
+
+  const stats = useMemo(() => {
+    const s = data.stats;
+    return {
+      totalAttendance: s.present + s.late,
+      late: s.late,
+      undertime: s.halfDay,
+      absent: s.absent,
+      attendanceRate: s.attendanceRate,
+    };
+  }, [data.stats]);
+
+  const records = useMemo(() => {
+    let filtered = [...data.records];
+    if (period === "Weekly") filtered = filtered.slice(-5);
+    else if (period === "Monthly") filtered = filtered.slice(-23);
+    return filtered;
+  }, [data.records, period]);
+
+  const monthlyRates = useMemo(() => {
+    const colors = ["blue", "orange", "green", "pink", "purple"] as const;
+    return Object.entries(data.monthlyData).slice(-6).map(([month, mdata], i) => ({
+      month: new Date(`${month}-15`).toLocaleDateString("en-US", { month: "long" }),
+      rate: mdata.total > 0 ? Math.round(((mdata.present + mdata.late) / mdata.total) * 100) : 0,
+      color: colors[i % colors.length],
+    }));
+  }, [data.monthlyData]);
 
   if (isLoading) {
     return <StudentAttendanceSkeleton />;
@@ -64,17 +91,19 @@ export function StudentAttendanceReport({ period, studentName }: StudentAttendan
         </div>
       </AttendancePanel>
 
-      <AttendancePanel>
-        <h3 className="text-base font-bold">Monthly rates</h3>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {MONTHLY_RATES.map((item) => (
-            <div key={item.month} className="rounded-2xl bg-muted/45 px-4 py-3">
-              <p className="text-xs text-muted-foreground">{item.month}</p>
-              <p className="mt-1 text-lg font-bold">{item.rate}%</p>
-            </div>
-          ))}
-        </div>
-      </AttendancePanel>
+      {monthlyRates.length > 0 ? (
+        <AttendancePanel>
+          <h3 className="text-base font-bold">Monthly rates</h3>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {monthlyRates.map((item) => (
+              <div key={item.month} className="rounded-2xl bg-muted/45 px-4 py-3">
+                <p className="text-xs text-muted-foreground">{item.month}</p>
+                <p className="mt-1 text-lg font-bold">{item.rate}%</p>
+              </div>
+            ))}
+          </div>
+        </AttendancePanel>
+      ) : null}
 
       <AttendancePanel>
         <div className="mb-4 flex items-center gap-2">

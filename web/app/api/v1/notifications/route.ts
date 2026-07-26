@@ -1,48 +1,113 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  clearNotificationsForUser,
-  getAnnouncementsForUser,
-  getNotificationsForUser,
-  markAllNotificationsRead,
-  markNotificationRead,
-} from "@/lib/notifications/realtime-hub";
-import { resolveRealtimeUser } from "@/lib/notifications/realtime-auth";
-import { createApiError, createApiResponse } from "@/shared";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
+import { createApiResponse, createApiError } from "@/shared";
 
 export async function GET() {
-  const user = await resolveRealtimeUser();
-  return NextResponse.json(
-    createApiResponse(
-      {
-        notifications: getNotificationsForUser(user.id, user.role),
-        announcements: getAnnouncementsForUser(user.id, user.role),
-      },
-      "Notifications loaded",
-    ),
-  );
+  try {
+    const user = await getCurrentUser();
+    if (!user?.id) {
+      return NextResponse.json(createApiError("unauthorized", "Authentication required"), { status: 401 });
+    }
+
+    const [notifications, announcements, unreadCount] = await Promise.all([
+      prisma.notification.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
+      prisma.announcement.findMany({
+        orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
+        take: 20,
+        include: {
+          author: { select: { firstName: true, lastName: true, role: true } },
+        },
+      }).then((all) =>
+        all.filter((a) => {
+          if (a.targetRoles === null) return true;
+          try {
+            const roles = Array.isArray(a.targetRoles) ? a.targetRoles : JSON.parse(String(a.targetRoles));
+            return Array.isArray(roles) && roles.includes(user!.role);
+          } catch {
+            return true;
+          }
+        }),
+      ),
+      prisma.notification.count({ where: { userId: user.id, isRead: false } }),
+    ]);
+
+    return NextResponse.json(
+      createApiResponse(
+        {
+          notifications: notifications.map((n) => ({
+            id: n.id,
+            userId: n.userId,
+            type: n.type,
+            title: n.title,
+            message: n.message,
+            link: n.link,
+            isRead: n.isRead,
+            createdAt: n.createdAt.toISOString(),
+          })),
+          announcements: announcements.map((a) => ({
+            id: a.id,
+            title: a.title,
+            body: a.content,
+            authorId: a.authorId,
+            authorName: `${a.author.firstName} ${a.author.lastName}`,
+            authorRole: a.author.role,
+            priority: "normal" as const,
+            pinned: a.isPinned,
+            audience: a.targetRoles ?? "all",
+            createdAt: a.publishedAt.toISOString(),
+            readBy: [] as string[],
+          })),
+          unreadCount,
+        },
+        "Notifications loaded",
+      ),
+    );
+  } catch (error) {
+    return NextResponse.json(
+      createApiError("notification_error", error instanceof Error ? error.message : "Failed to load notifications"),
+      { status: 500 },
+    );
+  }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    const user = await resolveRealtimeUser();
+    const user = await getCurrentUser();
+    if (!user?.id) {
+      return NextResponse.json(createApiError("unauthorized", "Authentication required"), { status: 401 });
+    }
+
     const body = (await request.json()) as { action?: string; id?: string };
 
     if (body.action === "read-all") {
-      const count = markAllNotificationsRead(user.id, user.role);
-      return NextResponse.json(createApiResponse({ count }, "All notifications marked as read"));
+      const result = await prisma.notification.updateMany({
+        where: { userId: user.id, isRead: false },
+        data: { isRead: true },
+      });
+      return NextResponse.json(createApiResponse({ count: result.count }, "All notifications marked as read"));
     }
 
     if (body.action === "clear-all") {
-      const count = clearNotificationsForUser(user.id, user.role);
-      return NextResponse.json(createApiResponse({ count }, "Notifications cleared"));
+      const result = await prisma.notification.deleteMany({
+        where: { userId: user.id },
+      });
+      return NextResponse.json(createApiResponse({ count: result.count }, "Notifications cleared"));
     }
 
     if (body.action === "read" && body.id) {
-      const updated = markNotificationRead(body.id, user.id, user.role);
-      if (!updated) {
+      const result = await prisma.notification.updateMany({
+        where: { id: body.id, userId: user.id },
+        data: { isRead: true },
+      });
+      if (result.count === 0) {
         return NextResponse.json(createApiError("not_found", "Notification not found"), { status: 404 });
       }
-      return NextResponse.json(createApiResponse(updated, "Notification marked as read"));
+      return NextResponse.json(createApiResponse({ id: body.id, isRead: true }, "Notification marked as read"));
     }
 
     return NextResponse.json(createApiError("validation_error", "Unsupported action"), { status: 400 });

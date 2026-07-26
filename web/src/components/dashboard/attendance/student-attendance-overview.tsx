@@ -1,38 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   CalendarCheck,
   Clock,
   Footprints,
   MapPinCheck,
-  Search,
   Timer,
   UserX,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useCurrentTime } from "@/hooks/use-current-time";
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { cn } from "@/lib/utils";
-import {
-  buildDemoSessions,
-  getSessionWindowState,
-  hasMarkedSession,
-  useLiveAttendanceMarks,
-} from "./attendance-live-store";
-import {
-  AttendancePanel,
-  attendanceHref,
-} from "./attendance-ui";
-import {
-  MONTHLY_RATES,
-  TOP_ATTENDANCE_STUDENTS,
-  attendanceMarkHref,
-  getAttendanceStats,
-  getMonthlyRateColor,
-  type AttendancePeriod,
-} from "./student-attendance-data";
+import { useStudentAttendance, type StudentAttendanceData } from "@/hooks/use-dashboard-data";
+import { AttendancePanel, attendanceHref } from "./attendance-ui";
 import { StudentAttendanceSkeleton } from "./student-attendance-skeleton";
 
 function StatCard({
@@ -72,64 +53,18 @@ function StatCard({
   );
 }
 
-function MonthlyRateChart() {
-  const points = MONTHLY_RATES.map((item, index) => ({ ...item, x: index, y: item.rate }));
-  const width = 320;
-  const height = 120;
-  const padding = 12;
-  const stepWidth = (width - padding * 2) / (points.length - 1);
-  const linePath = points
-    .map((point, index) => {
-      const x = padding + index * stepWidth;
-      const y = height - padding - ((point.y - 50) / 20) * (height - padding * 2);
-      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
-    })
-    .join(" ");
-
-  return (
-    <div className="mt-5 space-y-4">
-      <p className="text-sm font-semibold text-foreground">Monthly Rate</p>
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-28 w-full min-w-[280px]">
-        <path d={linePath} fill="none" stroke="currentColor" strokeWidth="2" className="text-brand-blue" />
-        {points.map((point, index) => {
-          const x = padding + index * stepWidth;
-          const y = height - padding - ((point.y - 50) / 20) * (height - padding * 2);
-          return <circle key={point.month} cx={x} cy={y} r="4" className="fill-brand-blue" />;
-        })}
-      </svg>
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-        {MONTHLY_RATES.map((item) => (
-          <div
-            key={item.month}
-            className={cn("rounded-lg px-2 py-2 text-center text-white", getMonthlyRateColor(item.color))}
-          >
-            <p className="text-[10px] font-medium opacity-90">{item.month.slice(0, 3)}</p>
-            <p className="text-sm font-bold">{item.rate}%</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SummaryBarChart({
-  stats,
-  studentName,
-}: {
-  stats: ReturnType<typeof getAttendanceStats>;
-  studentName: string;
-}) {
+function SummaryBarChart({ stats }: { stats: StudentAttendanceData["stats"] }) {
   const items = [
-    { label: "Attendance", value: stats.totalAttendance, tone: "bg-brand-blue", icon: Footprints },
+    { label: "Present", value: stats.present, tone: "bg-brand-blue", icon: Footprints },
     { label: "Late", value: stats.late, tone: "bg-green", icon: Clock },
-    { label: "Undertime", value: stats.undertime, tone: "bg-brand-orange", icon: Timer },
+    { label: "Half Day", value: stats.halfDay, tone: "bg-brand-orange", icon: Timer },
     { label: "Absent", value: stats.absent, tone: "bg-destructive", icon: UserX },
   ] as const;
   const maxValue = Math.max(...items.map((item) => item.value), 1);
 
   return (
     <AttendancePanel>
-      <h2 className="text-base font-bold">Summary - {studentName}</h2>
+      <h2 className="text-base font-bold">Attendance Summary</h2>
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {items.map((item) => {
           const Icon = item.icon;
@@ -139,10 +74,7 @@ function SummaryBarChart({
               <p className="text-2xl font-bold text-foreground">{String(item.value).padStart(2, "0")}</p>
               <p className="mt-1 text-xs text-muted-foreground">{item.label}</p>
               <div className="mt-4 flex h-28 w-full items-end justify-center">
-                <div
-                  className={cn("relative flex w-14 items-end justify-center rounded-t-2xl", item.tone)}
-                  style={{ height: `${heightPct}%` }}
-                >
+                <div className={cn("relative flex w-14 items-end justify-center rounded-t-2xl", item.tone)} style={{ height: `${heightPct}%` }}>
                   <Icon className="absolute bottom-2 h-5 w-5 text-white/90" />
                 </div>
               </div>
@@ -154,59 +86,46 @@ function SummaryBarChart({
   );
 }
 
-function TopStudentsTable() {
-  const [query, setQuery] = useState("");
-  const filtered = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return TOP_ATTENDANCE_STUDENTS;
-    return TOP_ATTENDANCE_STUDENTS.filter(
-      (student) =>
-        student.name.toLowerCase().includes(normalized) ||
-        student.studentId.toLowerCase().includes(normalized),
-    );
-  }, [query]);
-
+function AttendanceHistoryTable({ records }: { records: StudentAttendanceData["records"] }) {
   return (
     <AttendancePanel>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-base font-bold">Top Attendance Students</h2>
-        <div className="relative w-full max-w-[12rem]">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search"
-            className="h-9 w-full rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[28rem] text-left text-sm">
+      <h2 className="text-base font-bold">Recent Attendance</h2>
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full min-w-[400px] text-sm">
           <thead>
             <tr className="border-b border-border text-xs text-muted-foreground">
-              <th className="pb-3 pr-4 font-medium">Number</th>
-              <th className="pb-3 pr-4 font-medium">Name</th>
-              <th className="pb-3 pr-4 font-medium">ID</th>
-              <th className="pb-3 font-medium">Progress</th>
+              <th className="pb-3 pr-4 font-medium">Date</th>
+              <th className="pb-3 pr-4 font-medium">Class</th>
+              <th className="pb-3 pr-4 font-medium">Status</th>
+              <th className="pb-3 font-medium">Remarks</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((student) => (
-              <tr key={student.id} className="border-b border-border/60 last:border-none">
-                <td className="py-3 pr-4 font-medium">{student.number}</td>
-                <td className="py-3 pr-4">{student.name}</td>
-                <td className="py-3 pr-4 text-muted-foreground">{student.studentId}</td>
-                <td className="py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-brand-blue" style={{ width: `${student.progress}%` }} />
-                    </div>
-                    <span className="w-10 text-xs font-medium text-muted-foreground">{student.progress}%</span>
-                  </div>
+            {records.slice(0, 10).map((record) => {
+              const statusStyle = record.status === "present" ? "bg-green/15 text-green" :
+                record.status === "absent" ? "bg-destructive/15 text-destructive" :
+                record.status === "late" ? "bg-brand-orange/15 text-brand-orange" :
+                "bg-muted text-muted-foreground";
+              return (
+                <tr key={record.id} className="border-b border-border/60 last:border-none">
+                  <td className="py-3 pr-4 font-medium">{record.date}</td>
+                  <td className="py-3 pr-4 text-muted-foreground">{record.className}</td>
+                  <td className="py-3 pr-4">
+                    <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold", statusStyle)}>
+                      {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="py-3 text-muted-foreground">{record.remarks ?? "—"}</td>
+                </tr>
+              );
+            })}
+            {records.length === 0 && (
+              <tr>
+                <td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                  No attendance records yet. Attend classes to see your history here.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -214,24 +133,21 @@ function TopStudentsTable() {
   );
 }
 
+const EMPTY_ATTENDANCE: StudentAttendanceData = {
+  records: [],
+  stats: { totalClasses: 0, present: 0, absent: 0, late: 0, excused: 0, halfDay: 0, attendanceRate: 100 },
+  monthlyData: {},
+};
+
 type StudentAttendanceOverviewProps = {
-  period: AttendancePeriod;
+  period: string;
   studentName: string;
 };
 
 export function StudentAttendanceOverview({ period, studentName }: StudentAttendanceOverviewProps) {
   const isLoading = usePageLoading();
-  const now = useCurrentTime();
-  const liveMarks = useLiveAttendanceMarks();
-  const stats = useMemo(() => getAttendanceStats(period), [period, liveMarks]);
-
-  const openSessions = useMemo(() => {
-    const sessions = buildDemoSessions(now);
-    return sessions.filter(
-      (session) =>
-        getSessionWindowState(session, now, hasMarkedSession(session.id)) === "open",
-    );
-  }, [now, liveMarks]);
+  const { data: attendanceData } = useStudentAttendance(EMPTY_ATTENDANCE);
+  const data = attendanceData ?? EMPTY_ATTENDANCE;
 
   if (isLoading) {
     return <StudentAttendanceSkeleton />;
@@ -241,78 +157,46 @@ export function StudentAttendanceOverview({ period, studentName }: StudentAttend
 
   return (
     <>
-      {openSessions.length > 0 ? (
-        <AttendancePanel className="flex flex-col gap-4 border border-brand-orange/25 bg-brand-orange/5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand-orange">
-              Check-in open
-            </p>
-            <h2 className="mt-1 text-base font-bold">
-              {openSessions.length} class{openSessions.length === 1 ? "" : "es"} ready for attendance
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {openSessions.map((session) => session.className).join(" · ")}
-            </p>
-          </div>
-          <Button
-            asChild
-            className="rounded-full bg-brand-orange text-white hover:bg-brand-orange/90"
-          >
-            <Link href={attendanceMarkHref()}>
-              <MapPinCheck className="mr-2 h-4 w-4" />
-              Mark attendance
-            </Link>
-          </Button>
-        </AttendancePanel>
-      ) : null}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard
-          value={stats.totalAttendance}
-          label="Total Attendance"
-          icon={CalendarCheck}
-          tone="blue"
-          href={`${historyBase}present`}
-        />
-        <StatCard value={stats.late} label="Late Attendance" icon={Clock} tone="green" href={`${historyBase}late`} />
-        <StatCard
-          value={stats.undertime}
-          label="Undertime Attendance"
-          icon={Timer}
-          tone="orange"
-          href={`${historyBase}undertime`}
-        />
-        <StatCard value={stats.absent} label="Total Absent" icon={UserX} tone="red" href={`${historyBase}absent`} />
+        <StatCard value={data.stats.present} label="Total Present" icon={CalendarCheck} tone="blue" href={`${historyBase}present`} />
+        <StatCard value={data.stats.late} label="Late Attendance" icon={Clock} tone="green" href={`${historyBase}late`} />
+        <StatCard value={data.stats.halfDay} label="Half Day" icon={Timer} tone="orange" href={`${historyBase}halfday`} />
+        <StatCard value={data.stats.absent} label="Total Absent" icon={UserX} tone="red" href={`${historyBase}absent`} />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
         <div className="space-y-5">
-          <Link href={attendanceHref("calendar")} className="block transition-opacity hover:opacity-90">
-            <AttendancePanel>
-              <p className="text-3xl font-bold text-foreground">{stats.classDays}</p>
-              <p className="mt-1 text-sm text-muted-foreground">Days</p>
-              <p className="mt-2 text-xs text-muted-foreground">Class days for {period}</p>
-            </AttendancePanel>
-          </Link>
-
           <AttendancePanel>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-muted-foreground">Attendance Rate</p>
-                <p className="mt-1 text-4xl font-bold text-foreground">{stats.attendanceRate}%</p>
+                <p className="mt-1 text-4xl font-bold text-foreground">{data.stats.attendanceRate}%</p>
               </div>
               <span className="rounded-full bg-brand-blue/15 px-3 py-1 text-xs font-semibold text-brand-blue">
-                This Year
+                Overall
               </span>
             </div>
-            <MonthlyRateChart />
+            <div className="mt-5 space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Total Classes</p>
+                  <p className="text-xl font-bold">{data.stats.totalClasses}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Present</p>
+                  <p className="text-xl font-bold text-green">{data.stats.present}</p>
+                </div>
+              </div>
+            </div>
           </AttendancePanel>
         </div>
 
         <div className="space-y-5">
-          <SummaryBarChart stats={stats} studentName={studentName} />
-          <TopStudentsTable />
+          <SummaryBarChart stats={data.stats} />
         </div>
       </div>
+
+      <AttendanceHistoryTable records={data.records} />
     </>
   );
 }

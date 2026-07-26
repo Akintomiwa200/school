@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useStudentAttendance, type StudentAttendanceData } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import {
   AttendancePanel,
@@ -27,6 +28,8 @@ const LEGEND: { status: StudentAttendanceStatus; label: string }[] = [
   { status: "absent", label: "Absent" },
 ];
 
+const EMPTY_ATTENDANCE: StudentAttendanceData = { records: [], stats: { totalClasses: 0, present: 0, absent: 0, late: 0, excused: 0, halfDay: 0, attendanceRate: 0 }, monthlyData: {} };
+
 export function StudentAttendanceCalendar() {
   const isLoading = usePageLoading();
   const [focusDate, setFocusDate] = useState(() => {
@@ -35,10 +38,27 @@ export function StudentAttendanceCalendar() {
     return today;
   });
 
+  const { data: attendanceData } = useStudentAttendance(EMPTY_ATTENDANCE);
+  const data = attendanceData ?? EMPTY_ATTENDANCE;
+
+  const apiRecords = useMemo(
+    () =>
+      data.records.map((r) => ({
+        id: r.id,
+        date: r.date,
+        status: r.status as StudentAttendanceStatus,
+        className: r.className,
+        checkIn: r.checkIn ?? undefined,
+        checkOut: r.checkOut ?? undefined,
+        remarks: r.remarks ?? undefined,
+      })),
+    [data.records],
+  );
+
   const monthLabel = focusDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
   const days = useMemo(
-    () => getCalendarMonthDays(focusDate.getFullYear(), focusDate.getMonth()),
-    [focusDate],
+    () => getCalendarMonthDays(focusDate.getFullYear(), focusDate.getMonth(), apiRecords.length > 0 ? apiRecords : undefined),
+    [focusDate, apiRecords],
   );
 
   const shiftMonth = (delta: number) => {

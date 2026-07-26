@@ -129,62 +129,110 @@ export const DEMO_CAMPUS_LOCATION = {
 };
 
 export function buildDemoSessions(referenceDate = new Date()): AttendanceSession[] {
-  const today = startOfDay(referenceDate);
+  return buildSessionsFromTimetable(undefined, referenceDate);
+}
 
-  return [
-    {
-      id: "sess-english",
-      courseId: "1",
-      className: "English Literature",
-      teacher: "Ms. Sarah Chen",
-      mode: "physical",
-      startsAt: buildDateTime(today, 8, 0),
-      endsAt: buildDateTime(today, 9, 30),
-      room: "Room 201",
-      building: "Block A",
-      latitude: DEMO_CAMPUS_LOCATION.latitude,
-      longitude: DEMO_CAMPUS_LOCATION.longitude,
+export type ApiTimetableEntry = {
+  id: string;
+  subject: string;
+  subjectCode: string;
+  dayOfWeek: number;
+  dayName: string;
+  startTime: string;
+  endTime: string;
+  room: string | null;
+};
+
+function parseTimeToHoursMinutes(time: string): [number, number] {
+  const cleaned = time.length === 5 ? time : time.slice(0, 5);
+  const [h, m] = cleaned.split(":").map(Number);
+  return [h, m];
+}
+
+export function buildSessionsFromTimetable(
+  apiTimetable?: ApiTimetableEntry[],
+  referenceDate = new Date(),
+): AttendanceSession[] {
+  const today = startOfDay(referenceDate);
+  const dow = today.getDay();
+
+  if (!apiTimetable || apiTimetable.length === 0) {
+    return [
+      {
+        id: "sess-english",
+        courseId: "1",
+        className: "English Literature",
+        teacher: "Ms. Sarah Chen",
+        mode: "physical",
+        startsAt: buildDateTime(today, 8, 0),
+        endsAt: buildDateTime(today, 9, 30),
+        room: "Room 201",
+        building: "Block A",
+        latitude: DEMO_CAMPUS_LOCATION.latitude,
+        longitude: DEMO_CAMPUS_LOCATION.longitude,
+        geofenceRadiusMeters: 200,
+      },
+      {
+        id: "sess-cs",
+        courseId: "4",
+        className: "Computer Science",
+        teacher: "Prof. David Kim",
+        mode: "virtual",
+        startsAt: buildDateTime(today, 10, 0),
+        endsAt: buildDateTime(today, 11, 30),
+        meetingUrl: "https://meet.example.com/cs-algorithms",
+        virtualCode: "CS2026",
+      },
+      {
+        id: "sess-business",
+        courseId: "3",
+        className: "Business Studies",
+        teacher: "Dr. Amira Hassan",
+        mode: "hybrid",
+        startsAt: buildDateTime(today, 13, 0),
+        endsAt: buildDateTime(today, 14, 30),
+        room: "Room 105",
+        building: "Block B",
+        latitude: DEMO_CAMPUS_LOCATION.latitude + 0.0008,
+        longitude: DEMO_CAMPUS_LOCATION.longitude + 0.0005,
+        geofenceRadiusMeters: 200,
+        meetingUrl: "https://meet.example.com/business-studies",
+        virtualCode: "BUS330",
+      },
+      {
+        id: "sess-design",
+        courseId: "2",
+        className: "Design Strategy",
+        teacher: "James Okonkwo",
+        mode: "virtual",
+        startsAt: buildDateTime(today, 15, 0),
+        endsAt: buildDateTime(today, 16, 30),
+        meetingUrl: "https://meet.example.com/design-lab",
+        virtualCode: "DS118",
+      },
+    ];
+  }
+
+  const todayEntries = apiTimetable.filter((t) => t.dayOfWeek === dow);
+
+  return todayEntries.map((entry, index) => {
+    const [sh, sm] = parseTimeToHoursMinutes(entry.startTime);
+    const [eh, em] = parseTimeToHoursMinutes(entry.endTime);
+    return {
+      id: `sess-${entry.id}`,
+      courseId: entry.subjectCode,
+      className: entry.subject,
+      teacher: "",
+      mode: entry.room ? "physical" : "virtual",
+      startsAt: buildDateTime(today, sh, sm),
+      endsAt: buildDateTime(today, eh, em),
+      room: entry.room ?? undefined,
+      building: undefined,
+      latitude: entry.room ? DEMO_CAMPUS_LOCATION.latitude : undefined,
+      longitude: entry.room ? DEMO_CAMPUS_LOCATION.longitude : undefined,
       geofenceRadiusMeters: 200,
-    },
-    {
-      id: "sess-cs",
-      courseId: "4",
-      className: "Computer Science",
-      teacher: "Prof. David Kim",
-      mode: "virtual",
-      startsAt: buildDateTime(today, 10, 0),
-      endsAt: buildDateTime(today, 11, 30),
-      meetingUrl: "https://meet.example.com/cs-algorithms",
-      virtualCode: "CS2026",
-    },
-    {
-      id: "sess-business",
-      courseId: "3",
-      className: "Business Studies",
-      teacher: "Dr. Amira Hassan",
-      mode: "hybrid",
-      startsAt: buildDateTime(today, 13, 0),
-      endsAt: buildDateTime(today, 14, 30),
-      room: "Room 105",
-      building: "Block B",
-      latitude: DEMO_CAMPUS_LOCATION.latitude + 0.0008,
-      longitude: DEMO_CAMPUS_LOCATION.longitude + 0.0005,
-      geofenceRadiusMeters: 200,
-      meetingUrl: "https://meet.example.com/business-studies",
-      virtualCode: "BUS330",
-    },
-    {
-      id: "sess-design",
-      courseId: "2",
-      className: "Design Strategy",
-      teacher: "James Okonkwo",
-      mode: "virtual",
-      startsAt: buildDateTime(today, 15, 0),
-      endsAt: buildDateTime(today, 16, 30),
-      meetingUrl: "https://meet.example.com/design-lab",
-      virtualCode: "DS118",
-    },
-  ];
+    };
+  });
 }
 
 export type SessionWindowState = "upcoming" | "open" | "ended" | "marked";
