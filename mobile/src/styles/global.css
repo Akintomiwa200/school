@@ -1,3 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Semantic tokens — keep in sync with web/src/styles/globals.css */
+:root {
+  --color-primary: #5865f2;
+  --color-primary-foreground: #ffffff;
+  --color-background: #f3f5fa;
+  --color-foreground: #1e293b;
+  --color-card: #ffffff;
+  --color-card-foreground: #1e293b;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #1e293b;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #5865f2;
+  --color-accent: #ec48bd;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #ed4245;
+  --color-destructive-foreground: #ffffff;
+}
+
+.dark {
+  --color-background: #0a0d3a;
+  --color-foreground: #ffffff;
+  --color-card: #1e2353;
+  --color-card-foreground: #ffffff;
+  --color-secondary: #23272a;
+  --color-secondary-foreground: #ffffff;
+  --color-muted: #1e2353;
+  --color-muted-foreground: #a0a4b8;
+  --color-border: #2e3568;
+  --color-input: #2e3568;
+  --color-ring: #5865f2;
+  --color-accent: #ec48bd;
+  --color-accent-foreground: #ffffff;
+}

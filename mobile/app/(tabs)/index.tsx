@@ -12,8 +12,8 @@ export default function HomeScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
     >
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>School mobile</Text>
+      <View style={[styles.hero, { backgroundColor: colors.primary }]}>
+        <Text style={[styles.heroTitle, { color: colors.primaryForeground }]}>School mobile</Text>
         <Text style={styles.heroSubtitle}>
           Your dashboard on the go — explore features and open quick actions.
         </Text>
@@ -24,18 +24,25 @@ export default function HomeScreen() {
         <View style={styles.actionRow}>
           <Pressable
             onPress={() => router.push("/(tabs)/explore")}
-            style={({ pressed }) => [styles.actionButton, { opacity: pressed ? 0.9 : 1 }]}
+            style={({ pressed }) => [
+              styles.actionButton,
+              { backgroundColor: colors.primary, opacity: pressed ? 0.9 : 1 },
+            ]}
           >
-            <Text style={styles.actionButtonText}>Open explore</Text>
+            <Text style={[styles.actionButtonText, { color: colors.primaryForeground }]}>
+              Open explore
+            </Text>
           </Pressable>
           <Pressable
             onPress={() => router.push("/modal")}
             style={({ pressed }) => [
               styles.actionButtonSecondary,
-              { opacity: pressed ? 0.9 : 1 },
+              { backgroundColor: `${colors.primary}1f`, opacity: pressed ? 0.9 : 1 },
             ]}
           >
-            <Text style={styles.actionButtonSecondaryText}>Open modal</Text>
+            <Text style={[styles.actionButtonSecondaryText, { color: colors.primary }]}>
+              Open modal
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -43,7 +50,7 @@ export default function HomeScreen() {
       <View style={[styles.panel, { borderColor: colors.border, backgroundColor: colors.card }]}>
         <Text style={[styles.panelTitle, { color: colors.text }]}>Theme</Text>
         <Text style={[styles.muted, { color: colors.icon }]}>
-          Colors follow light/dark mode from the device.
+          Colors follow the same palette as the web app, with light/dark support.
         </Text>
       </View>
     </ScrollView>
@@ -63,10 +70,8 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 22,
     gap: 10,
-    backgroundColor: "#0a7ea4",
   },
   heroTitle: {
-    color: "#fff",
     fontSize: 28,
     fontWeight: "800",
   },
@@ -95,23 +100,19 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   actionButton: {
-    backgroundColor: "#0a7ea4",
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
   actionButtonText: {
-    color: "#fff",
     fontWeight: "700",
   },
   actionButtonSecondary: {
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: "rgba(10,126,164,0.12)",
   },
   actionButtonSecondaryText: {
-    color: "#0a7ea4",
     fontWeight: "700",
   },
 });

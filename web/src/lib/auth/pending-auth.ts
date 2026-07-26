@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { NextRequest } from "next/server";
 import crypto from "crypto";
 
 const COOKIE_NAME = "auth-pending";
@@ -38,9 +39,18 @@ function decode(value: string): PendingAuthPayload | null {
   }
 }
 
+export function createPendingToken(payload: PendingAuthPayload) {
+  return encode(payload);
+}
+
+export function decodePendingToken(value: string): PendingAuthPayload | null {
+  return decode(value);
+}
+
 export async function setPendingAuth(payload: PendingAuthPayload) {
+  const token = createPendingToken(payload);
   const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, encode(payload), {
+  cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -59,4 +69,14 @@ export async function getPendingAuth() {
 export async function clearPendingAuth() {
   const cookieStore = await cookies();
   cookieStore.delete(COOKIE_NAME);
+}
+
+export async function getPendingAuthFromRequest(request: NextRequest) {
+  const fromCookie = await getPendingAuth();
+  if (fromCookie) return fromCookie;
+
+  const headerToken = request.headers.get("X-Pending-Auth");
+  if (headerToken) return decodePendingToken(headerToken);
+
+  return null;
 }

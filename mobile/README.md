@@ -34,10 +34,13 @@ Start the web API (in a separate terminal):
 
 ```bash
 cd ../web
+pnpm install
 pnpm dev
 ```
 
 ## Run the app
+
+From `mobile/`:
 
 ```bash
 pnpm start
@@ -51,6 +54,7 @@ Other scripts:
 pnpm ios
 pnpm android
 pnpm lint
+pnpm run typecheck
 ```
 
 ## Project layout
@@ -65,10 +69,39 @@ mobile/
 ├── src/
 │   ├── api/             # HTTP client + auth API
 │   ├── auth/            # Session context
-│   ├── config/          # API base URL
-│   └── hooks/
+│   ├── config/          # API base URL + color tokens
+│   ├── hooks/           # Data hooks + useThemeColors
+│   ├── providers/       # ThemeProvider (light/dark/system)
+│   └── styles/          # NativeWind global CSS tokens
 └── components/          # Shared UI (themed text, icons)
 ```
+
+## Theming
+
+Colors match the web app (`web/src/styles/globals.css` and `web/src/config/design.ts`). Use `useTheme()` or `useThemeColors()` from `src/hooks` — do not hardcode hex values in screens.
+
+Theme preference (`light` / `dark` / `system`) is persisted in SecureStore via `ThemeProvider`.
+
+## Startup flow
+
+1. **Splash** — native splash stays visible for 3 seconds (`appConfig.splashDurationMs`).
+2. **Network** — if offline, shows the configured no-network screen (`src/config/app.ts` → `networkErrors`).
+3. **Onboarding** — first-time users see a 3-step slider (`app/(onboarding)`), then continue to sign in.
+4. **Auth** — signed-out users land on login; signed-in users go to tabs.
+
+## Auth screens
+
+| Route | Purpose |
+|-------|---------|
+| `/(auth)/login` | Email + password sign in |
+| `/(auth)/register` | Create student account |
+| `/(auth)/verify-code` | 6-digit OTP after login/register |
+| `/(auth)/forgot-password` | Request reset email |
+| `/(auth)/reset-password` | Set new password (`?token=` from email or deep link) |
+
+Deep link for password reset: `school-lms://reset-password?token=<token>`
+
+Auth copy and network error messages are configured in `src/config/app.ts`.
 
 ## Auth
 

@@ -1,4 +1,5 @@
-/** Discord-inspired marketing design tokens (see design.md) */
+/** Discord-inspired marketing design tokens (see design.md)
+ *  Dashboard semantic colors live in src/styles/globals.css — keep mobile/src/config/colors.ts in sync. */
 
 export const colors = {
   primary: "#5865f2",

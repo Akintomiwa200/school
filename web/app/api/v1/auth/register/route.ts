@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { createAndSendOtp } from "@/lib/auth/otp";
-import { setPendingAuth } from "@/lib/auth/pending-auth";
+import { createPendingToken, setPendingAuth } from "@/lib/auth/pending-auth";
 import { UserRole, createApiError, createApiResponse, registerSchema } from "@/shared";
 import { isStaffRole } from "@/shared/permissions";
 
@@ -65,7 +65,8 @@ export async function POST(request: NextRequest) {
       `${user.firstName} ${user.lastName}`.trim(),
     );
 
-    await setPendingAuth({ userId: user.id, email, flow: "signup" });
+    const pending = { userId: user.id, email, flow: "signup" as const };
+    await setPendingAuth(pending);
 
     return NextResponse.json(
       createApiResponse(
@@ -73,6 +74,7 @@ export async function POST(request: NextRequest) {
           email,
           flow: "signup" as const,
           devCode: otpResult.devCode,
+          pendingToken: createPendingToken(pending),
         },
         "Account created. Enter the verification code sent to your email.",
       ),
