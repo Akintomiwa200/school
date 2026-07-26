@@ -5,21 +5,21 @@ Expo (React Native) client for the school platform. It talks to the same backend
 ## Prerequisites
 
 - Node.js 20+
-- [pnpm](https://pnpm.io/) (repo uses pnpm workspaces)
+- [pnpm](https://pnpm.io/)
 - iOS Simulator, Android emulator, or Expo Go on a device
 
 ## Setup
 
-From the **repository root**:
+From the **`mobile/`** folder:
 
 ```bash
+cd mobile
 pnpm install
 ```
 
 Configure the API base URL (required for a **physical device**; optional on simulators using defaults):
 
 ```bash
-cd mobile
 cp .env.local.example .env.local
 # Edit EXPO_PUBLIC_API_URL — use your computer's LAN IP, not localhost
 ```
@@ -30,21 +30,14 @@ cp .env.local.example .env.local
 | Android emulator | `http://10.0.2.2:3000` (default) |
 | Physical device | `http://<your-lan-ip>:3000` |
 
-Start the web API (from repo root):
+Start the web API (in a separate terminal):
 
 ```bash
-pnpm --filter web dev
+cd ../web
+pnpm dev
 ```
 
 ## Run the app
-
-From repo root:
-
-```bash
-pnpm --filter mobile start
-```
-
-Or from `mobile/`:
 
 ```bash
 pnpm start
@@ -55,9 +48,9 @@ Then press `i` (iOS), `a` (Android), or scan the QR code with Expo Go.
 Other scripts:
 
 ```bash
-pnpm --filter mobile ios
-pnpm --filter mobile android
-pnpm --filter mobile lint
+pnpm ios
+pnpm android
+pnpm lint
 ```
 
 ## Project layout
@@ -81,8 +74,4 @@ mobile/
 
 Login uses `POST /api/v1/auth/login` on the web app. The session token is stored in `expo-secure-store` and sent as `Authorization: Bearer <token>` on API calls.
 
-Demo credentials match the web app (see web README / seed data).
-
-## Monorepo
-
-This package is `"mobile"` in the root `pnpm-workspace.yaml`. Shared types or utilities can be added under `packages/` later and referenced from `mobile/package.json`.
+Demo credentials match the web app (see [web/README.md](../web/README.md)).

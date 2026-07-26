@@ -34,7 +34,7 @@ export function TeacherMaterialDetail({ materialId }: { materialId: string }) {
   const { data: material, isFetching, isError, isFetched } = useTeacherMaterial<MaterialDetail | null>(
     materialId,
     fallback ? { ...fallback, classId: "class-a", sharedClasses: ["class-a"] } : undefined,
-  );  const { data: coursesData } = useTeacherCourses(buildTeacherCoursesFallback());
+  );  const { data: coursesData = buildTeacherCoursesFallback() } = useTeacherCourses(buildTeacherCoursesFallback());
   const shareMaterial = useShareTeacherMaterial(materialId);
   const deleteMaterial = useDeleteTeacherMaterial();
   const [shareClassId, setShareClassId] = useState("");

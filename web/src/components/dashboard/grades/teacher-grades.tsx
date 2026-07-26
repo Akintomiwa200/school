@@ -48,7 +48,7 @@ export function TeacherGrades() {
   const initialClassId = searchParams.get("classId") ?? TEACHER_DASHBOARD_CLASSES[0]?.id ?? "class-a";
   const [classId, setClassId] = useState(initialClassId);
   const isLoading = usePageLoading();
-  const { data: coursesData } = useTeacherCourses(buildTeacherCoursesFallback());
+  const { data: coursesData = buildTeacherCoursesFallback() } = useTeacherCourses(buildTeacherCoursesFallback());
   const { data: gradebook, isFetching, isError, isFetched } = useTeacherGradebook<GradebookData>(classId, GRADEBOOK_FALLBACK);
   const publishGrades = usePublishTeacherGrades();
 

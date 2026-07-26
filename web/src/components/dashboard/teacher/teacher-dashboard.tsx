@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   GraduationCap,
@@ -12,6 +12,7 @@ import {
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { useTeacherDashboard } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
+import { AdminTablePagination } from "../admin/admin-list-ui";
 import { ManagementPanel } from "../management/management-ui";
 import {
   TEACHER_AVATAR_TONES,
@@ -22,6 +23,8 @@ import {
   type TeacherPerformanceTier,
   type TeacherStudentProficiency,
 } from "./teacher-data";
+
+const PROFICIENCY_PAGE_SIZES = [10, 25, 100] as const;
 
 const SEGMENT_STYLES: Record<
   TeacherPerformanceTier,
@@ -313,8 +316,27 @@ export function TeacherDashboard() {
   const defaultClassId = TEACHER_DASHBOARD_CLASSES[0]?.id ?? "class-a";
   const [selectedClass, setSelectedClass] = useState(defaultClassId);
   const [proficiencyView, setProficiencyView] = useState<"objectives" | "strands">("objectives");
+  const [proficiencyPage, setProficiencyPage] = useState(1);
+  const [proficiencyPageSize, setProficiencyPageSize] = useState<number>(PROFICIENCY_PAGE_SIZES[0]);
   const fallback = buildTeacherDashboardFallback(selectedClass);
   const { data: dashboard = fallback, isFetching } = useTeacherDashboard(selectedClass, fallback);
+
+  const proficiencyTotal = dashboard.proficiency.length;
+  const proficiencyTotalPages = Math.max(1, Math.ceil(proficiencyTotal / proficiencyPageSize));
+  const paginatedProficiency = useMemo(() => {
+    const start = (proficiencyPage - 1) * proficiencyPageSize;
+    return dashboard.proficiency.slice(start, start + proficiencyPageSize);
+  }, [dashboard.proficiency, proficiencyPage, proficiencyPageSize]);
+
+  useEffect(() => {
+    setProficiencyPage(1);
+  }, [selectedClass, proficiencyPageSize]);
+
+  useEffect(() => {
+    if (proficiencyPage > proficiencyTotalPages) {
+      setProficiencyPage(proficiencyTotalPages);
+    }
+  }, [proficiencyPage, proficiencyTotalPages]);
 
   if (pageLoading && isFetching) return <DashboardSkeleton />;
 
@@ -432,7 +454,19 @@ export function TeacherDashboard() {
       <ManagementPanel className="overflow-hidden border border-border p-0">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
           <h2 className="text-base font-bold text-foreground">Students proficiency</h2>
-          <div className="flex items-center gap-4 text-sm font-semibold">
+          <div className="flex flex-wrap items-center gap-4 text-sm font-semibold">
+            <label className="inline-flex items-center gap-2 font-normal text-muted-foreground">
+              <span>Rows per page</span>
+              <select
+                value={proficiencyPageSize}
+                onChange={(e) => setProficiencyPageSize(Number(e.target.value))}
+                className="h-8 rounded-lg border border-border bg-background px-2 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {PROFICIENCY_PAGE_SIZES.map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </label>
             <button
               type="button"
               onClick={() => setProficiencyView("objectives")}
@@ -483,12 +517,33 @@ export function TeacherDashboard() {
               </tr>
             </thead>
             <tbody>
-              {dashboard.proficiency.map((student) => (
-                <ProficiencyRow key={student.id} student={student} view={proficiencyView} />
-              ))}
+              {paginatedProficiency.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={proficiencyView === "objectives" ? 6 : 3}
+                    className="px-5 py-10 text-center text-muted-foreground"
+                  >
+                    No students in this class yet.
+                  </td>
+                </tr>
+              ) : (
+                paginatedProficiency.map((student) => (
+                  <ProficiencyRow key={student.id} student={student} view={proficiencyView} />
+                ))
+              )}
             </tbody>
           </table>
         </div>
+
+        {proficiencyTotal > 0 ? (
+          <AdminTablePagination
+            page={proficiencyPage}
+            totalPages={proficiencyTotalPages}
+            totalItems={proficiencyTotal}
+            pageSize={proficiencyPageSize}
+            onPageChange={setProficiencyPage}
+          />
+        ) : null}
       </ManagementPanel>
     </div>
   );

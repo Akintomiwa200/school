@@ -316,16 +316,19 @@ let assignments: TeacherAssignmentRecord[] = TEACHER_ASSIGNMENTS.map((item, inde
   };
 });
 
-let attendanceSessions: TeacherAttendanceRecord[] = TEACHER_ATTENDANCE_SESSIONS.map((item, index) => ({
-  id: item.id,
-  classId: index === 0 ? "class-a" : index === 1 ? "class-c" : "class-b",
-  className: item.className,
-  time: item.time,
-  date: todayIso(),
-  marked: item.marked,
-  present: item.present,
-  absent: item.absent,
-}));
+let attendanceSessions: TeacherAttendanceRecord[] = TEACHER_ATTENDANCE_SESSIONS.map((item, index) => {
+  const classId = index === 0 ? "class-a" : index === 1 ? "class-c" : "class-b";
+  return {
+    id: item.id,
+    classId,
+    className: item.className,
+    time: item.time,
+    date: todayIso(),
+    marked: item.marked,
+    present: item.present,
+    absent: item.absent,
+  };
+});
 
 let attendanceRosters: Record<string, AttendanceStudentRecord[]> = {};
 
