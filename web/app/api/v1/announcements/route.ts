@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         content: body.body.trim(),
         authorId: user.id,
         isPinned: body.pinned ?? false,
-        targetRoles: body.audience === "all" ? null : (body.audience ?? null),
+        targetRoles: body.audience === "all" ? undefined : (body.audience ?? undefined),
       },
       include: {
         author: { select: { firstName: true, lastName: true, role: true } },

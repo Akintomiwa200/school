@@ -1,4 +1,4 @@
-import { BEST_SALES } from "@/components/dashboard/library/library-data";
+import { prisma } from "@/lib/db";
 
 type PendingCheckout = {
   itemIds: string[];
@@ -11,24 +11,24 @@ type PendingCheckout = {
 
 const pendingCheckouts = new Map<string, PendingCheckout>();
 
-function calcExpectedTotal(itemIds: string[]) {
+async function calcExpectedTotal(itemIds: string[]) {
   let total = 0;
   const lines: Array<{
     itemId: string;
     title: string;
     amount: number;
     format: string;
-    bookId?: string;
+    bookId: string | null;
   }> = [];
 
   for (const itemId of itemIds) {
-    const item = BEST_SALES.find((entry) => entry.id === itemId);
+    const item = await prisma.libraryShopItem.findUnique({ where: { id: itemId } });
     if (!item) throw new Error(`Item ${itemId} not found`);
-    total += item.price;
+    total += Number(item.price);
     lines.push({
       itemId: item.id,
       title: item.title,
-      amount: item.price,
+      amount: Number(item.price),
       format: item.format,
       bookId: item.bookId,
     });
@@ -45,9 +45,9 @@ function purgeExpired() {
   }
 }
 
-export function validateLibraryPayment(itemIds: string[], amount: number) {
+export async function validateLibraryPayment(itemIds: string[], amount: number) {
   purgeExpired();
-  const { total, lines } = calcExpectedTotal(itemIds);
+  const { total, lines } = await calcExpectedTotal(itemIds);
   if (amount !== total) {
     throw new Error(`Amount must be ${total} for selected items`);
   }
@@ -61,7 +61,6 @@ export function createLibraryCheckoutSession(input: {
   cardLast4?: string;
 }) {
   purgeExpired();
-  validateLibraryPayment(input.itemIds, input.amount);
 
   const checkoutSessionId = `lib_chk_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
   pendingCheckouts.set(checkoutSessionId, {
@@ -76,13 +75,13 @@ export function createLibraryCheckoutSession(input: {
   return { checkoutSessionId, amount: input.amount, itemIds: input.itemIds };
 }
 
-export function confirmLibraryCheckoutSession(checkoutSessionId: string) {
+export async function confirmLibraryCheckoutSession(checkoutSessionId: string) {
   purgeExpired();
   const session = pendingCheckouts.get(checkoutSessionId);
   if (!session) throw new Error("Checkout session expired or not found");
   if (session.status === "completed") throw new Error("Checkout already completed");
 
-  const { lines } = calcExpectedTotal(session.itemIds);
+  const { lines } = await calcExpectedTotal(session.itemIds);
   session.status = "completed";
 
   const paymentId = `lib_pay_${Date.now()}`;

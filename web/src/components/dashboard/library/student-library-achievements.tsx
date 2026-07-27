@@ -4,10 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useStudentLibraryAchievements, type LibraryAchievement } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
-import { booksHref, READING_ACHIEVEMENTS } from "./library-data";
+import { booksHref } from "./library-data";
 import { LibraryPanel } from "./library-ui";
 import { LibraryListSkeleton } from "./library-skeleton";
+
+const EMPTY_ACHIEVEMENTS: LibraryAchievement[] = [];
 
 function SegmentedProgress({ progress, segments = 3 }: { progress: number; segments?: number }) {
   const filled = Math.min(segments, Math.max(0, Math.round((progress / 100) * segments)));
@@ -26,6 +29,7 @@ function SegmentedProgress({ progress, segments = 3 }: { progress: number; segme
 export function StudentLibraryAchievements() {
   const isLoading = usePageLoading();
   const [enabled, setEnabled] = useState(true);
+  const { data: achievements } = useStudentLibraryAchievements(EMPTY_ACHIEVEMENTS);
 
   if (isLoading) return <LibraryListSkeleton />;
 
@@ -58,11 +62,13 @@ export function StudentLibraryAchievements() {
       </LibraryPanel>
 
       <div className={cn("space-y-4 transition-opacity", !enabled && "opacity-45")}>
-        {READING_ACHIEVEMENTS.map((item) => (
+        {achievements.map((item) => (
           <LibraryPanel key={item.id}>
             <div className="flex items-start gap-4">
               <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-muted">
-                <Image src={item.avatarUrl} alt="" fill className="object-cover" sizes="56px" />
+                {item.avatarUrl ? (
+                  <Image src={item.avatarUrl} alt="" fill className="object-cover" sizes="56px" />
+                ) : null}
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-bold">{item.title}</h3>

@@ -97,6 +97,8 @@ export const API_ENDPOINTS = {
   LIBRARY: `${API_BASE}/library`,
   LIBRARY_BOOKS: `${API_BASE}/library/books`,
   LIBRARY_ISSUES: `${API_BASE}/library/issues`,
+  LIBRARY_SHOP: `${API_BASE}/library/shop`,
+  LIBRARY_SHOP_BY_ID: (id: string) => `${API_BASE}/library/shop/${id}`,
 
   // Transport & Hostel
   TRANSPORT: `${API_BASE}/transport`,
@@ -152,6 +154,9 @@ export const API_ENDPOINTS = {
   STUDENT_LIBRARY: `${API_BASE}/student/library`,
   STUDENT_LIBRARY_BOOKS: `${API_BASE}/student/library/books`,
   STUDENT_LIBRARY_SHOP: `${API_BASE}/student/library/shop`,
+  STUDENT_LIBRARY_ACHIEVEMENTS: `${API_BASE}/student/library/achievements`,
+  STUDENT_LIBRARY_ORDERS: `${API_BASE}/student/library/orders`,
+  STUDENT_LIBRARY_ORDER_BY_ID: (id: string) => `${API_BASE}/student/library/orders/${id}`,
 
   // Leave & HR
   LEAVE: `${API_BASE}/leave`,

@@ -1,4 +1,4 @@
-import { AlertCircle, Book, BookMarked } from "lucide-react";
+import { AlertCircle, Book, BookMarked, ShoppingBag } from "lucide-react";
 
 export type LibraryBookRecord = {
   id: string;
@@ -91,5 +91,7 @@ export function libraryPaths(basePath: string) {
     issues: `${root}/issues`,
     issuesNew: `${root}/issues/new`,
     issue: (id: string) => `${root}/issues/${id}`,
+    shop: `${root}/shop`,
+    shopItem: (id: string) => `${root}/shop/${id}`,
   };
 }

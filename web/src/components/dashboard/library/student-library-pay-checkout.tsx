@@ -7,7 +7,7 @@ import { Building2, CreditCard, Loader2, Lock, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import { useLibraryShopItems, type LibraryShopItemData } from "@/hooks/use-dashboard-data";
+import { useLibraryShopItems, useCreateLibraryOrder, type LibraryShopItemData } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import {
   clearLibraryCheckoutDraft,
@@ -15,7 +15,6 @@ import {
   saveLibraryCheckoutDraft,
 } from "./library-checkout-storage";
 import { LibraryPaySteps } from "./library-pay-steps";
-import { addLiveLibraryOrder } from "./library-live-store";
 import { formatLibraryPrice, payConfirmationHref, payHref } from "./library-data";
 import { LibraryBackLink, LibraryPanel } from "./library-ui";
 import { LibraryListSkeleton } from "./library-skeleton";
@@ -44,6 +43,7 @@ function CheckoutContent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { data: shopItems } = useLibraryShopItems([]);
+  const createOrder = useCreateLibraryOrder();
 
   useEffect(() => {
     const draft = readLibraryCheckoutDraft();
@@ -119,15 +119,8 @@ function CheckoutContent() {
         }>;
       };
 
-      const order = addLiveLibraryOrder({
+      const result = await createOrder.mutateAsync({
         itemIds: data.itemIds,
-        lines: data.lines.map((line) => ({
-          itemId: line.itemId,
-          title: line.title,
-          amount: line.amount,
-          format: line.format as "physical" | "digital" | "bundle",
-          bookId: line.bookId,
-        })),
         amount: data.amount,
         method: data.method,
         cardLast4: data.cardLast4,
@@ -135,7 +128,7 @@ function CheckoutContent() {
       });
 
       clearLibraryCheckoutDraft();
-      router.push(payConfirmationHref(order.id));
+      router.push(payConfirmationHref(result.id));
     } catch (error) {
       setPhase("error");
       setStatusMessage(null);

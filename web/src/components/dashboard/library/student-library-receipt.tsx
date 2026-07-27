@@ -4,21 +4,17 @@ import Link from "next/link";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import {
-  formatLibraryPrice,
-  getOrderById,
-  orderHref,
-} from "./library-data";
+import { useStudentLibraryOrder } from "@/hooks/use-dashboard-data";
+import { formatLibraryPrice, orderHref } from "./library-data";
 import { LibraryBackLink, LibraryPanel } from "./library-ui";
 import { LibraryDetailSkeleton } from "./library-skeleton";
-import { getOrderByIdLive } from "./library-live-store";
 
 export function StudentLibraryReceipt({ orderId }: { orderId: string }) {
   const isLoading = usePageLoading();
-  const order = getOrderByIdLive(orderId) ?? getOrderById(orderId);
+  const { data: order } = useStudentLibraryOrder(orderId, null);
 
-  if (!order) return null;
   if (isLoading) return <LibraryDetailSkeleton />;
+  if (!order) return null;
 
   return (
     <div className="space-y-5">

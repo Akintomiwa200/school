@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { AlertCircle, Book, BookMarked } from "lucide-react";
+import { AlertCircle, Book, BookMarked, ShoppingBag } from "lucide-react";
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { useLibraryData } from "@/hooks/use-dashboard-data";
 import {
@@ -74,13 +74,19 @@ export function LibraryDashboard({ basePath }: { basePath: string }) {
           <ManagementStatCard key={s.id} {...s} />
         ))}
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         <ManagementActionLink href={paths.books} label="Books" description="Manage catalog" icon={Book} />
         <ManagementActionLink
           href={paths.issues}
           label="Issues & returns"
           description="Circulation desk"
           icon={BookMarked}
+        />
+        <ManagementActionLink
+          href={paths.shop}
+          label="Shop"
+          description="Manage shop items"
+          icon={ShoppingBag}
         />
       </div>
       <ManagementPanel className="border border-border">

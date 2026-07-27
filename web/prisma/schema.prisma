@@ -144,6 +144,7 @@ model Subject {
 
   class       Class?   @relation(fields: [classId], references: [id])
   courses     Course[]
+  grades      Grade[]
   timetables  Timetable[]
 }
 
@@ -170,7 +171,9 @@ model Student {
   payments        Payment[]
   grades          Grade[]
   submissions     AssignmentSubmission[]
-  libraryIssues   LibraryIssue[]
+  libraryIssues   LibraryIssue[] @relation("LibraryIssues")
+  readingAchievements ReadingAchievement[]
+  libraryOrders   LibraryOrder[]
   admissions      Admission[]
 
   @@index([classId])
@@ -204,6 +207,7 @@ model Staff {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   payrolls     Payroll[]
   attendances  Attendance[]
+  courses      Course[]
 }
 
 // ============================================
@@ -227,6 +231,7 @@ model Course {
 
   subject     Subject      @relation(fields: [subjectId], references: [id])
   class       Class        @relation(fields: [classId], references: [id])
+  teacher     Staff        @relation(fields: [teacherId], references: [id])
   materials   CourseMaterial[]
   assignments Assignment[]
   onlineClasses OnlineClass[]
@@ -320,6 +325,7 @@ model Grade {
   createdAt DateTime @default(now())
 
   student   Student  @relation(fields: [studentId], references: [id])
+  subject   Subject  @relation(fields: [subjectId], references: [id])
 
   @@index([studentId])
 }
@@ -437,7 +443,7 @@ model Payment {
   createdAt     DateTime      @default(now())
 
   feePayment    FeePayment?   @relation(fields: [feePaymentId], references: [id])
-  student       Student       @relation(fields: [studentId], references: [id])
+  student   Student  @relation(fields: [studentId], references: [id])
 
   @@index([studentId])
 }
@@ -682,16 +688,28 @@ model BookChapter {
 }
 
 model LibraryIssue {
-  id         String    @id @default(cuid())
-  bookId     String
-  studentId  String
-  issuedAt   DateTime  @default(now())
-  dueDate    DateTime
-  returnedAt DateTime?
-  fine       Decimal?  @db.Decimal(10, 2)
+  id            String    @id @default(cuid())
+  bookId        String
+  studentId     String?
+  borrower      String?
+  borrowerId    String?
+  borrowerType  String?
+  issuedAt      DateTime  @default(now())
+  dueDate       DateTime
+  returnedAt    DateTime?
+  fine          Decimal?  @db.Decimal(10, 2)
 
-  book       Book      @relation(fields: [bookId], references: [id])
-  student    Student   @relation(fields: [studentId], references: [id])
+  book          Book      @relation(fields: [bookId], references: [id])
+  student          Student?   @relation("LibraryIssues", fields: [studentId], references: [id])
+
+  @@index([bookId])
+  @@index([studentId])
+}
+
+enum OrderStatus {
+  COMPLETED
+  PROCESSING
+  CANCELLED
 }
 
 model LibraryShopItem {
@@ -707,6 +725,59 @@ model LibraryShopItem {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  orderLines LibraryOrderLine[]
+}
+
+model ReadingAchievement {
+  id        String   @id @default(cuid())
+  studentId String
+  title     String
+  avatarUrl String?
+  goal      String
+  progress  Int      @default(0)
+  daysLeft  Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student   Student  @relation(fields: [studentId], references: [id])
+
+  @@index([studentId])
+}
+
+model LibraryOrder {
+  id              String          @id @default(cuid())
+  studentId       String
+  amount          Decimal         @db.Decimal(10, 2)
+  method          String          @default("card")
+  status          OrderStatus     @default(COMPLETED)
+  date            DateTime        @default(now())
+  receiptId       String          @unique
+  cardLast4       String?
+  gatewaySessionId String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  student         Student         @relation(fields: [studentId], references: [id])
+  lines           LibraryOrderLine[]
+
+  @@index([studentId])
+}
+
+model LibraryOrderLine {
+  id       String  @id @default(cuid())
+  orderId  String
+  shopItemId String?
+  title    String
+  amount   Decimal @db.Decimal(10, 2)
+  format   String  @default("digital")
+  bookId   String?
+
+  order    LibraryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shopItem LibraryShopItem? @relation(fields: [shopItemId], references: [id])
+
+  @@index([orderId])
 }
 
 // ============================================

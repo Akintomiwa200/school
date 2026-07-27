@@ -506,7 +506,7 @@ export function buildAttendanceMetaFromApi(
   const lastDay = new Date(year, month + 1, 0).getDate();
   const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}`;
 
-  return apiAttendance
+  const mapped = apiAttendance
     .filter((r) => r.date.startsWith(monthPrefix))
     .map((r) => {
       const dayNum = parseInt(r.date.split("-")[2], 10);
@@ -514,8 +514,9 @@ export function buildAttendanceMetaFromApi(
       const status: DayAttendanceStatus =
         r.status === "present" || r.status === "absent" ? r.status : "present";
       return { dateKey: formatDateKey(new Date(year, month, dayNum)), attendance: status };
-    })
-    .filter((item): item is ScheduleDayMeta => item !== null);
+    });
+
+  return mapped.filter((item) => item !== null) as ScheduleDayMeta[];
 }
 
 export function getScheduleEvents(viewDate: Date): ScheduleEvent[] {

@@ -7,14 +7,15 @@ import { useSession } from "next-auth/react";
 import { BookOpen, Glasses, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import { useStudentLibraryBooks, useLibraryShopItems, type LibraryBookItem } from "@/hooks/use-dashboard-data";
+import { useStudentLibraryBooks, useLibraryShopItems, useStudentLibraryAchievements, type LibraryBookItem, type LibraryAchievement } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { LibraryBookCard } from "./library-book-card";
-import { booksHref, libraryHref, payHref, shopHref, READING_ACHIEVEMENTS } from "./library-data";
+import { booksHref, libraryHref, payHref, shopHref } from "./library-data";
 import { LibraryPanel } from "./library-ui";
 import { LibrarySkeleton } from "./library-skeleton";
 
 const EMPTY_BOOKS: LibraryBookItem[] = [];
+const EMPTY_ACHIEVEMENTS: LibraryAchievement[] = [];
 
 function LibraryHeroBooksLeft() {
   return (
@@ -115,6 +116,7 @@ function SegmentedProgress({ progress }: { progress: number }) {
 
 function AchievementWidget() {
   const [enabled, setEnabled] = useState(true);
+  const { data: achievements } = useStudentLibraryAchievements(EMPTY_ACHIEVEMENTS);
   return (
     <LibraryPanel>
       <div className="flex items-center justify-between gap-3">
@@ -136,10 +138,12 @@ function AchievementWidget() {
       </div>
       <p className="mt-1 text-sm text-muted-foreground">Goal achieved success unlocked.</p>
       <div className={cn("mt-6 space-y-6 transition-opacity", !enabled && "opacity-45")}>
-        {READING_ACHIEVEMENTS.map((item) => (
+        {achievements.map((item) => (
           <div key={item.id} className="flex items-start gap-3">
             <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-muted">
-              <Image src={item.avatarUrl} alt="" fill className="object-cover" sizes="44px" />
+              {item.avatarUrl ? (
+                <Image src={item.avatarUrl} alt="" fill className="object-cover" sizes="44px" />
+              ) : null}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-3">

@@ -553,6 +553,70 @@ export function useReturnLibraryBook(issueId: string) {
   });
 }
 
+export type LibrarianShopItem = {
+  id: string;
+  title: string;
+  description: string | null;
+  rating: number;
+  icon: string;
+  thumbTone: string;
+  price: number;
+  format: string;
+  bookId: string | null;
+};
+
+export function useLibrarianShopItems(fallback: LibrarianShopItem[]) {
+  const { data, ...rest } = useQuery<LibrarianShopItem[]>({
+    queryKey: ["library", "shop"],
+    queryFn: () => apiGet<LibrarianShopItem[]>(API_ENDPOINTS.LIBRARY_SHOP),
+    placeholderData: fallback,
+    staleTime: 30_000,
+  });
+  return { data: data ?? fallback, ...rest };
+}
+
+export function useLibrarianShopItem(itemId: string, fallback?: LibrarianShopItem) {
+  return useQuery<LibrarianShopItem>({
+    queryKey: ["library", "shop", itemId],
+    queryFn: () => apiGet<LibrarianShopItem>(API_ENDPOINTS.LIBRARY_SHOP_BY_ID(itemId)),
+    enabled: !!itemId,
+    placeholderData: fallback,
+    staleTime: 30_000,
+  });
+}
+
+export function useCreateLibrarianShopItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { title: string; description?: string; rating?: number; icon: string; thumbTone?: string; price: number; format?: string; bookId?: string }) =>
+      apiPost<LibrarianShopItem>(API_ENDPOINTS.LIBRARY_SHOP, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["library", "shop"] });
+    },
+  });
+}
+
+export function useUpdateLibrarianShopItem(itemId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Partial<LibrarianShopItem>) =>
+      apiPatch<LibrarianShopItem>(API_ENDPOINTS.LIBRARY_SHOP_BY_ID(itemId), body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["library", "shop"] });
+    },
+  });
+}
+
+export function useDeleteLibrarianShopItem(itemId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiDelete(API_ENDPOINTS.LIBRARY_SHOP_BY_ID(itemId)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["library", "shop"] });
+    },
+  });
+}
+
 export function useTransportRoutes<T>(fallback: T) {
   return useApiData<T>("transport", API_ENDPOINTS.TRANSPORT, fallback);
 }
@@ -1450,6 +1514,68 @@ export function useLibraryShopItem(itemId: string, fallback: LibraryShopItemDeta
     staleTime: 30_000,
   });
   return { data: data ?? fallback, ...rest };
+}
+
+export type LibraryAchievement = {
+  id: string;
+  title: string;
+  avatarUrl: string | null;
+  progress: number;
+  daysLeft: number;
+  goal: string;
+};
+
+export function useStudentLibraryAchievements(fallback: LibraryAchievement[]) {
+  const { data, ...rest } = useQuery<LibraryAchievement[]>({
+    queryKey: ["student", "library", "achievements"],
+    queryFn: () => apiGet<LibraryAchievement[]>(API_ENDPOINTS.STUDENT_LIBRARY_ACHIEVEMENTS),
+    placeholderData: fallback,
+    staleTime: 30_000,
+  });
+  return { data: data ?? fallback, ...rest };
+}
+
+export type LibraryOrderData = {
+  id: string;
+  amount: number;
+  method: string;
+  status: string;
+  date: string;
+  receiptId: string;
+  cardLast4: string | null;
+  lines: { itemId: string; title: string; amount: number; format: string; bookId: string | null }[];
+};
+
+export function useStudentLibraryOrders(fallback: LibraryOrderData[]) {
+  const { data, ...rest } = useQuery<LibraryOrderData[]>({
+    queryKey: ["student", "library", "orders"],
+    queryFn: () => apiGet<LibraryOrderData[]>(API_ENDPOINTS.STUDENT_LIBRARY_ORDERS),
+    placeholderData: fallback,
+    staleTime: 30_000,
+  });
+  return { data: data ?? fallback, ...rest };
+}
+
+export function useStudentLibraryOrder(orderId: string, fallback: LibraryOrderData | null) {
+  const { data, ...rest } = useQuery<LibraryOrderData | null>({
+    queryKey: ["student", "library", "orders", orderId],
+    queryFn: () => apiGet<LibraryOrderData | null>(API_ENDPOINTS.STUDENT_LIBRARY_ORDER_BY_ID(orderId)),
+    enabled: !!orderId,
+    placeholderData: fallback,
+    staleTime: 30_000,
+  });
+  return { data: data ?? fallback, ...rest };
+}
+
+export function useCreateLibraryOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { itemIds: string[]; amount: number; method?: string; cardLast4?: string; gatewaySessionId?: string }) =>
+      apiPost<LibraryOrderData>(`${API_ENDPOINTS.STUDENT_LIBRARY_ORDERS}/create`, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["student", "library", "orders"] });
+    },
+  });
 }
 
 export function usePayAdmissionByReference(reference: string) {

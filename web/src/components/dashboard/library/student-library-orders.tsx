@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useStudentLibraryOrders, type LibraryOrderData } from "@/hooks/use-dashboard-data";
 import { formatLibraryPrice, orderHref } from "./library-data";
 import { LibraryPanel } from "./library-ui";
 import { LibraryListSkeleton } from "./library-skeleton";
-import { useLiveLibraryOrders } from "./library-live-store";
+
+const EMPTY_ORDERS: LibraryOrderData[] = [];
 
 export function StudentLibraryOrders() {
   const isLoading = usePageLoading();
-  const orders = useLiveLibraryOrders();
+  const { data: orders } = useStudentLibraryOrders(EMPTY_ORDERS);
 
   if (isLoading) return <LibraryListSkeleton />;
 

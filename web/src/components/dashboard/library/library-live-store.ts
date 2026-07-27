@@ -1,12 +1,26 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { LibraryOrder } from "./library-data";
-import { DEMO_ORDERS } from "./library-data";
 
-export type LiveLibraryOrder = LibraryOrder & {
-  paidAt: Date;
+export type LiveLibraryOrderLine = {
+  itemId: string;
+  title: string;
+  amount: number;
+  format: "physical" | "digital" | "bundle";
+  bookId?: string;
+};
+
+export type LiveLibraryOrder = {
+  id: string;
+  lines: LiveLibraryOrderLine[];
+  amount: number;
+  method: "card" | "bank";
+  status: "completed" | "processing" | "cancelled";
+  date: string;
+  receiptId: string;
+  cardLast4?: string;
   gatewaySessionId?: string;
+  paidAt: Date;
 };
 
 type LibraryShelfState = {
@@ -17,22 +31,13 @@ type LibraryShelfState = {
   currentChapter: Record<string, string>;
 };
 
-let liveOrders: LiveLibraryOrder[] = DEMO_ORDERS.map((order) => ({
-  ...order,
-  paidAt: new Date(order.date),
-}));
+let liveOrders: LiveLibraryOrder[] = [];
 
 let shelfState: LibraryShelfState = {
   ownedBookIds: [],
-  bookmarkedIds: ["pop-2", "ong-1"],
-  likedIds: ["pop-1", "ong-3"],
-  readingProgress: {
-    "pop-1": 40,
-    "ong-1": 62,
-    "ong-3": 35,
-    "ong-4": 44,
-    "ong-2": 18,
-  },
+  bookmarkedIds: [],
+  likedIds: [],
+  readingProgress: {},
   currentChapter: {},
 };
 
@@ -56,7 +61,7 @@ function getShelfSnapshot() {
 }
 
 export function useLiveLibraryOrders() {
-  return useSyncExternalStore(subscribe, getOrdersSnapshot, () => DEMO_ORDERS);
+  return useSyncExternalStore(subscribe, getOrdersSnapshot, () => []);
 }
 
 export function useLibraryShelf() {
@@ -143,40 +148,4 @@ export function grantBookAccess(bookId: string) {
     ownedBookIds: [...shelfState.ownedBookIds, bookId],
   };
   emit();
-}
-
-export function addLiveLibraryOrder(input: {
-  itemIds: string[];
-  lines: LiveLibraryOrder["lines"];
-  amount: number;
-  method: LiveLibraryOrder["method"];
-  cardLast4?: string;
-  gatewaySessionId?: string;
-}): LiveLibraryOrder {
-  const paidAt = new Date();
-  const order: LiveLibraryOrder = {
-    id: buildOrderId(paidAt),
-    lines: input.lines,
-    amount: input.amount,
-    method: input.method,
-    status: "completed",
-    date: formatDateKey(paidAt),
-    receiptId: buildReceiptId(paidAt),
-    cardLast4: input.cardLast4,
-    gatewaySessionId: input.gatewaySessionId,
-    paidAt,
-  };
-
-  liveOrders = [order, ...liveOrders];
-
-  for (const line of input.lines) {
-    if (line.bookId) grantBookAccess(line.bookId);
-  }
-
-  emit();
-  return order;
-}
-
-export function getOrderByIdLive(orderId: string) {
-  return liveOrders.find((order) => order.id === orderId);
 }

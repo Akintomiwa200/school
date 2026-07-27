@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useStudentLibraryOrder, type LibraryOrderData } from "@/hooks/use-dashboard-data";
 import {
   bookReadHref,
   formatLibraryPrice,
@@ -13,15 +14,13 @@ import {
 } from "./library-data";
 import { LibraryBackLink, LibraryPanel } from "./library-ui";
 import { LibraryDetailSkeleton } from "./library-skeleton";
-import { getOrderByIdLive } from "./library-live-store";
-import { getOrderById } from "./library-data";
 
 export function StudentLibraryOrderDetail({ orderId }: { orderId: string }) {
   const isLoading = usePageLoading();
-  const order = getOrderByIdLive(orderId) ?? getOrderById(orderId);
+  const { data: order } = useStudentLibraryOrder(orderId, null);
 
-  if (!order) return null;
   if (isLoading) return <LibraryDetailSkeleton />;
+  if (!order) return null;
 
   const digitalLine = order.lines.find((line) => line.bookId);
 

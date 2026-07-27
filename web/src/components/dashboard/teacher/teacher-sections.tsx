@@ -232,7 +232,7 @@ export function TeacherAssignments() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold">{a.title}</h3>
-                <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize", a.status === "grading" ? "bg-brand-orange/15 text-brand-orange" : a.status === "closed" ? "bg-green/15 text-green" : "bg-brand-blue/15 text-brand-blue")}>{a.status}</span>
+                <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize", (a.status === "grading" as string) ? "bg-brand-orange/15 text-brand-orange" : (a.status as string) === "closed" ? "bg-green/15 text-green" : "bg-brand-blue/15 text-brand-blue")}>{a.status}</span>
               </div>
               <p className="text-sm text-muted-foreground">{a.className} · Due {a.dueDate}</p>
             </div>
