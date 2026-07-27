@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useSuperAdminDashboard, type SuperAdminDashboardData } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import {
   ManagementActionLink,
@@ -13,11 +14,19 @@ import {
   ManagementStatCard,
 } from "../management/management-ui";
 import {
-  SUPER_ADMIN_AUDIT_LOG,
-  SUPER_ADMIN_DASHBOARD_STATS,
   SUPER_ADMIN_QUICK_ACTIONS,
-  SUPER_ADMIN_SCHOOLS,
 } from "./super-admin-data";
+
+const FALLBACK: SuperAdminDashboardData = {
+  stats: [
+    { id: "schools", label: "Schools", value: "0", hint: "Connected institutions", tone: "purple" },
+    { id: "users", label: "Users", value: "0", hint: "All platform accounts", tone: "blue" },
+    { id: "audit", label: "Audit events", value: "0", hint: "Last 30 days", tone: "green" },
+    { id: "health", label: "System health", value: "99.9%", hint: "Uptime this month", tone: "orange" },
+  ],
+  schools: [],
+  auditLog: [],
+};
 
 function SuperAdminDashboardSkeleton() {
   return (
@@ -40,6 +49,8 @@ export function SuperAdminDashboard() {
   const loading = usePageLoading(400);
   const { data: session } = useSession();
   const name = session?.user?.name?.split(" ")[0] ?? "Super Admin";
+  const { data: rawData } = useSuperAdminDashboard(FALLBACK);
+  const data = rawData ?? FALLBACK;
 
   if (loading) return <SuperAdminDashboardSkeleton />;
 
@@ -56,7 +67,7 @@ export function SuperAdminDashboard() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {SUPER_ADMIN_DASHBOARD_STATS.map((stat) => (
+        {data.stats.map((stat) => (
           <ManagementStatCard key={stat.id} {...stat} />
         ))}
       </div>
@@ -70,29 +81,33 @@ export function SuperAdminDashboard() {
             </Link>
           </div>
           <ul className="space-y-2">
-            {SUPER_ADMIN_SCHOOLS.map((school) => (
-              <li
-                key={school.id}
-                className="flex flex-col gap-2 rounded-xl border border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-foreground">{school.name}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {school.location} · {school.students.toLocaleString()} students
-                  </p>
-                </div>
-                <span
-                  className={cn(
-                    "inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
-                    school.status === "Active"
-                      ? "bg-green/15 text-green"
-                      : "bg-brand-orange/15 text-brand-orange",
-                  )}
+            {data.schools.length === 0 ? (
+              <li className="py-6 text-center text-sm text-muted-foreground">No schools found.</li>
+            ) : (
+              data.schools.map((school) => (
+                <li
+                  key={school.id}
+                  className="flex flex-col gap-2 rounded-xl border border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  {school.status}
-                </span>
-              </li>
-            ))}
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{school.name}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {school.location} · {school.students.toLocaleString()} students
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
+                      school.status === "Active"
+                        ? "bg-green/15 text-green"
+                        : "bg-brand-orange/15 text-brand-orange",
+                    )}
+                  >
+                    {school.status}
+                  </span>
+                </li>
+              ))
+            )}
           </ul>
         </ManagementPanel>
 
@@ -105,15 +120,19 @@ export function SuperAdminDashboard() {
             </Link>
           </div>
           <ul className="divide-y divide-border">
-            {SUPER_ADMIN_AUDIT_LOG.map((item) => (
-              <li key={item.id} className="py-3 first:pt-0 last:pb-0">
-                <p className="text-sm font-medium text-foreground">{item.action}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {item.actor} · {item.target}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">{item.time}</p>
-              </li>
-            ))}
+            {data.auditLog.length === 0 ? (
+              <li className="py-6 text-center text-sm text-muted-foreground">No audit events.</li>
+            ) : (
+              data.auditLog.map((item) => (
+                <li key={item.id} className="py-3 first:pt-0 last:pb-0">
+                  <p className="text-sm font-medium text-foreground">{item.action}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {item.actor} · {item.target}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.time}</p>
+                </li>
+              ))
+            )}
           </ul>
         </ManagementPanel>
       </div>

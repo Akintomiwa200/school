@@ -23,7 +23,7 @@ export function EmptyState({ icon: Icon, title, description, action, className }
         </div>
       ) : null}
       <p className="text-sm font-medium text-foreground">{title}</p>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );

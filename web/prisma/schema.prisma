@@ -10,6 +10,21 @@ datasource db {
 // AUTH & USERS
 // ============================================
 
+model School {
+  id          String   @id @default(cuid())
+  name        String
+  location    String?
+  phone       String?
+  email       String?
+  logo        String?
+  website     String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -24,8 +39,11 @@ model User {
   onboardingCompleted Boolean @default(false)
   onboardingData      Json?
   referralSource        String?
+  schoolId      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  school        School?   @relation(fields: [schoolId], references: [id])
 
   accounts      Account[]
   sessions      Session[]

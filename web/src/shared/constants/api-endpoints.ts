@@ -88,6 +88,7 @@ export const API_ENDPOINTS = {
   // Support
   SUPPORT: `${API_BASE}/support`,
   SUPPORT_BY_ID: (id: string) => `${API_BASE}/support/${id}`,
+  SUPPORT_REPLIES: (ticketId: string) => `${API_BASE}/support/${ticketId}/replies`,
 
   // Events & Calendar
   EVENTS: `${API_BASE}/events`,
@@ -109,6 +110,7 @@ export const API_ENDPOINTS = {
   ACADEMIC_YEARS: `${API_BASE}/academic-years`,
   ACADEMIC_YEARS_BY_ID: (id: string) => `${API_BASE}/academic-years/${id}`,
   SCHOOLS: `${API_BASE}/schools`,
+  SCHOOLS_BY_ID: (id: string) => `${API_BASE}/schools/${id}`,
 
   // Reports
   REPORTS: `${API_BASE}/reports`,
@@ -119,6 +121,9 @@ export const API_ENDPOINTS = {
 
   // Settings
   SETTINGS: `${API_BASE}/settings`,
+
+  // Super Admin
+  SUPER_ADMIN_DASHBOARD: `${API_BASE}/super-admin/dashboard`,
 
   // Upload
   UPLOAD: `${API_BASE}/upload`,

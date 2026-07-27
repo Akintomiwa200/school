@@ -221,7 +221,7 @@ export function StudentLibrary() {
                 <BookOpen className="h-10 w-10 text-muted-foreground/60" />
               </div>
               <h2 className="mt-6 text-2xl font-bold text-foreground">No books in the library yet</h2>
-              <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
+              <p className="mx-auto mt-3 text-base leading-relaxed text-muted-foreground">
                 The library catalog is being curated. Check back soon for free and premium titles.
               </p>
               <Button asChild variant="outline" className="mt-7 rounded-full">

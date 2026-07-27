@@ -171,6 +171,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.EVENTS_VIEW,
     Permission.CALENDAR_VIEW,
     Permission.LIBRARY_VIEW,
+    Permission.SUPPORT_VIEW,
   ],
 
   [UserRole.PARENT]: [

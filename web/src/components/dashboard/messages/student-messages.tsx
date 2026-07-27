@@ -324,7 +324,7 @@ function EmptyThreadState() {
         💬
       </div>
       <h2 className="text-lg font-semibold">Schooli Messages</h2>
-      <p className="max-w-sm text-sm text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         Send messages, share documents, photos, and voice notes. Start voice or video calls with
         WebRTC — just like WhatsApp.
       </p>

@@ -62,7 +62,7 @@ function LibraryBooksContent() {
             </svg>
           </div>
           <p className="mt-6 text-2xl font-bold text-foreground">No {filter !== "all" ? filter : ""} books found</p>
-          <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-3 text-base leading-relaxed text-muted-foreground">
             {filter !== "all"
               ? `There are no ${filter} books in the catalog right now. Try a different filter.`
               : "The catalog is empty. Books will appear here once added to the library."}

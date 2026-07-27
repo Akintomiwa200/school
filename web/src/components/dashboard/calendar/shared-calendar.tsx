@@ -111,7 +111,7 @@ function DayDetailList({
       <CalendarPanel className="flex h-full min-h-[280px] flex-col items-center justify-center border border-border text-center">
         <CalendarDays className="mb-3 h-10 w-10 text-muted-foreground/50" />
         <p className="text-sm font-medium">Select a day</p>
-        <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-muted-foreground">
           Tap a date on the month view to see classes, exams, and events.
         </p>
       </CalendarPanel>

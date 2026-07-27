@@ -46,7 +46,7 @@ function ReaderContent({ bookId }: { bookId: string }) {
           <BookOpen className="h-12 w-12 text-muted-foreground/50" />
         </div>
         <h2 className="mt-8 text-2xl font-bold text-foreground">Book not found</h2>
-        <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
+        <p className="mx-auto mt-3 text-base leading-relaxed text-muted-foreground">
           This book may have been removed or the link is invalid.
         </p>
         <Button asChild variant="outline" className="mt-8 rounded-full">
@@ -63,7 +63,7 @@ function ReaderContent({ bookId }: { bookId: string }) {
           <BookOpen className="h-12 w-12 text-muted-foreground/50" />
         </div>
         <h2 className="mt-8 text-2xl font-bold text-foreground">No chapters available</h2>
-        <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
+        <p className="mx-auto mt-3 text-base leading-relaxed text-muted-foreground">
           This book doesn&apos;t have any chapters yet. Content is being added.
         </p>
         <Button asChild variant="outline" className="mt-8 rounded-full">

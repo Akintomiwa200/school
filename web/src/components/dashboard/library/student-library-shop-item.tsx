@@ -27,7 +27,7 @@ export function StudentLibraryShopItem({ itemId }: { itemId: string }) {
             <span className="text-5xl">🛍️</span>
           </div>
           <h2 className="mt-8 text-2xl font-bold text-foreground">Item not found</h2>
-          <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-3 text-base leading-relaxed text-muted-foreground">
             This shop item may have been removed or the link is invalid.
           </p>
           <Button asChild variant="outline" className="mt-8 rounded-full">

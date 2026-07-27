@@ -1,35 +1,51 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Building2, Download, Plus, Search, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import { useAuditLog, useSchoolsList, useUsersList } from "@/hooks/use-dashboard-data";
+import { useAuditLog, useSchoolsList, useUsersList, useCreateSchool } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { ManagementPageHeader, ManagementPanel } from "../management/management-ui";
 import {
   AUDIT_SEVERITY_STYLES,
   PLATFORM_AUDIT,
-  PLATFORM_SCHOOLS,
   PLATFORM_USERS,
   SCHOOL_STATUS_STYLES,
   USER_STATUS_STYLES,
+  type PlatformSchool,
 } from "./super-admin-entities-data";
+
+const EMPTY_SCHOOLS: PlatformSchool[] = [];
 
 function SectionSkeleton() {
   return <div className="h-64 animate-pulse rounded-[20px] bg-muted" />;
 }
 
 export function SuperAdminSchools() {
-  const { data: schools = PLATFORM_SCHOOLS, isFetching } = useSchoolsList(PLATFORM_SCHOOLS);
+  const { data: schools = EMPTY_SCHOOLS, isFetching } = useSchoolsList(EMPTY_SCHOOLS);
+  const createSchool = useCreateSchool();
   const loading = usePageLoading() || isFetching;
   const [query, setQuery] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [formName, setFormName] = useState("");
+  const [formLocation, setFormLocation] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formPhone, setFormPhone] = useState("");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return schools;
     return schools.filter((s) => s.name.toLowerCase().includes(q) || s.location.toLowerCase().includes(q));
   }, [schools, query]);
+
+  const onProvision = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName.trim()) return;
+    await createSchool.mutateAsync({ name: formName, location: formLocation || undefined, email: formEmail || undefined, phone: formPhone || undefined });
+    setFormName(""); setFormLocation(""); setFormEmail(""); setFormPhone(""); setShowForm(false);
+  };
 
   if (loading) return <SectionSkeleton />;
 
@@ -39,22 +55,41 @@ export function SuperAdminSchools() {
         title="Schools"
         description="Manage schools connected to the platform."
         action={
-          <Button className="h-10 rounded-full bg-brand-purple px-5 text-white hover:bg-brand-purple/90">
+          <Button onClick={() => setShowForm(!showForm)} className="h-10 rounded-full bg-brand-purple px-5 text-white hover:bg-brand-purple/90">
             <Plus className="mr-2 h-4 w-4" />
             Provision school
           </Button>
         }
       />
-      <ManagementPanel className="flex flex-col gap-4 border border-border sm:flex-row sm:items-center sm:justify-between">
+      {showForm && (
+        <ManagementPanel className="border border-brand-purple/30">
+          <form onSubmit={onProvision} className="space-y-4">
+            <h3 className="text-sm font-bold">New school</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input required value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="School name" className="h-9 rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+              <input value={formLocation} onChange={(e) => setFormLocation(e.target.value)} placeholder="Location" className="h-9 rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+              <input value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="Email" className="h-9 rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+              <input value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="Phone" className="h-9 rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={createSchool.isPending} className="h-9 rounded-full bg-brand-purple px-5 text-white">
+                {createSchool.isPending ? "Creating..." : "Create school"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="h-9 rounded-full px-5">Cancel</Button>
+            </div>
+          </form>
+        </ManagementPanel>
+      )}
+      <ManagementPanel className="flex flex-col gap-3 border border-border sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-bold">{filtered.length} schools</h2>
-        <div className="relative w-full max-w-xs">
+        <div className="relative w-full sm:ml-auto sm:w-64">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search schools"
-            className="h-9 w-full rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-10 w-full rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
       </ManagementPanel>
@@ -89,9 +124,32 @@ export function SuperAdminSchools() {
                 <p className="text-xs text-muted-foreground">Created</p>
               </div>
             </div>
-            <Button variant="outline" className="mt-4 w-full rounded-full">Manage school</Button>
+            <Button asChild variant="outline" className="mt-4 w-full rounded-full">
+              <Link href={`/super-admin/schools/${school.id}`}>Manage school</Link>
+            </Button>
           </ManagementPanel>
         ))}
+        {filtered.length === 0 && (
+          <ManagementPanel className="col-span-full flex flex-col items-center justify-center border border-dashed border-border py-16 text-center">
+            <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-purple/10">
+              <Building2 className="h-7 w-7 text-brand-purple" />
+            </span>
+            <h3 className="text-base font-bold">
+              {query ? "No matching schools" : "No schools yet"}
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {query
+                ? `No schools match "${query}". Try a different search term.`
+                : "Get started by provisioning your first school to begin onboarding students and staff."}
+            </p>
+            {!query && (
+              <Button onClick={() => setShowForm(true)} className="mt-5 h-10 rounded-full bg-brand-purple px-6 text-white hover:bg-brand-purple/90">
+                <Plus className="mr-2 h-4 w-4" />
+                Provision your first school
+              </Button>
+            )}
+          </ManagementPanel>
+        )}
       </div>
     </div>
   );

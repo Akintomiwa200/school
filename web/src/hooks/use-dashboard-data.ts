@@ -63,6 +63,61 @@ export function useSchoolsList<T>(fallback: T) {
   return useApiData<T>("schools", API_ENDPOINTS.SCHOOLS, fallback);
 }
 
+export type SchoolDetail = {
+  id: string;
+  name: string;
+  location: string;
+  email: string;
+  phone: string;
+  logo: string;
+  website: string;
+  status: string;
+  createdAt: string;
+  stats: { students: number; admins: number; teachers: number; staff: number; totalUsers: number };
+  recentUsers: Array<{ id: string; name: string; email: string; role: string; isActive: boolean; joinedAt: string }>;
+};
+
+export function useSchoolDetail(schoolId: string) {
+  return useQuery<SchoolDetail>({
+    queryKey: ["school", schoolId],
+    queryFn: () => apiGet<SchoolDetail>(API_ENDPOINTS.SCHOOLS_BY_ID(schoolId)),
+    enabled: !!schoolId,
+    staleTime: 30_000,
+  });
+}
+
+export function useUpdateSchool(schoolId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Partial<SchoolDetail>) => apiPatch<SchoolDetail>(API_ENDPOINTS.SCHOOLS_BY_ID(schoolId), body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["school", schoolId] });
+      queryClient.invalidateQueries({ queryKey: ["schools"] });
+    },
+  });
+}
+
+export function useDeleteSchool(schoolId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiDelete(API_ENDPOINTS.SCHOOLS_BY_ID(schoolId)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["schools"] });
+    },
+  });
+}
+
+export function useCreateSchool() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { name: string; location?: string; email?: string; phone?: string }) =>
+      apiPost(API_ENDPOINTS.SCHOOLS, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["schools"] });
+    },
+  });
+}
+
 export function useAuditLog<T>(scope: "platform" | "finance", fallback: T) {
   return useApiData<T>(["audit", scope], `${API_ENDPOINTS.AUDIT}?scope=${scope}&limit=100`, fallback);
 }
@@ -75,6 +130,16 @@ export function useAuditEvent<T>(auditId: string, fallback: T | undefined) {
     enabled: auditId.length > 0,
     staleTime: 30_000,
   });
+}
+
+export type SuperAdminDashboardData = {
+  stats: Array<{ id: string; label: string; value: string; hint: string; tone: "purple" | "blue" | "green" | "orange" }>;
+  schools: Array<{ id: string; name: string; location: string; students: number; status: string }>;
+  auditLog: Array<{ id: string; action: string; actor: string; target: string; time: string }>;
+};
+
+export function useSuperAdminDashboard(fallback: SuperAdminDashboardData) {
+  return useApiData<SuperAdminDashboardData>("super-admin-dashboard", API_ENDPOINTS.SUPER_ADMIN_DASHBOARD, fallback);
 }
 
 export type AuditStats = {
@@ -967,6 +1032,52 @@ export function useSubmitSupportTicket() {
     mutationFn: (body: { subject: string; category: string; priority: string; description: string }) =>
       apiPost(API_ENDPOINTS.SUPPORT, body),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["support"] }),
+  });
+}
+
+export type SupportTicketDetail = {
+  id: string;
+  subject: string;
+  category: string;
+  description: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  updatedAt: string;
+  replyCount?: number;
+  user: { id: string; name: string; email: string; role?: string };
+  replies: { id: string; content: string; createdAt: string; user: { id: string; name: string; email: string; role?: string } }[];
+};
+
+export function useSupportTicketDetail(ticketId: string) {
+  return useQuery<SupportTicketDetail>({
+    queryKey: ["support", ticketId],
+    queryFn: () => apiGet<SupportTicketDetail>(API_ENDPOINTS.SUPPORT_BY_ID(ticketId)),
+    enabled: !!ticketId,
+    staleTime: 5_000,
+    refetchInterval: 10_000,
+  });
+}
+
+export function useReplySupportTicket(ticketId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { content: string }) => apiPost(API_ENDPOINTS.SUPPORT_REPLIES(ticketId), body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["support", ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["support"] });
+    },
+  });
+}
+
+export function useUpdateSupportTicket(ticketId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { status?: string; priority?: string }) => apiPatch(API_ENDPOINTS.SUPPORT_BY_ID(ticketId), body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["support", ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["support"] });
+    },
   });
 }
 

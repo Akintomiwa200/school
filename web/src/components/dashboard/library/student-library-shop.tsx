@@ -28,7 +28,7 @@ export function StudentLibraryShop() {
             <span className="text-4xl">🛒</span>
           </div>
           <p className="mt-6 text-2xl font-bold text-foreground">No shop items available</p>
-          <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-3 text-base leading-relaxed text-muted-foreground">
             New items will be added to the shop soon. Check back later.
           </p>
         </div>

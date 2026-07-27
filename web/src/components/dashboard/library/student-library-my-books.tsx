@@ -87,7 +87,7 @@ export function StudentLibraryMyBooks() {
               <BookOpen className="h-8 w-8 text-muted-foreground/60" />
             </div>
             <p className="mt-5 text-lg font-semibold text-foreground">No accessible titles</p>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            <p className="mx-auto mt-2 text-sm leading-relaxed text-muted-foreground">
               Free books are available immediately; paid titles unlock after purchase.
             </p>
             <Button asChild variant="outline" className="mt-5 rounded-full">
@@ -122,7 +122,7 @@ export function StudentLibraryMyBooks() {
               <BookMarked className="h-8 w-8 text-muted-foreground/60" />
             </div>
             <p className="mt-5 text-lg font-semibold text-foreground">No bookmarks yet</p>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            <p className="mx-auto mt-2 text-sm leading-relaxed text-muted-foreground">
               Bookmark books from the catalog to find them quickly later.
             </p>
           </LibraryPanel>
@@ -154,7 +154,7 @@ export function StudentLibraryMyBooks() {
               <BookOpen className="h-8 w-8 text-muted-foreground/60" />
             </div>
             <p className="mt-5 text-lg font-semibold text-foreground">No books in progress</p>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            <p className="mx-auto mt-2 text-sm leading-relaxed text-muted-foreground">
               Start reading a book to track your progress here.
             </p>
           </LibraryPanel>
