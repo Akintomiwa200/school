@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { GradesPanel, getLetterGradeStyle } from "./grade-ui";
 import { StudentGradesListSkeleton } from "./student-grades-skeleton";
-import { TEACHER_DASHBOARD_CLASSES, buildTeacherCoursesFallback } from "../teacher/teacher-data";
+const COURSES_EMPTY = { classes: [] as { id: string; name: string; students: number; room: string; schedule: string }[], courses: [] as { id: string; title: string; classId: string }[] };
 
 type GradebookData = {
   classId: string;
@@ -45,10 +45,10 @@ function scoreToLetter(score: number) {
 
 export function TeacherGrades() {
   const searchParams = useSearchParams();
-  const initialClassId = searchParams.get("classId") ?? TEACHER_DASHBOARD_CLASSES[0]?.id ?? "class-a";
+  const initialClassId = searchParams.get("classId") ?? "";
   const [classId, setClassId] = useState(initialClassId);
   const isLoading = usePageLoading();
-  const { data: coursesData = buildTeacherCoursesFallback() } = useTeacherCourses(buildTeacherCoursesFallback());
+  const { data: coursesData = COURSES_EMPTY } = useTeacherCourses(COURSES_EMPTY);
   const { data: gradebook, isFetching, isError, isFetched } = useTeacherGradebook<GradebookData>(classId, GRADEBOOK_FALLBACK);
   const publishGrades = usePublishTeacherGrades();
 
@@ -65,7 +65,7 @@ export function TeacherGrades() {
 
   if (!gradebook) return <StudentGradesListSkeleton />;
 
-  const classOptions = coursesData.classes.length > 0 ? coursesData.classes : TEACHER_DASHBOARD_CLASSES.map((c) => ({ id: c.id, name: c.name }));
+  const classOptions = coursesData.classes;
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">

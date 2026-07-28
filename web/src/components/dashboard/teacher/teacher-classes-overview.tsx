@@ -24,7 +24,7 @@ import { usePageLoading } from "@/hooks/use-page-loading";
 import { useTeacherClassesOverview } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { ManagementPanel } from "../management/management-ui";
-import { TEACHER_AVATAR_TONES, buildTeacherOverviewPerformers, TEACHER_ASSIGNMENTS, TEACHER_COURSES } from "./teacher-data";
+import { TEACHER_AVATAR_TONES } from "./teacher-data";
 
 type OverviewData = {
   courseCards: {
@@ -66,28 +66,11 @@ type OverviewData = {
 };
 
 const OVERVIEW_FALLBACK: OverviewData = {
-  courseCards: TEACHER_COURSES.map((course, index) => ({
-    id: course.id,
-    classId: index === 0 ? "class-a" : index === 1 ? "class-b" : "class-c",
-    title: course.title,
-    students: course.students,
-    modules: course.modules,
-    lessons: course.lessons,
-    materials: 12 + index * 4,
-    assignments: 8 + index * 3,
-    progress: course.progress,
-    tone: (["purple", "green", "pink", "orange"] as const)[index % 4],
-  })),
-  bestPerformers: buildTeacherOverviewPerformers(),
-  assignments: TEACHER_ASSIGNMENTS.slice(0, 4).map((item, index) => ({
-    id: item.id,
-    title: item.title,
-    className: item.className,
-    status: item.status === "grading" ? "Grading in progress" : "Pending",
-    tone: (["pink", "blue", "green", "yellow"] as const)[index % 4],
-  })),
-  classCount: 3,
-  studentCount: 29,
+  courseCards: [],
+  bestPerformers: [],
+  assignments: [],
+  classCount: 0,
+  studentCount: 0,
 };
 
 const COURSE_TONE_STYLES = {
@@ -135,7 +118,7 @@ function OverviewSkeleton() {
   return (
     <div className="animate-pulse space-y-6">
       <div className="h-10 w-56 rounded-xl bg-muted" />
-      <div className="grid gap-4 xl:grid-cols-12">
+      <div className="grid gap-6 xl:grid-cols-12">
         <div className="space-y-4 xl:col-span-8">
           <div className="h-36 rounded-[24px] bg-muted" />
           <div className="grid gap-4 sm:grid-cols-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-40 rounded-[24px] bg-muted" />)}</div>
@@ -221,7 +204,7 @@ export function TeacherClasses() {
     return list;
   }, [overview.bestPerformers, sortDesc]);
 
-  if (loading && isFetching) return <OverviewSkeleton />;
+  if (loading || isFetching) return <OverviewSkeleton />;
 
   const teacherName = session?.user?.name?.split(" ")[0] ?? "Teacher";
 
@@ -231,7 +214,7 @@ export function TeacherClasses() {
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Course Overview</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {overview.classCount} classes · {overview.studentCount} students
+            {overview.classCount > 0 ? `${overview.classCount} classes · ${overview.studentCount} students` : "No classes assigned yet"}
           </p>
         </div>
         <Button asChild className="rounded-full bg-brand-purple text-white hover:bg-brand-purple/90">
@@ -248,7 +231,7 @@ export function TeacherClasses() {
             <div className="relative z-10 p-6 sm:p-8 sm:pr-40 lg:pr-48">
               <div className="max-w-2xl">
                 <p className="text-sm font-medium text-white/85">Welcome back</p>
-                <h2 className="mt-1 text-2xl font-bold leading-tight sm:text-3xl">{session?.user?.name ?? "Jenny Wilson"}</h2>
+                <h2 className="mt-1 text-2xl font-bold leading-tight sm:text-3xl">{session?.user?.name ?? "Teacher"}</h2>
                 <p className="mt-2 max-w-prose text-sm leading-relaxed text-white/85">
                   Hi {teacherName}, track your classes, top students, and pending assignments from one place.
                 </p>
@@ -273,149 +256,161 @@ export function TeacherClasses() {
             </div>
           </ManagementPanel>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {overview.courseCards.map((course, index) => {
-              const styles = COURSE_TONE_STYLES[course.tone];
-              const Icon = COURSE_ICONS[index % COURSE_ICONS.length];
-              return (
-                <Link key={course.id} href={`/teacher/classes/${course.classId}`} className="group block">
-                  <ManagementPanel className={cn("h-full border transition-transform hover:-translate-y-0.5", styles.card)}>
-                    <div className="flex items-start justify-between gap-3">
-                      <span className={cn("flex h-11 w-11 items-center justify-center rounded-2xl shadow-sm", styles.icon)}>
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span className="text-xs font-semibold text-muted-foreground">{course.progress}%</span>
-                    </div>
-                    <h3 className="mt-4 text-lg font-bold text-foreground group-hover:text-brand-purple">{course.title}</h3>
-                    <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                      <span className="inline-flex items-center gap-1.5"><Eye className="h-4 w-4" />{course.lessons}</span>
-                      <span className="inline-flex items-center gap-1.5"><FileText className="h-4 w-4" />{course.materials}</span>
-                      <span className="inline-flex items-center gap-1.5"><Users className="h-4 w-4" />{course.students}</span>
-                    </div>
-                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted/80">
-                      <div className="h-full rounded-full bg-brand-purple" style={{ width: `${course.progress}%` }} />
-                    </div>
-                    <div className="mt-3 flex items-center gap-3 text-xs font-medium">
-                      <span className="text-brand-purple opacity-0 transition-opacity group-hover:opacity-100">Open class →</span>
-                      <Link
-                        href={`/teacher/courses/${course.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-muted-foreground hover:text-brand-purple"
-                      >
-                        Course content
-                      </Link>
-                    </div>
-                  </ManagementPanel>
-                </Link>
-              );
-            })}
+          {overview.courseCards.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {overview.courseCards.map((course, index) => {
+                const styles = COURSE_TONE_STYLES[course.tone];
+                const Icon = COURSE_ICONS[index % COURSE_ICONS.length];
+                return (
+                  <Link key={course.id} href={`/teacher/classes/${course.classId}`} className="group block">
+                    <ManagementPanel className={cn("h-full border transition-transform hover:-translate-y-0.5", styles.card)}>
+                      <div className="flex items-start justify-between gap-3">
+                        <span className={cn("flex h-11 w-11 items-center justify-center rounded-2xl shadow-sm", styles.icon)}>
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <span className="text-xs font-semibold text-muted-foreground">{course.progress}%</span>
+                      </div>
+                      <h3 className="mt-4 text-lg font-bold text-foreground group-hover:text-brand-purple">{course.title}</h3>
+                      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                        <span className="inline-flex items-center gap-1.5"><Eye className="h-4 w-4" />{course.lessons}</span>
+                        <span className="inline-flex items-center gap-1.5"><FileText className="h-4 w-4" />{course.materials}</span>
+                        <span className="inline-flex items-center gap-1.5"><Users className="h-4 w-4" />{course.students}</span>
+                      </div>
+                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted/80">
+                        <div className="h-full rounded-full bg-brand-purple" style={{ width: `${course.progress}%` }} />
+                      </div>
+                      <div className="mt-3 flex items-center gap-3 text-xs font-medium">
+                        <span className="text-brand-purple opacity-0 transition-opacity group-hover:opacity-100">Open class →</span>
+                        <Link
+                          href={`/teacher/courses/${course.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-muted-foreground hover:text-brand-purple"
+                        >
+                          Course content
+                        </Link>
+                      </div>
+                    </ManagementPanel>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 py-16 text-center">
+              <BookOpen className="h-10 w-10 text-muted-foreground/50" />
+              <p className="mt-3 text-sm font-medium text-muted-foreground">No courses yet</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">Once you are assigned classes, your courses will appear here.</p>
+            </div>
+          )}
+
+            <ManagementPanel className="overflow-hidden border border-border p-0">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
+                <h2 className="text-base font-bold">Best performers</h2>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={month}
+                    onChange={(e) => setMonth(e.target.value)}
+                    className="h-9 rounded-full border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {MONTHS.map((label) => (
+                      <option key={label} value={label}>{label}</option>
+                    ))}
+                  </select>
+                  <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={() => setSortDesc((v) => !v)}>
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filters
+                  </Button>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[760px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30 text-xs uppercase tracking-wide text-muted-foreground">
+                      <th className="px-5 py-3">Rank</th>
+                      <th className="px-5 py-3">Name</th>
+                      <th className="px-5 py-3">Courses</th>
+                      <th className="px-5 py-3">Assignments</th>
+                      <th className="px-5 py-3">Hours</th>
+                      <th className="px-5 py-3">Quiz</th>
+                      <th className="px-5 py-3">Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {performers.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">
+                          Performance data will appear as students complete work.
+                        </td>
+                      </tr>
+                    ) : (
+                      performers.map((student) => (
+                        <tr key={student.id} className="border-b border-border/60 last:border-0">
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-2">
+                              <span className={cn("flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ring-2", RANK_BADGE_STYLES[student.badge])}>
+                                {student.rank}
+                              </span>
+                              {student.trend === "up" ? (
+                                <ArrowUpRight className="h-4 w-4 text-green" />
+                              ) : (
+                                <ArrowDownRight className="h-4 w-4 text-brand-pink" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <Link href={`/teacher/students/${student.id}`} className="flex items-center gap-3 hover:text-brand-purple">
+                              <span className={cn("flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold", TEACHER_AVATAR_TONES[student.avatarTone])}>
+                                {student.initials}
+                              </span>
+                              <span className="font-semibold">{student.name}</span>
+                            </Link>
+                          </td>
+                          <td className="px-5 py-4 tabular-nums text-muted-foreground">{String(student.courses).padStart(2, "0")}</td>
+                          <td className="px-5 py-4 tabular-nums text-muted-foreground">{student.assignments}</td>
+                          <td className="px-5 py-4 tabular-nums text-muted-foreground">{student.hours}</td>
+                          <td className="px-5 py-4 tabular-nums text-muted-foreground">{student.quiz}</td>
+                          <td className="px-5 py-4 font-bold tabular-nums">{student.points}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </ManagementPanel>
           </div>
 
-          <ManagementPanel className="overflow-hidden border border-border p-0">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
-              <h2 className="text-base font-bold">Best performers</h2>
-              <div className="flex items-center gap-2">
-                <select
-                  value={month}
-                  onChange={(e) => setMonth(e.target.value)}
-                  className="h-9 rounded-full border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  {MONTHS.map((label) => (
-                    <option key={label} value={label}>{label}</option>
-                  ))}
-                </select>
-                <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={() => setSortDesc((v) => !v)}>
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filters
-                </Button>
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30 text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="px-5 py-3">Rank</th>
-                    <th className="px-5 py-3">Name</th>
-                    <th className="px-5 py-3">Courses</th>
-                    <th className="px-5 py-3">Assignments</th>
-                    <th className="px-5 py-3">Hours</th>
-                    <th className="px-5 py-3">Quiz</th>
-                    <th className="px-5 py-3">Points</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {performers.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">
-                        Performance data will appear as students complete work.
-                      </td>
-                    </tr>
-                  ) : (
-                    performers.map((student) => (
-                      <tr key={student.id} className="border-b border-border/60 last:border-0">
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className={cn("flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ring-2", RANK_BADGE_STYLES[student.badge])}>
-                              {student.rank}
-                            </span>
-                            {student.trend === "up" ? (
-                              <ArrowUpRight className="h-4 w-4 text-green" />
-                            ) : (
-                              <ArrowDownRight className="h-4 w-4 text-brand-pink" />
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <Link href={`/teacher/students/${student.id}`} className="flex items-center gap-3 hover:text-brand-purple">
-                            <span className={cn("flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold", TEACHER_AVATAR_TONES[student.avatarTone])}>
-                              {student.initials}
-                            </span>
-                            <span className="font-semibold">{student.name}</span>
-                          </Link>
-                        </td>
-                        <td className="px-5 py-4 tabular-nums text-muted-foreground">{String(student.courses).padStart(2, "0")}</td>
-                        <td className="px-5 py-4 tabular-nums text-muted-foreground">{student.assignments}</td>
-                        <td className="px-5 py-4 tabular-nums text-muted-foreground">{student.hours}</td>
-                        <td className="px-5 py-4 tabular-nums text-muted-foreground">{student.quiz}</td>
-                        <td className="px-5 py-4 font-bold tabular-nums">{student.points}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </ManagementPanel>
-        </div>
+          <div className="space-y-6 xl:col-span-4">
+            <MiniCalendar />
 
-        <div className="space-y-6 xl:col-span-4">
-          <MiniCalendar />
-
-          <ManagementPanel className="border border-border">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-bold">Assignments</h3>
-              <Link href="/teacher/assignments" className="text-sm font-semibold text-brand-purple hover:underline">
-                View all
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {overview.assignments.map((assignment) => (
-                <Link
-                  key={assignment.id}
-                  href={`/teacher/assignments/${assignment.id}`}
-                  className={cn(
-                    "block rounded-2xl border p-4 transition-colors hover:brightness-[0.98]",
-                    ASSIGNMENT_TONE_STYLES[assignment.tone],
-                  )}
-                >
-                  <p className="font-semibold leading-snug text-foreground">{assignment.title}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{assignment.className}</p>
-                  <p className="mt-2 text-xs font-medium text-foreground/80">{assignment.status}</p>
+            <ManagementPanel className="border border-border">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-bold">Assignments</h3>
+                <Link href="/teacher/assignments" className="text-sm font-semibold text-brand-purple hover:underline">
+                  View all
                 </Link>
-              ))}
-            </div>
-          </ManagementPanel>
+              </div>
+              <div className="space-y-3">
+                {overview.assignments.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No assignments yet.</p>
+                ) : (
+                  overview.assignments.map((assignment) => (
+                    <Link
+                      key={assignment.id}
+                      href={`/teacher/assignments/${assignment.id}`}
+                      className={cn(
+                        "block rounded-2xl border p-4 transition-colors hover:brightness-[0.98]",
+                        ASSIGNMENT_TONE_STYLES[assignment.tone],
+                      )}
+                    >
+                      <p className="font-semibold leading-snug text-foreground">{assignment.title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{assignment.className}</p>
+                      <p className="mt-2 text-xs font-medium text-foreground/80">{assignment.status}</p>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </ManagementPanel>
+          </div>
         </div>
       </div>
-    </div>
   );
 }

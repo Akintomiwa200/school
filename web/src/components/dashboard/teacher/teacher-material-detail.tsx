@@ -14,7 +14,6 @@ import {
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { AdminBackLink, AdminFormField, adminSelectClass } from "../admin/admin-workflow-ui";
 import { ManagementPageHeader, ManagementPanel } from "../management/management-ui";
-import { TEACHER_MATERIALS, buildTeacherCoursesFallback } from "./teacher-data";
 import { TeacherDetailSkeleton, TeacherNotFound } from "./teacher-workflow-ui";
 type MaterialDetail = {
   id: string;
@@ -30,11 +29,10 @@ type MaterialDetail = {
 export function TeacherMaterialDetail({ materialId }: { materialId: string }) {
   const router = useRouter();
   const pageLoading = usePageLoading();
-  const fallback = TEACHER_MATERIALS.find((m) => m.id === materialId);
   const { data: material, isFetching, isError, isFetched } = useTeacherMaterial<MaterialDetail | null>(
     materialId,
-    fallback ? { ...fallback, classId: "class-a", sharedClasses: ["class-a"] } : undefined,
-  );  const { data: coursesData = buildTeacherCoursesFallback() } = useTeacherCourses(buildTeacherCoursesFallback());
+  );  const COURSES_EMPTY = { classes: [] as { id: string; name: string }[], courses: [] as { id: string; title: string }[] };
+  const { data: coursesData = COURSES_EMPTY } = useTeacherCourses(COURSES_EMPTY);
   const shareMaterial = useShareTeacherMaterial(materialId);
   const deleteMaterial = useDeleteTeacherMaterial();
   const [shareClassId, setShareClassId] = useState("");

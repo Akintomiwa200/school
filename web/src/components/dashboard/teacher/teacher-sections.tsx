@@ -17,16 +17,11 @@ import {
 } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { AdminFormField, adminInputClass, adminSelectClass } from "../admin/admin-workflow-ui";
+import { EmptyState } from "../../ui/empty-state";
 import { ManagementPageHeader, ManagementPanel } from "../management/management-ui";
-import {
-  TEACHER_ASSIGNMENTS,
-  TEACHER_ATTENDANCE_SESSIONS,
-  TEACHER_MATERIALS,
-  TEACHER_TIMETABLE,
-  buildTeacherCoursesFallback,
-} from "./teacher-data";
+import { BookOpen } from "lucide-react";
 
-const COURSES_FALLBACK = buildTeacherCoursesFallback();
+const COURSES_FALLBACK = { classes: [] as { id: string; name: string; students: number; room: string; schedule: string }[], courses: [] as { id: string; title: string; modules: number; lessons: number; students: number; progress: number; classId: string }[] };
 
 function Skeleton() {
   return <div className="animate-pulse space-y-5"><div className="h-10 w-64 rounded-lg bg-muted" /><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-28 rounded-[20px] bg-muted" />)}</div></div>;
@@ -81,7 +76,9 @@ export function TeacherCourses() {
         }
       />
       <div className="space-y-3">
-        {data.courses.map((c) => (
+        {data.courses.length === 0 ? (
+          <EmptyState icon={BookOpen} title="No courses yet" description="Courses will appear here once you are assigned classes." />
+        ) : data.courses.map((c) => (
           <ManagementPanel key={c.id} className="border border-border">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -107,7 +104,7 @@ export function TeacherCourses() {
 }
 
 export function TeacherAttendance() {
-  const { data: sessions = TEACHER_ATTENDANCE_SESSIONS, isFetching } = useTeacherAttendance(TEACHER_ATTENDANCE_SESSIONS);
+  const { data: sessions = [], isFetching } = useTeacherAttendance<{ id: string; className: string; time: string; date: string; marked: boolean; present: number; absent: number; rosterSize?: number }[]>([]);
   const { data: coursesData = COURSES_FALLBACK } = useTeacherCourses(COURSES_FALLBACK);
   const createSession = useCreateTeacherAttendanceSession();
   const loading = usePageLoading() || isFetching;
@@ -138,7 +135,9 @@ export function TeacherAttendance() {
         }
       />
       <div className="space-y-3">
-        {sessions.map((s) => (
+        {sessions.length === 0 ? (
+          <EmptyState icon={BookOpen} title="No attendance sessions" description="Create a session to start marking attendance." />
+        ) : sessions.map((s) => (
           <ManagementPanel key={s.id} className="flex flex-col gap-4 border border-border sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="font-bold">{s.className}</h3>
@@ -187,7 +186,7 @@ export function TeacherAttendance() {
 
 export function TeacherAssignments() {
   const { data: coursesData = COURSES_FALLBACK } = useTeacherCourses(COURSES_FALLBACK);
-  const { data: assignments = TEACHER_ASSIGNMENTS, isFetching } = useTeacherAssignments(TEACHER_ASSIGNMENTS);
+  const { data: assignments = [], isFetching } = useTeacherAssignments<{ id: string; title: string; className: string; dueDate: string; submitted: number; total: number; status: string }[]>([]);
   const createAssignment = useCreateTeacherAssignment();
   const loading = usePageLoading() || isFetching;
   const [open, setOpen] = useState(false);
@@ -227,7 +226,9 @@ export function TeacherAssignments() {
         }
       />
       <div className="space-y-3">
-        {assignments.map((a) => (
+        {assignments.length === 0 ? (
+          <EmptyState icon={BookOpen} title="No assignments yet" description="Create your first assignment to start collecting submissions." />
+        ) : assignments.map((a) => (
           <ManagementPanel key={a.id} className="flex flex-col gap-3 border border-border sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -277,7 +278,7 @@ export function TeacherAssignments() {
 }
 
 export function TeacherMaterials() {
-  const { data: materials = TEACHER_MATERIALS, isFetching } = useTeacherMaterials(TEACHER_MATERIALS);
+  const { data: materials = [], isFetching } = useTeacherMaterials<{ id: string; name: string; type: string; size: string; sharedWith: string; uploaded: string }[]>([]);
   const { data: coursesData = COURSES_FALLBACK } = useTeacherCourses(COURSES_FALLBACK);
   const addMaterial = useAddTeacherMaterial();
   const loading = usePageLoading() || isFetching;
@@ -313,7 +314,9 @@ export function TeacherMaterials() {
         <table className="w-full min-w-[560px] text-left text-sm">
           <thead><tr className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground"><th className="px-4 py-3">File</th><th className="px-4 py-3">Shared with</th><th className="px-4 py-3">Uploaded</th><th className="px-4 py-3" /></tr></thead>
           <tbody>
-            {materials.map((m) => (
+            {materials.length === 0 ? (
+              <tr><td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">No materials uploaded yet.</td></tr>
+            ) : materials.map((m) => (
               <tr key={m.id} className="border-b border-border last:border-0 hover:bg-muted/20">
                 <td className="px-4 py-3">
                   <Link href={`/teacher/materials/${m.id}`} className="font-semibold hover:text-brand-purple">{m.name}</Link>
@@ -362,14 +365,18 @@ export function TeacherMaterials() {
 }
 
 export function TeacherTimetable() {
-  const { data: timetable = TEACHER_TIMETABLE, isFetching } = useTeacherTimetable(TEACHER_TIMETABLE);
+  const { data: timetable = [], isFetching } = useTeacherTimetable<{ day: string; periods: { time: string; subject: string; room: string; classId?: string }[] }[]>([]);
   const loading = usePageLoading() || isFetching;
   if (loading) return <Skeleton />;
   return (
     <div className="space-y-6">
       <ManagementPageHeader title="Timetable" description="Your weekly teaching schedule." />
       <div className="grid gap-4 lg:grid-cols-3">
-        {timetable.map((day) => (
+        {timetable.length === 0 ? (
+          <div className="lg:col-span-3">
+            <EmptyState icon={BookOpen} title="No timetable data" description="Your weekly schedule will appear here once classes are assigned." />
+          </div>
+        ) : timetable.map((day) => (
           <ManagementPanel key={day.day} className="border border-border">
             <h3 className="font-bold">{day.day}</h3>
             <ul className="mt-4 space-y-3">

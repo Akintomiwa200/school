@@ -10,19 +10,32 @@ import {
   Zap,
 } from "lucide-react";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import { useTeacherDashboard } from "@/hooks/use-dashboard-data";
+import { useTeacherDashboard, type TeacherDashboardLive } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { AdminTablePagination } from "../admin/admin-list-ui";
 import { ManagementPanel } from "../management/management-ui";
 import {
   TEACHER_AVATAR_TONES,
-  TEACHER_DASHBOARD_CLASSES,
   TEACHER_MASTERY_TONES,
-  buildTeacherDashboardFallback,
   getTeacherScoreBarTone,
   type TeacherPerformanceTier,
   type TeacherStudentProficiency,
 } from "./teacher-data";
+
+const EMPTY_DASHBOARD: TeacherDashboardLive = {
+  classId: "",
+  className: "",
+  rosterPreview: [],
+  rosterOverflow: 0,
+  summary: { overallScore: 0, overallGradeAvg: 0, workAssigned: 0, workGradeAvg: 0 },
+  segments: [],
+  proficiency: [],
+  alerts: { total: 0, urgent: 0 },
+  assignmentsDue: 0,
+  sessionsToday: 0,
+  updatedAt: new Date().toISOString(),
+  classes: [],
+};
 
 const PROFICIENCY_PAGE_SIZES = [10, 25, 100] as const;
 
@@ -103,6 +116,7 @@ function ClassSelect({
         onChange={(e) => onChange(e.target.value)}
         className="h-10 min-w-[132px] appearance-none rounded-xl border border-border bg-background py-2 pl-9 pr-8 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
+        {classes.length === 0 && <option value="">No classes</option>}
         {classes.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name}
@@ -121,6 +135,7 @@ function RosterAvatars({
   preview: { id: string; initials: string; name: string; tone: keyof typeof TEACHER_AVATAR_TONES }[];
   overflow: number;
 }) {
+  if (preview.length === 0) return null;
   return (
     <div className="flex items-center pl-1">
       {preview.map((student, index) => (
@@ -313,13 +328,20 @@ function ProficiencyRow({ student, view }: { student: TeacherStudentProficiency;
 
 export function TeacherDashboard() {
   const pageLoading = usePageLoading(400);
-  const defaultClassId = TEACHER_DASHBOARD_CLASSES[0]?.id ?? "class-a";
-  const [selectedClass, setSelectedClass] = useState(defaultClassId);
+  const [selectedClass, setSelectedClass] = useState("");
   const [proficiencyView, setProficiencyView] = useState<"objectives" | "strands">("objectives");
   const [proficiencyPage, setProficiencyPage] = useState(1);
   const [proficiencyPageSize, setProficiencyPageSize] = useState<number>(PROFICIENCY_PAGE_SIZES[0]);
-  const fallback = buildTeacherDashboardFallback(selectedClass);
+  const fallback: TeacherDashboardLive = { ...EMPTY_DASHBOARD, classId: selectedClass };
   const { data: dashboard = fallback, isFetching } = useTeacherDashboard(selectedClass, fallback);
+
+  const noClassSelected = selectedClass === "" && dashboard.classes.length > 0;
+
+  useEffect(() => {
+    if (noClassSelected) {
+      setSelectedClass(dashboard.classes[0]!.id);
+    }
+  }, [noClassSelected, dashboard.classes]);
 
   const proficiencyTotal = dashboard.proficiency.length;
   const proficiencyTotalPages = Math.max(1, Math.ceil(proficiencyTotal / proficiencyPageSize));
@@ -338,7 +360,7 @@ export function TeacherDashboard() {
     }
   }, [proficiencyPage, proficiencyTotalPages]);
 
-  if (pageLoading && isFetching) return <DashboardSkeleton />;
+  if (pageLoading || isFetching) return <DashboardSkeleton />;
 
   const classOptions = dashboard.classes.length > 0 ? dashboard.classes : fallback.classes;
 
@@ -350,7 +372,7 @@ export function TeacherDashboard() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Dashboard
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">{dashboard.className}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{dashboard.className || "No class assigned"}</p>
           </div>
           <ClassSelect
             value={selectedClass}
@@ -414,41 +436,67 @@ export function TeacherDashboard() {
           </div>
         </ManagementPanel>
 
-        {dashboard.segments.map((segment) => {
-          const styles = SEGMENT_STYLES[segment.tier];
-          return (
-            <ManagementPanel
-              key={segment.tier}
-              className={cn(
-                "relative flex min-h-[188px] flex-col justify-between border",
-                styles.card,
-              )}
-            >
-              <span
+        {dashboard.segments.length > 0 ? (
+          dashboard.segments.map((segment) => {
+            const styles = SEGMENT_STYLES[segment.tier];
+            return (
+              <ManagementPanel
+                key={segment.tier}
                 className={cn(
-                  "absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-[10px] font-bold ring-2",
-                  styles.badge,
+                  "relative flex min-h-[188px] flex-col justify-between border",
+                  styles.card,
                 )}
               >
-                {segment.initials}
-              </span>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {TIER_LABELS[segment.tier]}
-              </p>
+                <span
+                  className={cn(
+                    "absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-[10px] font-bold ring-2",
+                    styles.badge,
+                  )}
+                >
+                  {segment.initials}
+                </span>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {TIER_LABELS[segment.tier]}
+                </p>
+                <div>
+                  <p className={cn("text-3xl font-bold leading-none sm:text-4xl", styles.value)}>
+                    {segment.count}
+                  </p>
+                  <p className={cn("mt-2 text-xs font-medium", styles.subtext)}>
+                    {segment.classPercent}% of class
+                  </p>
+                  <p className={cn("mt-1 text-xs font-semibold", styles.subtext)}>
+                    Grade avg: {segment.gradeAvg}%
+                  </p>
+                </div>
+              </ManagementPanel>
+            );
+          })
+        ) : (
+          <>
+            <ManagementPanel className="relative flex min-h-[188px] flex-col justify-between border border-green/15 bg-green/5">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Mastered</p>
               <div>
-                <p className={cn("text-3xl font-bold leading-none sm:text-4xl", styles.value)}>
-                  {segment.count}
-                </p>
-                <p className={cn("mt-2 text-xs font-medium", styles.subtext)}>
-                  {segment.classPercent}% of class
-                </p>
-                <p className={cn("mt-1 text-xs font-semibold", styles.subtext)}>
-                  Grade avg: {segment.gradeAvg}%
-                </p>
+                <p className="text-3xl font-bold leading-none text-green sm:text-4xl">0</p>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">0% of class</p>
               </div>
             </ManagementPanel>
-          );
-        })}
+            <ManagementPanel className="relative flex min-h-[188px] flex-col justify-between border border-brand-blue/15 bg-brand-blue/5">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Working towards</p>
+              <div>
+                <p className="text-3xl font-bold leading-none text-brand-blue sm:text-4xl">0</p>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">0% of class</p>
+              </div>
+            </ManagementPanel>
+            <ManagementPanel className="relative flex min-h-[188px] flex-col justify-between border border-brand-orange/15 bg-brand-orange/5">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Needs attention</p>
+              <div>
+                <p className="text-3xl font-bold leading-none text-brand-orange sm:text-4xl">0</p>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">0% of class</p>
+              </div>
+            </ManagementPanel>
+          </>
+        )}
       </div>
 
       <ManagementPanel className="overflow-hidden border border-border p-0">
@@ -523,7 +571,7 @@ export function TeacherDashboard() {
                     colSpan={proficiencyView === "objectives" ? 6 : 3}
                     className="px-5 py-10 text-center text-muted-foreground"
                   >
-                    No students in this class yet.
+                    No student proficiency data for this class yet.
                   </td>
                 </tr>
               ) : (

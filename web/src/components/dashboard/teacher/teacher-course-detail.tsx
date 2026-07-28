@@ -8,7 +8,6 @@ import { useCreateTeacherCourseModule, useTeacherCourse } from "@/hooks/use-dash
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { AdminBackLink, AdminFormField, adminInputClass } from "../admin/admin-workflow-ui";
 import { ManagementPageHeader, ManagementPanel } from "../management/management-ui";
-import { TEACHER_COURSES, buildTeacherCoursesFallback } from "./teacher-data";
 import { TeacherDetailSkeleton, TeacherNotFound } from "./teacher-workflow-ui";
 type CourseDetail = {
   id: string;
@@ -23,27 +22,8 @@ type CourseDetail = {
 
 export function TeacherCourseDetail({ courseId }: { courseId: string }) {
   const pageLoading = usePageLoading();
-  const fallbackCourse = TEACHER_COURSES.find((c) => c.id === courseId);
-  const fallbackIndex = TEACHER_COURSES.findIndex((c) => c.id === courseId);
   const { data: course, isFetching, isError, isFetched } = useTeacherCourse<CourseDetail | null>(
     courseId,
-    fallbackCourse
-      ? {
-          id: fallbackCourse.id,
-          title: fallbackCourse.title,
-          classId: buildTeacherCoursesFallback().courses[fallbackIndex]?.classId ?? "class-a",
-          className: buildTeacherCoursesFallback().classes[fallbackIndex]?.name ?? fallbackCourse.title,
-          modules: Array.from({ length: fallbackCourse.modules }, (_, moduleIndex) => ({
-            id: `${fallbackCourse.id}-m${moduleIndex + 1}`,
-            title: `Module ${moduleIndex + 1}`,
-            lessons: Math.max(1, Math.round(fallbackCourse.lessons / fallbackCourse.modules)),
-            order: moduleIndex + 1,
-          })),
-          lessons: fallbackCourse.lessons,
-          students: fallbackCourse.students,
-          progress: fallbackCourse.progress,
-        }
-      : undefined,
   );  const addModule = useCreateTeacherCourseModule(courseId);
   const [open, setOpen] = useState(false);
   const [moduleTitle, setModuleTitle] = useState("");
