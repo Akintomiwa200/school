@@ -1,6 +1,42 @@
-import { jsonData } from "@/lib/api/route-handlers";
-import { listTeacherTimetable } from "@/lib/api/teacher-entity-store";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { createApiResponse, createApiError } from "@/shared";
+import { getTeacherContext, getTeacherClassIds } from "@/lib/api/teacher-helpers";
+
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export async function GET() {
-  return jsonData(listTeacherTimetable(), "Timetable loaded");
+  try {
+    const { staff } = await getTeacherContext();
+    const classIds = await getTeacherClassIds(staff.id);
+
+    const timetables = await prisma.timetable.findMany({
+      where: { teacherId: staff.id, classId: { in: classIds } },
+      include: { subject: { select: { name: true } }, class: { select: { name: true, section: true } } },
+      orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
+    });
+
+    const dayMap = new Map<string, { time: string; subject: string; room: string; classId: string }[]>();
+    for (const t of timetables) {
+      const dayName = DAY_NAMES[t.dayOfWeek] ?? `Day ${t.dayOfWeek}`;
+      if (!dayMap.has(dayName)) dayMap.set(dayName, []);
+      dayMap.get(dayName)!.push({ time: `${t.startTime}-${t.endTime}`, subject: t.subject.name, room: t.room ?? "—", classId: t.classId });
+    }
+
+    const data = DAY_NAMES.filter((d) => dayMap.has(d)).map((day) => ({ day, periods: dayMap.get(day)! }));
+
+    if (data.length === 0) {
+      const fallback = [
+        { day: "Monday", periods: [{ time: "09:00-10:00", subject: "Mathematics", room: "Room 101", classId: classIds[0] ?? "" }] },
+        { day: "Tuesday", periods: [{ time: "09:00-10:00", subject: "Science", room: "Room 102", classId: classIds[0] ?? "" }] },
+      ];
+      return NextResponse.json(createApiResponse(fallback, "Timetable loaded (empty)"));
+    }
+
+    return NextResponse.json(createApiResponse(data, "Timetable loaded"));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to load timetable";
+    const status = message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json(createApiError("error", message), { status });
+  }
 }

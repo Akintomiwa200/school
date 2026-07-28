@@ -346,6 +346,7 @@ model Grade {
   subject   Subject  @relation(fields: [subjectId], references: [id])
 
   @@index([studentId])
+  @@unique([studentId, subjectId, term])
 }
 
 model OnlineClass {

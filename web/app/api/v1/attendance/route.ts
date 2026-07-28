@@ -1,22 +1,49 @@
-import { NextRequest } from "next/server";
-import { jsonData } from "@/lib/api/route-handlers";
-import { PARENT_ATTENDANCE_ALERTS, PARENT_ATTENDANCE_RECORDS } from "@/components/dashboard/parent/parent-data";
-import { STAFF_ATTENDANCE } from "@/components/dashboard/staff/staff-data";
-import { listTeacherAttendance } from "@/lib/api/teacher-entity-store";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { createApiResponse, createApiError } from "@/shared";
+import { getTeacherContext, getTeacherClassIds } from "@/lib/api/teacher-helpers";
 
 export async function GET(request: NextRequest) {
-  const scope = request.nextUrl.searchParams.get("scope") ?? "teacher";
+  try {
+    const scope = request.nextUrl.searchParams.get("scope") ?? "teacher";
+    if (scope === "parent" || scope === "staff") {
+      return NextResponse.json(createApiResponse([], "Attendance loaded"));
+    }
 
-  if (scope === "parent") {
-    return jsonData(
-      { records: PARENT_ATTENDANCE_RECORDS, alerts: PARENT_ATTENDANCE_ALERTS },
-      "Parent attendance loaded",
-    );
+    const { staff } = await getTeacherContext();
+    const classIds = await getTeacherClassIds(staff.id);
+
+    const sessions = await prisma.attendance.findMany({
+      where: { AND: [{ classId: { in: classIds } }, { classId: { not: null } }, { studentId: { not: null } }] },
+      include: { class: { select: { name: true, section: true } } },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+    });
+
+    const grouped = new Map<string, { classId: string; className: string; date: string; records: typeof sessions }>();
+    for (const s of sessions) {
+      const key = `${s.classId!}-${s.date.toISOString().slice(0, 10)}`;
+      if (!grouped.has(key)) {
+        grouped.set(key, { classId: s.classId!, className: s.class ? (s.class.section ? `${s.class.name} - ${s.class.section}` : s.class.name) : "Unknown", date: s.date.toISOString().slice(0, 10), records: [] });
+      }
+      grouped.get(key)!.records.push(s);
+    }
+
+    const data = Array.from(grouped.values()).map((g) => ({
+      id: `${g.classId}-${g.date}`,
+      classId: g.classId,
+      className: g.className,
+      date: g.date,
+      time: "09:00",
+      marked: g.records.length > 0,
+      present: g.records.filter((r) => r.status === "PRESENT" || r.status === "LATE").length,
+      absent: g.records.filter((r) => r.status === "ABSENT").length,
+      rosterSize: g.records.length,
+    }));
+
+    return NextResponse.json(createApiResponse(data, "Teacher attendance loaded"));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to load attendance";
+    const status = message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json(createApiError("error", message), { status });
   }
-
-  if (scope === "staff") {
-    return jsonData(STAFF_ATTENDANCE, "Staff attendance loaded");
-  }
-
-  return jsonData(listTeacherAttendance(), "Teacher attendance loaded");
 }
