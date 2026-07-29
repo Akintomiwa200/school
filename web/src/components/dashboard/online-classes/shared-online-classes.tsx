@@ -20,6 +20,8 @@ import {
   useOnlineClassesStore,
 } from "./online-classes-live-store";
 import { ClassStatusBadge, ClassActionLink, LiveConnectionBadge, OnlineClassesPanel } from "./online-classes-ui";
+import { TeacherRoleLiveBadge } from "../teacher/teacher-workflow-ui";
+import { HrRoleLiveBadge } from "../hr/hr-workflow-ui";
 
 export type OnlineClassesTab = "live" | "upcoming" | "recordings";
 
@@ -267,9 +269,13 @@ export function SharedOnlineClasses({ embedded = false }: { embedded?: boolean }
       {!embedded ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Online Classes
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Online Classes
+              </h1>
+              <TeacherRoleLiveBadge />
+              <HrRoleLiveBadge />
+            </div>
             <p className="mt-1 text-sm text-muted-foreground">
               Join live sessions, view upcoming classes, and watch recordings.
             </p>

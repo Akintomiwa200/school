@@ -43,6 +43,14 @@ export type AdmissionConfig = {
   enableRealTimePayment: boolean;
   paymentInstructions: string;
   welcomeMessage: string;
+  /** Shown on /admissions marketing hero */
+  publicHeroTitle: string;
+  /** Shown under hero on /admissions */
+  publicHeroDescription: string;
+  /** e.g. "Open year-round" in Important dates */
+  intakeStatusNote: string;
+  /** e.g. "5–7 business days" */
+  responseTimeNote: string;
   updatedAt: string;
 };
 
@@ -214,6 +222,11 @@ export function createDefaultAdmissionConfig(schoolType: SchoolType = "universit
     enableRealTimePayment: true,
     paymentInstructions: "Pay the non-refundable application fee to proceed. Document review begins after payment.",
     welcomeMessage: "Complete your application, upload required documents, pay the fee, and follow the admission timeline.",
+    publicHeroTitle: "Start your journey with Pathway Academy",
+    publicHeroDescription:
+      "Our admissions process is straightforward and supportive. We guide every family from first inquiry to first day of class.",
+    intakeStatusNote: "Open year-round",
+    responseTimeNote: "5–7 business days",
     updatedAt: new Date().toISOString(),
   };
 }
@@ -254,6 +267,47 @@ export function formatAdmissionFee(amount: number) {
   return new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(
     amount,
   );
+}
+
+export type AdmissionsPublicStep = {
+  title: string;
+  description: string;
+};
+
+/** Content blocks for /admissions — driven by admin configuration. */
+export function buildAdmissionsPublicSteps(config: AdmissionConfig): AdmissionsPublicStep[] {
+  const typeLabel = SCHOOL_TYPE_LABELS[config.schoolType].toLowerCase();
+  const examSummary =
+    config.examSubjects.length > 0
+      ? `Subjects: ${config.examSubjects.slice(0, 3).join(", ")}${config.examSubjects.length > 3 ? "…" : ""}.`
+      : "Entrance assessment as configured by admissions.";
+
+  return [
+    {
+      title: "Choose your intake",
+      description: `Apply for ${typeLabel} — select your ${config.programLabel.toLowerCase()} from ${config.programOptions.length} options.`,
+    },
+    {
+      title: "Submit application",
+      description: config.welcomeMessage,
+    },
+    {
+      title: "Pay fee & sit exam",
+      description: `Application fee ${formatAdmissionFee(config.applicationFee)}. ${examSummary} Passing score: ${config.examPassingScore}%.`,
+    },
+    {
+      title: "Approval & enrollment",
+      description: `${config.departmentName} reviews your application. After approval you receive student login credentials.`,
+    },
+  ];
+}
+
+export function buildAdmissionsRequirements(config: AdmissionConfig): string[] {
+  const fromDocs = config.requiredDocuments.map((doc) =>
+    doc.required ? doc.label : `${doc.label} (optional)`,
+  );
+  if (fromDocs.length > 0) return fromDocs;
+  return ["Completed online application form"];
 }
 
 export function examSubjectsFor(institutionType: SchoolType, config?: AdmissionConfig) {

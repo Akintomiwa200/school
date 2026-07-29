@@ -112,6 +112,7 @@ export const ROLE_SHARED_PATH_OVERRIDES: Partial<Record<UserRole, string[]>> = {
     "/shared/calendar",
     "/shared/announcements",
     "/shared/events",
+    "/shared/support",
     "/shared/notifications",
   ],
   [UserRole.ACCOUNTANT]: [
@@ -136,8 +137,11 @@ export const ROLE_SHARED_PATH_OVERRIDES: Partial<Record<UserRole, string[]>> = {
     "/shared/notifications",
     "/shared/announcements",
     "/shared/calendar",
+    "/shared/events",
     "/shared/messages",
     "/shared/support",
+    "/shared/profile",
+    "/shared/settings",
   ],
   [UserRole.LIBRARIAN]: [
     "/shared/notifications",

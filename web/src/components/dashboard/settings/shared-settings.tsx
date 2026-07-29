@@ -15,6 +15,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { UserRole } from "@/shared";
+import { usePlatformSettings, useSavePlatformSettings } from "@/hooks/use-dashboard-data";
 import { DEMO_SESSIONS } from "../profile/profile-data";
 import { formatRoleLabel, getProfileInitials } from "../profile/profile-ui";
 import {
@@ -84,6 +85,8 @@ export function SharedSettings() {
   const tabs = useMemo(() => getSettingsTabsForRole(role), [role]);
   const [activeTab, setActiveTab] = useSettingsTab();
   const [saving, setSaving] = useState(false);
+  const savePlatformSettings = useSavePlatformSettings();
+  const { data: platformSettings } = usePlatformSettings<Record<string, unknown>>({});
 
   const displayName = (session?.user?.name ?? "Alex Johnson").trim();
   const roleLabel = formatRoleLabel(role);
@@ -135,6 +138,21 @@ export function SharedSettings() {
     }
   }, [session?.user?.email]);
 
+  useEffect(() => {
+    if (role !== UserRole.SUPER_ADMIN || !platformSettings) return;
+    const generalSaved = platformSettings.platformGeneral as GeneralSettingsForm | undefined;
+    const preferencesSaved = platformSettings.platformPreferences as PreferencesForm | undefined;
+    const privacySaved = platformSettings.platformPrivacy as PrivacyForm | undefined;
+    const notificationsSaved = platformSettings.platformNotifications as NotificationPrefs | undefined;
+    const integrationsSaved = platformSettings.platformIntegrations as IntegrationService[] | undefined;
+
+    if (generalSaved) setGeneral((prev) => ({ ...prev, ...generalSaved }));
+    if (preferencesSaved) setPreferences(preferencesSaved);
+    if (privacySaved) setPrivacy(privacySaved);
+    if (notificationsSaved) setNotifications(notificationsSaved);
+    if (integrationsSaved) setIntegrations(integrationsSaved);
+  }, [role, platformSettings]);
+
   const isDirty =
     JSON.stringify({
       general,
@@ -147,19 +165,34 @@ export function SharedSettings() {
 
   async function handleSave() {
     setSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setInitialSnapshot(
-      JSON.stringify({
-        general,
-        preferences,
-        privacy,
-        notifications,
-        integrations,
-        twoFactor,
-      }),
-    );
-    setSaving(false);
-    toast.success("Settings saved");
+    try {
+      if (role === UserRole.SUPER_ADMIN) {
+        await savePlatformSettings.mutateAsync({
+          platformGeneral: general,
+          platformPreferences: preferences,
+          platformPrivacy: privacy,
+          platformNotifications: notifications,
+          platformIntegrations: integrations,
+        });
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+      }
+      setInitialSnapshot(
+        JSON.stringify({
+          general,
+          preferences,
+          privacy,
+          notifications,
+          integrations,
+          twoFactor,
+        }),
+      );
+      toast.success("Settings saved");
+    } catch {
+      toast.error("Failed to save settings");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleCancel() {

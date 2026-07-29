@@ -7,4 +7,6 @@ export { TeacherCourseDetail } from "./teacher-course-detail";
 export { TeacherMaterialDetail } from "./teacher-material-detail";
 export { TeacherStudentDetail } from "./teacher-student-detail";
 export { TeacherStudents } from "./teacher-students";
+export { TeacherCourseCreate } from "./teacher-course-create";
+export { TeacherRealtimeBridge } from "./teacher-realtime-bridge";
 export { TeacherCourses, TeacherAttendance, TeacherAssignments, TeacherMaterials, TeacherTimetable } from "./teacher-sections";

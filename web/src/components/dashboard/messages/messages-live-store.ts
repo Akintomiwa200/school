@@ -1,30 +1,32 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { ActiveCall, ChatMessage, Conversation } from "./messages-types";
-import {
-  CURRENT_USER_ID,
-  getSeedConversations,
-  getSeedMessages,
-} from "./messages-data";
+import { API_ENDPOINTS } from "@/shared/constants";
+import { apiPost } from "@/lib/api/client";
+import type { ActiveCall, ChatMessage, ChatParticipant, Conversation } from "./messages-types";
 
 type MessagesState = {
+  currentUserId: string;
   conversations: Conversation[];
   messages: ChatMessage[];
   activeConversationId: string | null;
   activeCall: ActiveCall | null;
   typingByConversation: Record<string, string[]>;
+  hydrated: boolean;
 };
 
 let state: MessagesState = {
-  conversations: getSeedConversations(),
-  messages: getSeedMessages(),
-  activeConversationId: getSeedConversations()[0]?.id ?? null,
+  currentUserId: "",
+  conversations: [],
+  messages: [],
+  activeConversationId: null,
   activeCall: null,
   typingByConversation: {},
+  hydrated: false,
 };
 
 const listeners = new Set<() => void>();
+let refreshFn: (() => void) | null = null;
 
 function emit() {
   listeners.forEach((listener) => listener());
@@ -47,6 +49,29 @@ export function getMessagesState() {
   return state;
 }
 
+export function registerMessagesRefresh(fn: (() => void) | null) {
+  refreshFn = fn;
+}
+
+export function hydrateMessagesFromApi(payload: {
+  currentUserId: string;
+  conversations: Conversation[];
+  messages: ChatMessage[];
+}) {
+  const activeStillExists = payload.conversations.some((c) => c.id === state.activeConversationId);
+  state = {
+    ...state,
+    currentUserId: payload.currentUserId,
+    conversations: payload.conversations,
+    messages: payload.messages,
+    activeConversationId: activeStillExists
+      ? state.activeConversationId
+      : state.activeConversationId ?? payload.conversations[0]?.id ?? null,
+    hydrated: true,
+  };
+  emit();
+}
+
 export function setActiveConversation(conversationId: string | null) {
   state = { ...state, activeConversationId: conversationId };
   if (conversationId) {
@@ -60,14 +85,14 @@ export function setActiveConversation(conversationId: string | null) {
   emit();
 }
 
-export function addMessage(message: ChatMessage) {
+function addMessage(message: ChatMessage) {
   const conversations = state.conversations.map((conversation) => {
     if (conversation.id !== message.conversationId) return conversation;
     return {
       ...conversation,
       lastMessage: message,
       unreadCount:
-        message.senderId === CURRENT_USER_ID || conversation.id === state.activeConversationId
+        message.senderId === state.currentUserId || conversation.id === state.activeConversationId
           ? conversation.unreadCount
           : conversation.unreadCount + 1,
     };
@@ -82,12 +107,12 @@ export function addMessage(message: ChatMessage) {
   state = {
     ...state,
     conversations: sorted,
-    messages: [...state.messages, message],
+    messages: [...state.messages.filter((m) => m.id !== message.id), message],
   };
   emit();
 }
 
-export function updateMessage(messageId: string, patch: Partial<ChatMessage>) {
+function updateMessage(messageId: string, patch: Partial<ChatMessage>) {
   state = {
     ...state,
     messages: state.messages.map((message) =>
@@ -97,15 +122,19 @@ export function updateMessage(messageId: string, patch: Partial<ChatMessage>) {
   emit();
 }
 
-export function sendTextMessage(conversationId: string, content: string) {
+export async function sendTextMessage(conversationId: string, content: string) {
   const trimmed = content.trim();
   if (!trimmed) return;
 
-  const id = `msg-live-${Date.now()}`;
+  const conversation = state.conversations.find((c) => c.id === conversationId);
+  const receiverId = conversation?.participants[0]?.id;
+  if (!receiverId) return;
+
+  const tempId = `msg-live-${Date.now()}`;
   const message: ChatMessage = {
-    id,
+    id: tempId,
     conversationId,
-    senderId: CURRENT_USER_ID,
+    senderId: state.currentUserId,
     kind: "text",
     content: trimmed,
     createdAt: new Date().toISOString(),
@@ -114,10 +143,13 @@ export function sendTextMessage(conversationId: string, content: string) {
 
   addMessage(message);
 
-  window.setTimeout(() => {
-    updateMessage(id, { status: "sent" });
-    window.setTimeout(() => updateMessage(id, { status: "delivered" }), 600);
-  }, 400);
+  try {
+    await apiPost(API_ENDPOINTS.MESSAGES, { receiverId, content: trimmed });
+    updateMessage(tempId, { status: "delivered" });
+    refreshFn?.();
+  } catch {
+    updateMessage(tempId, { status: "sent" });
+  }
 }
 
 export function sendAttachmentMessage(
@@ -137,16 +169,15 @@ export function sendAttachmentMessage(
   const message: ChatMessage = {
     id,
     conversationId,
-    senderId: CURRENT_USER_ID,
+    senderId: state.currentUserId,
     kind,
     content: caption || attachment.fileName,
     attachments: [attachment],
     createdAt: new Date().toISOString(),
-    status: "sending",
+    status: "delivered",
   };
 
   addMessage(message);
-  window.setTimeout(() => updateMessage(id, { status: "delivered" }), 800);
 }
 
 export function sendCallLog(
@@ -158,7 +189,7 @@ export function sendCallLog(
   const message: ChatMessage = {
     id: `msg-call-${Date.now()}`,
     conversationId,
-    senderId: CURRENT_USER_ID,
+    senderId: state.currentUserId,
     kind: "call",
     content: callType === "video" ? "Video call" : "Voice call",
     callType,
@@ -198,4 +229,16 @@ export function getConversationMessages(conversationId: string) {
 
 export function getTotalUnreadCount() {
   return state.conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0);
+}
+
+export function getCurrentUserId() {
+  return state.currentUserId;
+}
+
+export function getParticipantById(id: string): ChatParticipant | undefined {
+  for (const conversation of state.conversations) {
+    const participant = conversation.participants.find((p) => p.id === id);
+    if (participant) return participant;
+  }
+  return undefined;
 }

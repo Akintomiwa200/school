@@ -60,6 +60,42 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
       { title: "Exports", description: "Download audit reports for compliance." },
     ],
   },
+  "/super-admin/events": {
+    title: "School Events",
+    description: "Upcoming school events and activities.",
+  },
+  "/super-admin/support": {
+    title: "Support",
+    description: "Help desk tickets and assistance.",
+  },
+  "/super-admin/contact": {
+    title: "Contact Inbox",
+    description: "Real-time website contact form submissions.",
+  },
+  "/super-admin/admissions/settings": {
+    title: "Admission Setup",
+    description: "Configure platform-wide admission workflows.",
+  },
+  "/super-admin/messages": {
+    title: "Messages",
+    description: "Chat with staff and colleagues.",
+  },
+  "/super-admin/calendar": {
+    title: "Calendar",
+    description: "Events, exams, and holidays.",
+  },
+  "/super-admin/announcements": {
+    title: "Announcements",
+    description: "School-wide updates and notices.",
+  },
+  "/super-admin/profile": {
+    title: "Profile",
+    description: "Your super admin account profile.",
+  },
+  "/super-admin/notifications": {
+    title: "Notifications",
+    description: "Real-time alerts and announcements.",
+  },
 
   "/admin": {
     title: "Admin Dashboard",
@@ -483,6 +519,38 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
       { title: "Applicants", description: "Review and shortlist candidates." },
     ],
   },
+  "/hr/events": {
+    title: "School Events",
+    description: "Upcoming school events and activities.",
+  },
+  "/hr/profile": {
+    title: "Profile",
+    description: "Your HR account profile.",
+  },
+  "/hr/settings": {
+    title: "Settings",
+    description: "Notification and account preferences.",
+  },
+  "/hr/announcements": {
+    title: "Announcements",
+    description: "School-wide updates and notices.",
+  },
+  "/hr/calendar": {
+    title: "Calendar",
+    description: "Events, exams, and holidays.",
+  },
+  "/hr/messages": {
+    title: "Messages",
+    description: "Chat with staff and colleagues.",
+  },
+  "/hr/notifications": {
+    title: "Notifications",
+    description: "Real-time alerts and announcements.",
+  },
+  "/hr/support": {
+    title: "Support",
+    description: "Help desk tickets and assistance.",
+  },
 
   "/receptionist": {
     title: "Reception Dashboard",
@@ -508,6 +576,10 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
       { title: "Check-in", description: "Register arrivals and purpose." },
       { title: "Visitor log", description: "Today's and historical visits." },
     ],
+  },
+  "/receptionist/contact": {
+    title: "Contact Messages",
+    description: "Live inbox for website contact form submissions.",
   },
 
   "/student": {
@@ -789,6 +861,8 @@ export const DASHBOARD_PAGE_META: Record<string, DashboardPageMeta> = {
 
 const ADMIN_LIBRARY_BOOK_DETAIL = /^\/admin\/library\/books\/[^/]+$/;
 const ADMIN_LIBRARY_ISSUE_DETAIL = /^\/admin\/library\/issues\/[^/]+$/;
+const HR_EMPLOYEE_DETAIL = /^\/hr\/employees\/[^/]+$/;
+const HR_RECRUITMENT_DETAIL = /^\/hr\/recruitment\/[^/]+$/;
 
 const SHARED_META_ALIASES: Record<string, string> = {
   announcements: "/shared/announcements",
@@ -826,6 +900,26 @@ export function getDashboardPageMeta(path: string): DashboardPageMeta {
       title: "Loan details",
       description: "View borrower, due date, and return status.",
       sections: [{ title: "Circulation", description: "Mark returned or follow up on overdue." }],
+    };
+  }
+  if (HR_EMPLOYEE_DETAIL.test(path)) {
+    return {
+      title: "Employee details",
+      description: "Staff record, leave history, and payroll.",
+      sections: [
+        { title: "Profile", description: "Role, department, and contact." },
+        { title: "Leave & payroll", description: "Recent requests and salary records." },
+      ],
+    };
+  }
+  if (HR_RECRUITMENT_DETAIL.test(path)) {
+    return {
+      title: "Job posting",
+      description: "Position details and applicant pipeline.",
+      sections: [
+        { title: "Listing", description: "Role, department, and status." },
+        { title: "Applicants", description: "Review candidates for this role." },
+      ],
     };
   }
 

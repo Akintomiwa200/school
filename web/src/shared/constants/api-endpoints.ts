@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
   // Users
   USERS: `${API_BASE}/users`,
   USERS_BY_ID: (id: string) => `${API_BASE}/users/${id}`,
+  USERS_ME: `${API_BASE}/users/me`,
 
   // Students
   STUDENTS: `${API_BASE}/students`,
@@ -118,12 +119,18 @@ export const API_ENDPOINTS = {
   // Parent & HR portals
   PARENT: `${API_BASE}/parent`,
   HR: `${API_BASE}/hr`,
+  HR_EMPLOYEE: (id: string) => `${API_BASE}/hr/employees/${id}`,
+  HR_LEAVE: (id: string) => `${API_BASE}/hr/leave/${id}`,
+  HR_RECRUITMENT: `${API_BASE}/hr/recruitment`,
+  HR_JOB: (id: string) => `${API_BASE}/hr/recruitment/${id}`,
+  HR_STREAM: `${API_BASE}/hr/stream`,
 
   // Settings
   SETTINGS: `${API_BASE}/settings`,
 
   // Super Admin
   SUPER_ADMIN_DASHBOARD: `${API_BASE}/super-admin/dashboard`,
+  SUPER_ADMIN_STREAM: `${API_BASE}/super-admin/stream`,
 
   // Upload
   UPLOAD: `${API_BASE}/upload`,
@@ -144,6 +151,7 @@ export const API_ENDPOINTS = {
   TEACHER_STUDENT: (id: string) => `${API_BASE}/teacher/students/${id}`,
   TEACHER_ATTENDANCE: `${API_BASE}/teacher/attendance`,
   TEACHER_ATTENDANCE_DETAIL: (id: string) => `${API_BASE}/teacher/attendance/${id}`,
+  TEACHER_STREAM: `${API_BASE}/teacher/stream`,
   ATTENDANCE_SESSION: (id: string) => `${API_BASE}/attendance/${id}`,
 
   // Student portal

@@ -8,18 +8,25 @@ import {
   ChevronDown,
   Search,
 } from "lucide-react";
+import { useEvents } from "@/hooks/use-dashboard-data";
 import { usePageLoading } from "@/hooks/use-page-loading";
-import { cn } from "@/lib/utils";
 import {
-  EVENT_STATS,
-  SCHOOL_EVENTS,
-  SCHOOL_LOUNGES,
+  buildEventStats,
+  buildLoungesFromEvents,
+  mapApiEventToSchoolEvent,
+} from "@/lib/events/map-events-api";
+import { cn } from "@/lib/utils";
+import { TeacherRoleLiveBadge } from "../teacher/teacher-workflow-ui";
+import { HrRoleLiveBadge } from "../hr/hr-workflow-ui";
+import { SuperAdminRoleLiveBadge } from "../super-admin/super-admin-workflow-ui";
+import {
   filterEvents,
   formatEventBadgeDate,
   sortEvents,
   type EventSortDir,
   type EventSortKey,
   type SchoolEvent,
+  type SchoolLounge,
 } from "./events-data";
 import { EVENT_TYPE_STYLES, EventsPanel } from "./events-ui";
 
@@ -195,7 +202,7 @@ function EventsTable({
   );
 }
 
-function LoungeCard({ lounge }: { lounge: (typeof SCHOOL_LOUNGES)[number] }) {
+function LoungeCard({ lounge }: { lounge: SchoolLounge }) {
   return (
     <div
       className={cn(
@@ -263,16 +270,18 @@ function EventCarouselCard({
 function MobileEventsView({
   upcoming,
   past,
+  lounges,
 }: {
   upcoming: SchoolEvent[];
   past: SchoolEvent[];
+  lounges: SchoolLounge[];
 }) {
   return (
     <div className="space-y-8 md:hidden">
       <section>
         <h2 className="mb-3 text-base font-bold">Your lounges</h2>
         <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {SCHOOL_LOUNGES.map((lounge) => (
+          {lounges.map((lounge) => (
             <LoungeCard key={lounge.id} lounge={lounge} />
           ))}
         </div>
@@ -308,12 +317,21 @@ function MobileEventsView({
 }
 
 export function SharedEvents() {
-  const isLoading = usePageLoading();
+  const pageLoading = usePageLoading();
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<EventSortKey>("date");
   const [sortDir, setSortDir] = useState<EventSortDir>("asc");
 
-  const filtered = useMemo(() => filterEvents(SCHOOL_EVENTS, query), [query]);
+  const { data: apiEvents = [], isFetching, isFetched } = useEvents(query);
+
+  const schoolEvents = useMemo(
+    () => apiEvents.map((event, index) => mapApiEventToSchoolEvent(event, index)),
+    [apiEvents],
+  );
+  const eventStats = useMemo(() => buildEventStats(schoolEvents), [schoolEvents]);
+  const lounges = useMemo(() => buildLoungesFromEvents(schoolEvents), [schoolEvents]);
+
+  const filtered = useMemo(() => filterEvents(schoolEvents, query), [schoolEvents, query]);
   const tableEvents = useMemo(
     () => sortEvents(filtered, sortKey, sortDir),
     [filtered, sortKey, sortDir],
@@ -341,23 +359,28 @@ export function SharedEvents() {
     setSortDir("asc");
   };
 
-  if (isLoading) {
+  if (pageLoading || (isFetching && !isFetched)) {
     return <EventsSkeleton />;
   }
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-[28px]">Events</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-[28px]">Events</h1>
+        <TeacherRoleLiveBadge isFetching={isFetching} />
+        <HrRoleLiveBadge isFetching={isFetching} />
+        <SuperAdminRoleLiveBadge isFetching={isFetching} />
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <StatCard
-          value={EVENT_STATS.pendingReview}
+          value={eventStats.pendingReview}
           label="Pending Review"
           icon={CalendarClock}
           tone="orange"
         />
         <StatCard
-          value={EVENT_STATS.upcoming}
+          value={eventStats.upcoming}
           label="Upcoming Events"
           icon={Calendar}
           tone="green"
@@ -383,7 +406,7 @@ export function SharedEvents() {
         onSort={handleSort}
       />
 
-      <MobileEventsView upcoming={upcoming} past={past} />
+      <MobileEventsView upcoming={upcoming} past={past} lounges={lounges} />
     </div>
   );
 }

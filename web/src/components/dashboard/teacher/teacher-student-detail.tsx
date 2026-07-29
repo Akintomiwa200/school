@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { AdminBackLink } from "../admin/admin-workflow-ui";
 import { ManagementPageHeader, ManagementPanel, ManagementStatCard } from "../management/management-ui";
 import { TEACHER_AVATAR_TONES } from "./teacher-data";
-import { TeacherDetailSkeleton, TeacherNotFound } from "./teacher-workflow-ui";
+import { TeacherDetailSkeleton, TeacherLiveBadge, TeacherNotFound } from "./teacher-workflow-ui";
 
 type StudentDetail = {
   id: string;
@@ -85,7 +85,10 @@ export function TeacherStudentDetail({ studentId }: { studentId: string }) {
             {student.initials}
           </span>
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{student.name}</h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{student.name}</h1>
+              <TeacherLiveBadge isFetching={isFetching} />
+            </div>
             <p className="mt-0.5 text-sm text-muted-foreground">{student.className} · {student.studentId}</p>
             {(student.email || student.phone) && (
               <p className="mt-0.5 text-xs text-muted-foreground/70">{student.email}{student.phone ? ` · ${student.phone}` : ""}</p>

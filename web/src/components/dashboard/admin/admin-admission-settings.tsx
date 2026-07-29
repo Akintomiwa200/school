@@ -12,12 +12,17 @@ import {
   type AdmissionConfig,
   type SchoolType,
 } from "@/components/admissions/admissions-workflow-data";
-import { ManagementPageHeader, ManagementPanel } from "../management/management-ui";
-import { AdminFormField, adminInputClass, adminSelectClass } from "./admin-workflow-ui";
+import { ManagementPanel } from "../management/management-ui";
+import { AdminBackLink, AdminFormField, adminInputClass } from "../admin/admin-workflow-ui";
+import {
+  SuperAdminListSkeleton,
+  SuperAdminPageHeader,
+} from "../super-admin/super-admin-workflow-ui";
 
 const FALLBACK = createDefaultAdmissionConfig("university");
 
 export function AdminAdmissionSettings({ backHref }: { backHref: string }) {
+  const isSuperAdmin = backHref.startsWith("/super-admin");
   const loading = usePageLoading(300);
   const { data: config = FALLBACK, isFetching } = useAdmissionConfig();
   const saveConfig = useUpdateAdmissionConfig();
@@ -28,7 +33,7 @@ export function AdminAdmissionSettings({ backHref }: { backHref: string }) {
   }, [config]);
 
   if (loading || isFetching) {
-    return <div className="h-64 animate-pulse rounded-[20px] bg-muted" />;
+    return <SuperAdminListSkeleton />;
   }
 
   const onSchoolTypeChange = async (schoolType: SchoolType) => {
@@ -70,15 +75,34 @@ export function AdminAdmissionSettings({ backHref }: { backHref: string }) {
 
   return (
     <div className="space-y-6">
-      <ManagementPageHeader
-        title="Admission configuration"
-        description="Define school type, required uploads, screening rules, examination, and payment for all applicants."
-        action={
+      {isSuperAdmin ? (
+        <>
+          <AdminBackLink href={backHref} label="Back to dashboard" />
+          <SuperAdminPageHeader
+            title="Admission setup"
+            description="Define school type, required uploads, screening rules, examination, and payment for all applicants."
+            isFetching={isFetching}
+            action={
+              <Button onClick={() => void onSave()} disabled={saveConfig.isPending} className="rounded-full bg-brand-purple px-5 text-white hover:bg-brand-purple/90">
+                {saveConfig.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Save configuration
+              </Button>
+            }
+          />
+        </>
+      ) : (
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Admission configuration</h1>
+            <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+              Define school type, required uploads, screening rules, examination, and payment for all applicants.
+            </p>
+          </div>
           <Button asChild variant="outline" className="h-10 rounded-full px-5">
             <a href={backHref}>Back to pipeline</a>
           </Button>
-        }
-      />
+        </div>
+      )}
 
       <ManagementPanel className="border border-border">
         <h2 className="text-base font-bold">Institution type</h2>
@@ -306,13 +330,30 @@ export function AdminAdmissionSettings({ backHref }: { backHref: string }) {
       </ManagementPanel>
 
       <ManagementPanel className="border border-border">
-        <AdminFormField label="Welcome message (shown on apply page)">
-          <textarea
-            value={draft.welcomeMessage}
-            onChange={(e) => setDraft({ ...draft, welcomeMessage: e.target.value })}
-            className={`${adminInputClass} min-h-[80px]`}
-          />
-        </AdminFormField>
+        <h2 className="text-base font-bold">Public page &amp; welcome</h2>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <AdminFormField label="Welcome message (shown on apply page)">
+            <textarea
+              value={draft.welcomeMessage}
+              onChange={(e) => setDraft({ ...draft, welcomeMessage: e.target.value })}
+              className={`${adminInputClass} min-h-[80px]`}
+            />
+          </AdminFormField>
+          <AdminFormField label="Hero title (/admissions)">
+            <input
+              value={draft.publicHeroTitle ?? ""}
+              onChange={(e) => setDraft({ ...draft, publicHeroTitle: e.target.value })}
+              className={adminInputClass}
+            />
+          </AdminFormField>
+          <AdminFormField label="Hero description (/admissions)" className="lg:col-span-2">
+            <textarea
+              value={draft.publicHeroDescription ?? ""}
+              onChange={(e) => setDraft({ ...draft, publicHeroDescription: e.target.value })}
+              className={`${adminInputClass} min-h-[80px]`}
+            />
+          </AdminFormField>
+        </div>
         <Button onClick={onSave} disabled={saveConfig.isPending} className="mt-4 h-10 rounded-full bg-primary px-6 text-primary-foreground">
           {saveConfig.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           Save configuration

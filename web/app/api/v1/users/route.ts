@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createApiResponse, createApiError, getPaginationParams, createPaginationMeta } from "@/shared";
+import { getSuperAdminContext } from "@/lib/api/super-admin-helpers";
 
 export async function GET(request: NextRequest) {
+  try {
+    await getSuperAdminContext();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unauthorized";
+    const status = message === "Forbidden" ? 403 : 401;
+    return NextResponse.json(createApiError("unauthorized", message), { status });
+  }
+
   const { page, limit, search, skip } = getPaginationParams(request.nextUrl.searchParams);
 
   const where = search
@@ -49,6 +58,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  try {
+    await getSuperAdminContext();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unauthorized";
+    const status = message === "Forbidden" ? 403 : 401;
+    return NextResponse.json(createApiError("unauthorized", message), { status });
+  }
+
   const body = (await request.json()) as Record<string, unknown>;
   if (!body.firstName || !body.lastName || !body.email || !body.role) {
     return NextResponse.json(createApiError("validation", "firstName, lastName, email, and role are required"), { status: 400 });

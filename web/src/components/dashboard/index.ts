@@ -9,7 +9,7 @@ export {
   AdminAdmissions,
   AdminReports,
 } from "./admin";
-export { SuperAdminDashboard, SuperAdminSectionPage } from "./super-admin";
+export { SuperAdminDashboard, SuperAdminSectionPage, SuperAdminRealtimeBridge } from "./super-admin";
 export { SuperAdminSchools, SuperAdminUsers, SuperAdminAudit } from "./super-admin";
 export {
   AccountantDashboard,
@@ -36,7 +36,7 @@ export {
   TeacherMaterials,
   TeacherTimetable,
 } from "./teacher";
-export { HrDashboard, HrEmployees, HrLeave, HrRecruitment } from "./hr";
+export { HrDashboard, HrEmployees, HrEmployeeDetail, HrLeave, HrRecruitment, HrRecruitmentDetail, HrRealtimeBridge } from "./hr";
 export { StaffDashboard, StaffTransport, StaffHostel, StaffInventory, StaffAttendance } from "./staff";
 export { LibrarianDashboard, LibrarianBooks, LibrarianIssues } from "./librarian";
 export { ReceptionistDashboard, ReceptionistAdmissions, ReceptionistVisitors } from "./receptionist";
@@ -87,6 +87,7 @@ export { SharedCalendar } from "./calendar";
 export { SharedProfile, StudentProfile } from "./profile";
 export { SharedSettings } from "./settings";
 export { SharedNotifications, RealtimeNotificationsBridge } from "./notifications";
+export { TeacherRealtimeBridge } from "./teacher/teacher-realtime-bridge";
 export { SharedAnnouncements, SharedAnnouncementDetail } from "./announcements";
 export {
   SharedOnlineClasses,
@@ -129,3 +130,15 @@ export {
 } from "./grades";
 export { DASHBOARD_PAGE_META, getDashboardPageMeta } from "./page-meta";
 export type { DashboardPageMeta, DashboardSection, DashboardStat } from "./page-meta";
+export {
+  DashboardEmptyCopy,
+  DashboardFilterSelect,
+  DashboardSearchField,
+  dashboardFieldClass,
+  dashboardFilterBarClass,
+  dashboardFilterSelectClass,
+  dashboardFormSelectClass,
+  dashboardInputClass,
+  dashboardSearchInputClass,
+  dashboardSearchWrapClass,
+} from "./form-controls";

@@ -245,6 +245,119 @@ async function main() {
     },
   });
 
+  const teacherStaff = await prisma.staff.findUniqueOrThrow({ where: { userId: teacher.id } });
+  const librarianStaff = await prisma.staff.findUniqueOrThrow({ where: { userId: librarian.id } });
+  const accountantStaff = await prisma.staff.findUniqueOrThrow({ where: { userId: accountant.id } });
+  const opsStaffRecord = await prisma.staff.findUniqueOrThrow({ where: { userId: opsStaff.id } });
+
+  await prisma.leaveRequest.upsert({
+    where: { id: "leave-seed-1" },
+    update: { status: "APPROVED", approvedBy: hr.id, approvedAt: new Date() },
+    create: {
+      id: "leave-seed-1",
+      userId: librarian.id,
+      type: "Sick leave",
+      startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      reason: "Medical recovery period approved by HR.",
+      status: "APPROVED",
+      approvedBy: hr.id,
+      approvedAt: new Date(),
+    },
+  });
+
+  await prisma.leaveRequest.upsert({
+    where: { id: "leave-seed-2" },
+    update: {},
+    create: {
+      id: "leave-seed-2",
+      userId: accountant.id,
+      type: "Annual leave",
+      startDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+      endDate: new Date(Date.now() + 17 * 24 * 60 * 60 * 1000),
+      reason: "Family travel plans during mid-term break.",
+      status: "PENDING",
+    },
+  });
+
+  await prisma.leaveRequest.upsert({
+    where: { id: "leave-seed-3" },
+    update: {},
+    create: {
+      id: "leave-seed-3",
+      userId: opsStaff.id,
+      type: "Personal leave",
+      startDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      endDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+      reason: "Personal appointment — request half-day coverage.",
+      status: "PENDING",
+    },
+  });
+
+  for (const job of [
+    {
+      id: "job-seed-1",
+      title: "Mathematics Teacher",
+      department: "Academic",
+      description: "Full-time position for senior secondary mathematics instruction.",
+      status: "OPEN" as const,
+      postedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "job-seed-2",
+      title: "IT Support Specialist",
+      department: "Technology",
+      description: "Maintain school network, devices, and learning platforms.",
+      status: "OPEN" as const,
+      postedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "job-seed-3",
+      title: "School Counselor",
+      department: "Student Services",
+      description: "Support student wellbeing and university guidance.",
+      status: "INTERVIEWING" as const,
+      postedAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
+    },
+  ]) {
+    await prisma.jobPosting.upsert({
+      where: { id: job.id },
+      update: job,
+      create: job,
+    });
+  }
+
+  for (const app of [
+    { id: "app-seed-1", jobId: "job-seed-1", name: "Ada Okoro", email: "ada.okoro@example.com", status: "applied" },
+    { id: "app-seed-2", jobId: "job-seed-1", name: "Chidi Nwosu", email: "chidi.nwosu@example.com", status: "screening" },
+    { id: "app-seed-3", jobId: "job-seed-3", name: "Grace Adebayo", email: "grace.adebayo@example.com", status: "interview" },
+  ]) {
+    await prisma.jobApplication.upsert({
+      where: { id: app.id },
+      update: app,
+      create: app,
+    });
+  }
+
+  const now = new Date();
+  for (const staffRecord of [teacherStaff, accountantStaff, librarianStaff]) {
+    await prisma.payroll.upsert({
+      where: { staffId_month_year: { staffId: staffRecord.id, month: now.getMonth() + 1, year: now.getFullYear() } },
+      update: {},
+      create: {
+        staffId: staffRecord.id,
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+        basicSalary: 4200,
+        allowances: 600,
+        deductions: 350,
+        netSalary: 4450,
+        status: "COMPLETED",
+        paidAt: new Date(),
+      },
+    });
+  }
+
   console.log("\n✓ Seed completed. Test accounts:\n");
   console.log("Staff portal (/staff/login):");
   console.log("  herkintormiwer@gmail.com  — Super Admin (owner)");

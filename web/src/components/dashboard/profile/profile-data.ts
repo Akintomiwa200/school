@@ -71,6 +71,10 @@ const ROLE_EXTRAS: Partial<Record<UserRole, Partial<ProfileExtras>>> = {
     department: "School Administration",
     jobTitle: "School Admin",
   },
+  [UserRole.SUPER_ADMIN]: {
+    department: "Platform Operations",
+    jobTitle: "Super Admin",
+  },
 };
 
 export const DEMO_SESSIONS: ActiveSession[] = [

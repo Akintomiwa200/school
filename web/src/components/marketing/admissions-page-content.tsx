@@ -1,74 +1,66 @@
 import Link from "next/link";
 import { CheckCircle2, ClipboardList, FileText, UserPlus } from "lucide-react";
+import {
+  buildAdmissionsPublicSteps,
+  buildAdmissionsRequirements,
+  formatAdmissionFee,
+  SCHOOL_TYPE_LABELS,
+  type AdmissionConfig,
+} from "@/components/admissions/admissions-workflow-data";
 import { MarketingCta } from "./cta";
 import { MarketingPageHero } from "./page-hero";
 
-const STEPS = [
-  {
-    icon: UserPlus,
-    title: "Choose your intake",
-    description: "Select secondary school (Grades 6–12) or university undergraduate program.",
-  },
-  {
-    icon: FileText,
-    title: "Submit application",
-    description: "Complete the online form with contact details and program or grade choice.",
-  },
-  {
-    icon: ClipboardList,
-    title: "Pay fee & sit exam",
-    description: "Pay the application fee, receive your exam slip, and attend the entrance test.",
-  },
-  {
-    icon: CheckCircle2,
-    title: "Approval & enrollment",
-    description: "After approval, admissions adds you as a student and shares login credentials.",
-  },
-] as const;
+const STEP_ICONS = [UserPlus, FileText, ClipboardList, CheckCircle2] as const;
 
-const REQUIREMENTS = [
-  "Completed online application form",
-  "Copy of student birth certificate or passport",
-  "Last two academic report cards (if transferring)",
-  "Parent or guardian valid ID",
-  "Passport photograph (digital upload)",
-  "Medical information form (provided after application)",
-] as const;
+export function AdmissionsPageContent({ config }: { config: AdmissionConfig }) {
+  const steps = buildAdmissionsPublicSteps(config);
+  const requirements = buildAdmissionsRequirements(config);
+  const typeBadge = SCHOOL_TYPE_LABELS[config.schoolType];
 
-export function AdmissionsPageContent() {
   return (
     <>
       <MarketingPageHero
         badge="Admissions"
-        title="Start your journey with Pathway Academy"
-        description="Our admissions process is straightforward and supportive. We guide every family from first inquiry to first day of class."
+        title={config.publicHeroTitle}
+        description={config.publicHeroDescription}
       />
 
       <section className="py-section lg:py-24">
         <div className="container-content">
           <div className="mx-auto max-w-2xl text-center">
-            <span className="section-badge">How it works</span>
+            <span className="section-badge">{typeBadge}</span>
             <h2 className="marketing-section-title mt-md text-2xl sm:text-3xl">
               Four simple steps to enroll
             </h2>
+            <p className="mt-md text-sm text-marketing-muted">
+              Application fee: <span className="font-semibold text-marketing-text">{formatAdmissionFee(config.applicationFee)}</span>
+              {!config.applicationOpen ? (
+                <span className="ml-2 rounded-full bg-brand-orange/15 px-2 py-0.5 text-xs font-semibold text-brand-orange">
+                  Applications closed
+                </span>
+              ) : null}
+            </p>
           </div>
 
           <ol className="mt-section grid gap-lg md:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map(({ icon: Icon, title, description }, index) => (
-              <li
-                key={title}
-                className="relative rounded-2xl border border-marketing-grid/80 bg-marketing-surface p-lg"
-              >
-                <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">
-                  Step {index + 1}
-                </span>
-                <div className="mt-md flex h-11 w-11 items-center justify-center rounded-xl bg-brand-purple/10 text-brand-purple">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-md font-display text-lg font-bold">{title}</h3>
-                <p className="mt-sm text-sm leading-relaxed text-marketing-muted">{description}</p>
-              </li>
-            ))}
+            {steps.map(({ title, description }, index) => {
+              const Icon = STEP_ICONS[index] ?? UserPlus;
+              return (
+                <li
+                  key={title}
+                  className="relative rounded-2xl border border-marketing-grid/80 bg-marketing-surface p-lg"
+                >
+                  <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">
+                    Step {index + 1}
+                  </span>
+                  <div className="mt-md flex h-11 w-11 items-center justify-center rounded-xl bg-brand-purple/10 text-brand-purple">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-md font-display text-lg font-bold">{title}</h3>
+                  <p className="mt-sm text-sm leading-relaxed text-marketing-muted">{description}</p>
+                </li>
+              );
+            })}
           </ol>
         </div>
       </section>
@@ -80,12 +72,9 @@ export function AdmissionsPageContent() {
             <h2 className="marketing-section-title mt-md text-2xl sm:text-3xl">
               What you will need to apply
             </h2>
-            <p className="marketing-lead-sm mt-md">
-              Gather these documents before you begin. Our team can help if you are missing
-              anything.
-            </p>
+            <p className="marketing-lead-sm mt-md">{config.welcomeMessage}</p>
             <ul className="mt-lg space-y-3">
-              {REQUIREMENTS.map((item) => (
+              {requirements.map((item) => (
                 <li key={item} className="flex gap-3 text-sm text-marketing-text">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-purple" />
                   {item}
@@ -98,27 +87,33 @@ export function AdmissionsPageContent() {
             <h3 className="font-display text-xl font-bold">Important dates</h3>
             <dl className="mt-lg space-y-4">
               <div className="flex justify-between gap-md border-b border-marketing-grid pb-4">
-                <dt className="text-sm text-marketing-muted">Fall term applications</dt>
-                <dd className="text-sm font-semibold text-marketing-text">Open year-round</dd>
+                <dt className="text-sm text-marketing-muted">{config.schoolName} applications</dt>
+                <dd className="text-sm font-semibold text-marketing-text">
+                  {config.applicationOpen ? config.intakeStatusNote : "Closed"}
+                </dd>
               </div>
               <div className="flex justify-between gap-md border-b border-marketing-grid pb-4">
-                <dt className="text-sm text-marketing-muted">Spring term deadline</dt>
-                <dd className="text-sm font-semibold text-marketing-text">January 15</dd>
+                <dt className="text-sm text-marketing-muted">Application fee</dt>
+                <dd className="text-sm font-semibold text-marketing-text">{formatAdmissionFee(config.applicationFee)}</dd>
               </div>
               <div className="flex justify-between gap-md border-b border-marketing-grid pb-4">
-                <dt className="text-sm text-marketing-muted">Summer program</dt>
-                <dd className="text-sm font-semibold text-marketing-text">May 1</dd>
+                <dt className="text-sm text-marketing-muted">Exam duration</dt>
+                <dd className="text-sm font-semibold text-marketing-text">{config.examDurationMinutes} minutes</dd>
               </div>
               <div className="flex justify-between gap-md">
                 <dt className="text-sm text-marketing-muted">Response time</dt>
-                <dd className="text-sm font-semibold text-marketing-text">5–7 business days</dd>
+                <dd className="text-sm font-semibold text-marketing-text">{config.responseTimeNote}</dd>
               </div>
             </dl>
 
             <div className="mt-xl flex flex-col gap-sm sm:flex-row">
-              <Link href="/admissions/apply" className="auth-btn-primary text-center">
-                Apply online
-              </Link>
+              {config.applicationOpen ? (
+                <Link href="/admissions/apply" className="auth-btn-primary text-center">
+                  Apply online
+                </Link>
+              ) : (
+                <span className="auth-btn-primary pointer-events-none text-center opacity-60">Applications closed</span>
+              )}
               <Link
                 href="/contact"
                 className="inline-flex items-center justify-center rounded-full border border-brand-purple px-xl py-3 text-sm font-semibold text-brand-purple transition-colors hover:bg-brand-purple/5"

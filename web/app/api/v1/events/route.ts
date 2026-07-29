@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { createApiResponse, createApiError, getPaginationParams, createPaginationMeta } from "@/shared";
 
 export async function GET(request: NextRequest) {
+  const user = await getCurrentUser();
+  if (!user?.id) {
+    return NextResponse.json(createApiError("unauthorized", "Authentication required"), { status: 401 });
+  }
+
   const { page, limit, search, skip } = getPaginationParams(request.nextUrl.searchParams);
 
   const where = search
@@ -29,6 +35,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const user = await getCurrentUser();
+  if (!user?.id) {
+    return NextResponse.json(createApiError("unauthorized", "Authentication required"), { status: 401 });
+  }
+
   const body = (await request.json()) as Record<string, unknown>;
   if (!body.title || !body.startDate || !body.endDate) {
     return NextResponse.json(createApiError("validation", "title, startDate, and endDate are required"), { status: 400 });
@@ -42,7 +53,7 @@ export async function POST(request: NextRequest) {
       endDate: new Date(String(body.endDate)),
       location: body.location ? String(body.location) : null,
       isPublic: body.isPublic !== false,
-      createdBy: body.createdBy ? String(body.createdBy) : "system",
+      createdBy: user.id,
     },
   });
 

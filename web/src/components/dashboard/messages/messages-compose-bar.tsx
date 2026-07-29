@@ -161,7 +161,7 @@ export function MessagesComposeBar({ conversationId, disabled }: MessagesCompose
           <ImageIcon className="h-5 w-5" />
         </Button>
 
-        <div className="relative min-w-0 flex-1">
+        <div className="relative min-w-[12rem] flex-1 basis-[14rem]" data-search-field="true">
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}

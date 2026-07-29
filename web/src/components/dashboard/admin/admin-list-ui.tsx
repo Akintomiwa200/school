@@ -19,14 +19,14 @@ export function AdminSearchBar({
   className?: string;
 }) {
   return (
-    <div className={cn("relative w-full min-w-0", className)}>
+    <div className={cn("relative w-full min-w-[12rem] flex-1 basis-[14rem]", className)} data-search-field="true">
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <input
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-9 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="box-border h-9 w-full min-w-0 max-w-full rounded-xl border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </div>
   );
@@ -76,14 +76,14 @@ export function AdminFilterSelect<T extends string>({
   className?: string;
 }) {
   return (
-    <label className={cn("block min-w-[160px]", className)}>
+    <label className={cn("block min-w-[10.5rem] shrink-0 sm:min-w-[11rem]", className)}>
       <span className="sr-only">{label}</span>
       <div className="relative">
         <select
           value={value}
           onChange={(e) => onChange(e.target.value as T)}
           aria-label={label}
-          className="h-9 w-full appearance-none rounded-xl border border-border bg-background pl-3 pr-8 text-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="box-border h-9 w-full min-w-[10.5rem] max-w-full shrink-0 appearance-none rounded-xl border border-border bg-background pl-3 pr-8 text-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
         >
           {options.map((opt) => (
             <option key={opt.id} value={opt.id}>

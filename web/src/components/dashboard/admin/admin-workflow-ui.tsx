@@ -21,7 +21,7 @@ export function AdminFormField({
   className?: string;
 }) {
   return (
-    <label className={cn("block space-y-1.5", className)}>
+    <label className={cn("block space-y-1.5", className)} data-form-field="true">
       <span className="text-sm font-medium text-foreground">{label}</span>
       {children}
     </label>
@@ -29,7 +29,7 @@ export function AdminFormField({
 }
 
 export const adminInputClass =
-  "h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "box-border h-10 w-full min-w-0 max-w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export const adminSelectClass =
-  "h-10 w-full appearance-none rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "box-border h-10 w-full min-w-0 max-w-full appearance-none rounded-xl border border-border bg-background px-3 pr-9 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";

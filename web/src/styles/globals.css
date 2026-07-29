@@ -393,11 +393,15 @@
     @apply bg-background font-sans text-foreground antialiased text-body;
   }
 
-  /* Don't squash form controls inside flex rows */
-  input:not([type="checkbox"]):not([type="radio"]),
-  textarea,
+  /* Prevent form controls from collapsing unreadably inside flex toolbars */
   select {
-    min-width: 0;
+    flex-shrink: 0;
+    max-width: 100%;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+  textarea {
+    max-width: 100%;
   }
 
   h1,
@@ -540,6 +544,35 @@
     font-weight: 500;
     line-height: 1.5;
     color: var(--color-marketing-muted);
+  }
+
+  /* Readable marketing copy — prevents flex/grid from squashing paragraphs */
+  .marketing-page .marketing-body-copy {
+    display: block;
+    width: 100%;
+    max-width: 36rem;
+    margin-inline: auto;
+    padding-inline: 0.25rem;
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+    line-height: 1.625;
+  }
+
+  .marketing-page .marketing-section-copy {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+    line-height: 1.625;
+  }
+
+  .marketing-page .marketing-lead,
+  .marketing-page .marketing-lead-sm {
+    width: 100%;
+    max-width: 42rem;
+    text-wrap: pretty;
+    overflow-wrap: break-word;
   }
 
   .marketing-page .marketing-section-title {
@@ -808,4 +841,90 @@ html:not([data-density]) {
   display: flex;
   flex-direction: column;
   gap: calc(var(--app-content-gap, 1.5rem) * var(--app-density-scale, 1));
+  width: 100%;
+  min-width: 0;
+}
+
+/* Filter toolbars: grid prevents search/select from squashing each other */
+.dashboard-filter-bar {
+  display: grid;
+  width: 100%;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .dashboard-filter-bar {
+    grid-template-columns: minmax(14rem, 1fr) minmax(10.5rem, max-content);
+    align-items: center;
+  }
+
+  .dashboard-filter-bar:has(select:nth-of-type(2)) {
+    grid-template-columns: minmax(14rem, 1fr) repeat(2, minmax(10.5rem, max-content));
+  }
+}
+
+.dashboard-main [data-search-field="true"] {
+  width: 100%;
+  min-width: min(100%, 14rem);
+}
+
+.dashboard-main [data-search-field="true"] input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.dashboard-main [data-filter-bar="true"] select,
+.dashboard-main select.dashboard-filter-select {
+  width: 100%;
+  min-width: 10.5rem;
+  max-width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .dashboard-main [data-filter-bar="true"] select,
+  .dashboard-main select.dashboard-filter-select {
+    width: auto;
+    min-width: 11rem;
+    max-width: 16rem;
+  }
+}
+
+.dashboard-main [data-form-field="true"] input:not([type="checkbox"]):not([type="radio"]),
+.dashboard-main [data-form-field="true"] select,
+.dashboard-main [data-form-field="true"] textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.dashboard-empty-copy {
+  width: 100%;
+  max-width: 32rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  flex-shrink: 0;
+  align-self: stretch;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+}
+
+.dashboard-empty-state {
+  width: 100%;
+}
+
+.dashboard-empty-state__inner {
+  display: flex;
+  width: 100%;
+  max-width: 28rem;
+  flex-direction: column;
+  align-items: center;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  text-align: center;
 }

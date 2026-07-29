@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   ArrowDownRight,
@@ -25,6 +26,7 @@ import { useTeacherClassesOverview } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { ManagementPanel } from "../management/management-ui";
 import { TEACHER_AVATAR_TONES } from "./teacher-data";
+import { TeacherLiveBadge, teacherInitialLoading } from "./teacher-workflow-ui";
 
 type OverviewData = {
   courseCards: {
@@ -194,9 +196,10 @@ function MiniCalendar() {
 export function TeacherClasses() {
   const { data: session } = useSession();
   const loading = usePageLoading();
-  const { data: overview = OVERVIEW_FALLBACK, isFetching } = useTeacherClassesOverview(OVERVIEW_FALLBACK);
+  const { data: overview = OVERVIEW_FALLBACK, isFetching, isFetched } = useTeacherClassesOverview(OVERVIEW_FALLBACK);
   const [month, setMonth] = useState(MONTHS[new Date().getMonth()]);
   const [sortDesc, setSortDesc] = useState(true);
+  const router = useRouter();
 
   const performers = useMemo(() => {
     const list = [...overview.bestPerformers];
@@ -204,7 +207,7 @@ export function TeacherClasses() {
     return list;
   }, [overview.bestPerformers, sortDesc]);
 
-  if (loading || isFetching) return <OverviewSkeleton />;
+  if (teacherInitialLoading(loading, isFetching, isFetched)) return <OverviewSkeleton />;
 
   const teacherName = session?.user?.name?.split(" ")[0] ?? "Teacher";
 
@@ -212,7 +215,10 @@ export function TeacherClasses() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Course Overview</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Course Overview</h1>
+            <TeacherLiveBadge isFetching={isFetching} />
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {overview.classCount > 0 ? `${overview.classCount} classes · ${overview.studentCount} students` : "No classes assigned yet"}
           </p>
@@ -281,13 +287,15 @@ export function TeacherClasses() {
                       </div>
                       <div className="mt-3 flex items-center gap-3 text-xs font-medium">
                         <span className="text-brand-purple opacity-0 transition-opacity group-hover:opacity-100">Open class →</span>
-                        <Link
-                          href={`/teacher/courses/${course.id}`}
-                          onClick={(e) => e.stopPropagation()}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/teacher/courses/${course.id}`);
+                          }}
                           className="text-muted-foreground hover:text-brand-purple"
                         >
                           Course content
-                        </Link>
+                        </button>
                       </div>
                     </ManagementPanel>
                   </Link>
@@ -295,11 +303,10 @@ export function TeacherClasses() {
               })}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 py-16 text-center">
-              <BookOpen className="h-10 w-10 text-muted-foreground/50" />
-              <p className="mt-3 text-sm font-medium text-muted-foreground">No courses yet</p>
+            <ManagementPanel className="border border-border py-14 text-center">
+              <p className="text-sm font-medium text-muted-foreground">No courses yet</p>
               <p className="mt-1 text-xs text-muted-foreground/70">Once you are assigned classes, your courses will appear here.</p>
-            </div>
+            </ManagementPanel>
           )}
 
             <ManagementPanel className="overflow-hidden border border-border p-0">

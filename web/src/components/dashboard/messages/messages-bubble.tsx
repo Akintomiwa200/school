@@ -12,13 +12,12 @@ import {
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "./messages-types";
 import {
-  CURRENT_USER_ID,
   formatFileSize,
   formatMessageTime,
-  getParticipantById,
   isAudioType,
   isImageType,
 } from "./messages-data";
+import { getCurrentUserId, getParticipantById } from "./messages-live-store";
 
 type MessageBubbleProps = {
   message: ChatMessage;
@@ -26,7 +25,7 @@ type MessageBubbleProps = {
 };
 
 export function MessageBubble({ message, showAvatar }: MessageBubbleProps) {
-  const isMine = message.senderId === CURRENT_USER_ID;
+  const isMine = message.senderId === getCurrentUserId();
   const sender = getParticipantById(message.senderId);
 
   if (message.kind === "call") {

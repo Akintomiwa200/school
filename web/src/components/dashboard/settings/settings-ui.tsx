@@ -60,7 +60,7 @@ export function SettingsField({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("space-y-2", className)} data-form-field="true">
       <label htmlFor={id} className="text-sm font-medium text-foreground">
         {label}
       </label>
@@ -70,7 +70,7 @@ export function SettingsField({
 }
 
 const fieldClassName =
-  "flex h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-purple/50 focus:ring-2 focus:ring-brand-purple/20";
+  "box-border flex h-11 w-full min-w-0 max-w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-purple/50 focus:ring-2 focus:ring-brand-purple/20";
 
 export function SettingsInput({
   id,

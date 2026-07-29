@@ -14,6 +14,7 @@ import { useTeacherDashboard, type TeacherDashboardLive } from "@/hooks/use-dash
 import { cn } from "@/lib/utils";
 import { AdminTablePagination } from "../admin/admin-list-ui";
 import { ManagementPanel } from "../management/management-ui";
+import { TeacherLiveBadge, teacherInitialLoading } from "./teacher-workflow-ui";
 import {
   TEACHER_AVATAR_TONES,
   TEACHER_MASTERY_TONES,
@@ -114,7 +115,7 @@ function ClassSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-10 min-w-[132px] appearance-none rounded-xl border border-border bg-background py-2 pl-9 pr-8 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="box-border h-10 min-w-[10.5rem] max-w-full shrink-0 appearance-none rounded-xl border border-border bg-background py-2 pl-9 pr-8 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {classes.length === 0 && <option value="">No classes</option>}
         {classes.map((item) => (
@@ -333,7 +334,7 @@ export function TeacherDashboard() {
   const [proficiencyPage, setProficiencyPage] = useState(1);
   const [proficiencyPageSize, setProficiencyPageSize] = useState<number>(PROFICIENCY_PAGE_SIZES[0]);
   const fallback: TeacherDashboardLive = { ...EMPTY_DASHBOARD, classId: selectedClass };
-  const { data: dashboard = fallback, isFetching } = useTeacherDashboard(selectedClass, fallback);
+  const { data: dashboard = fallback, isFetching, isFetched } = useTeacherDashboard(selectedClass, fallback);
 
   const noClassSelected = selectedClass === "" && dashboard.classes.length > 0;
 
@@ -360,7 +361,7 @@ export function TeacherDashboard() {
     }
   }, [proficiencyPage, proficiencyTotalPages]);
 
-  if (pageLoading || isFetching) return <DashboardSkeleton />;
+  if (teacherInitialLoading(pageLoading, isFetching, isFetched)) return <DashboardSkeleton />;
 
   const classOptions = dashboard.classes.length > 0 ? dashboard.classes : fallback.classes;
 
@@ -379,6 +380,7 @@ export function TeacherDashboard() {
             onChange={setSelectedClass}
             classes={classOptions.map((item) => ({ id: item.id, name: item.name }))}
           />
+          <TeacherLiveBadge isFetching={isFetching} updatedAt={dashboard.updatedAt} />
           <RosterAvatars preview={dashboard.rosterPreview} overflow={dashboard.rosterOverflow} />
         </div>
 

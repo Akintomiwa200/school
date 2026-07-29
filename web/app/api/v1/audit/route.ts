@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createApiResponse, createApiError, getPaginationParams, createPaginationMeta } from "@/shared";
+import { getSuperAdminContext } from "@/lib/api/super-admin-helpers";
 
 export async function GET(request: NextRequest) {
   const scope = request.nextUrl.searchParams.get("scope") ?? "platform";
@@ -41,6 +42,14 @@ export async function GET(request: NextRequest) {
   }
 
   // Platform scope
+  try {
+    await getSuperAdminContext();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unauthorized";
+    const status = message === "Forbidden" ? 403 : 401;
+    return NextResponse.json(createApiError("unauthorized", message), { status });
+  }
+
   const { page, limit, search, skip } = getPaginationParams(request.nextUrl.searchParams);
 
   const where = search

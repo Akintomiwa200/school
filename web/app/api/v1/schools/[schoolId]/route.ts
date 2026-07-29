@@ -45,6 +45,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       website: school.website ?? "",
       status: school.status,
       createdAt: school.createdAt.toISOString().split("T")[0],
+      updatedAt: school.updatedAt.toISOString().split("T")[0],
       stats: {
         students: studentCount,
         admins: adminCount,

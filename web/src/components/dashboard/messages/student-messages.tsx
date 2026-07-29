@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   ArrowLeft,
   MoreVertical,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useMessages } from "@/hooks/use-dashboard-data";
 import { MessageBubble } from "./messages-bubble";
 import { MessagesCallOverlay } from "./messages-call-overlay";
 import { MessagesComposeBar } from "./messages-compose-bar";
@@ -23,6 +25,9 @@ import {
   useMessagesStore,
 } from "./messages-live-store";
 import { createCallSession } from "./messages-webrtc";
+import { TeacherRoleLiveBadge } from "../teacher/teacher-workflow-ui";
+import { HrRoleLiveBadge } from "../hr/hr-workflow-ui";
+import { SuperAdminRoleLiveBadge } from "../super-admin/super-admin-workflow-ui";
 
 type StudentMessagesProps = {
   basePath?: string;
@@ -31,9 +36,12 @@ type StudentMessagesProps = {
 export function StudentMessages({ basePath = "/shared/messages" }: StudentMessagesProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
   const chatParam = searchParams.get("chat");
-  const { conversations, activeConversationId, activeCall, typingByConversation, messages: allMessages } =
+  const { conversations, activeConversationId, activeCall, typingByConversation, messages: allMessages, hydrated } =
     useMessagesStore();
+  const messagesEnabled = status === "authenticated" && Boolean(session?.user?.id);
+  const { isFetching: messagesFetching } = useMessages(messagesEnabled);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeConversation = useMemo(
@@ -97,6 +105,14 @@ export function StudentMessages({ basePath = "/shared/messages" }: StudentMessag
 
   const showThreadOnMobile = Boolean(activeConversationId);
 
+  if (!hydrated) {
+    return (
+      <div className="flex h-[calc(100vh-7.5rem)] min-h-[560px] animate-pulse items-center justify-center rounded-[24px] border border-border bg-card">
+        <p className="text-sm text-muted-foreground">Loading messages…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[calc(100vh-7.5rem)] min-h-[560px] overflow-hidden rounded-[24px] border border-border bg-card shadow-float">
       <aside
@@ -105,16 +121,25 @@ export function StudentMessages({ basePath = "/shared/messages" }: StudentMessag
           showThreadOnMobile ? "hidden md:flex" : "flex",
         )}
       >
-        <MessagesInboxHeader />
+        <MessagesInboxHeader isFetching={messagesFetching} />
         <div className="flex-1 overflow-y-auto">
-          {conversations.map((conversation) => (
-            <ConversationRow
-              key={conversation.id}
-              conversation={conversation}
-              active={conversation.id === activeConversationId}
-              onSelect={() => openChat(conversation.id)}
-            />
-          ))}
+          {conversations.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
+              <p className="text-sm font-medium text-muted-foreground">No conversations yet</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Messages from students, parents, and staff will appear here.
+              </p>
+            </div>
+          ) : (
+            conversations.map((conversation) => (
+              <ConversationRow
+                key={conversation.id}
+                conversation={conversation}
+                active={conversation.id === activeConversationId}
+                onSelect={() => openChat(conversation.id)}
+              />
+            ))
+          )}
         </div>
       </aside>
 
@@ -165,11 +190,16 @@ export function StudentMessages({ basePath = "/shared/messages" }: StudentMessag
   );
 }
 
-function MessagesInboxHeader() {
+function MessagesInboxHeader({ isFetching }: { isFetching?: boolean }) {
   return (
     <div className="border-b border-sidebar-border px-4 py-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-sidebar-foreground">Chats</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-xl font-bold text-sidebar-foreground">Chats</h1>
+          <TeacherRoleLiveBadge isFetching={isFetching} />
+          <HrRoleLiveBadge isFetching={isFetching} />
+          <SuperAdminRoleLiveBadge isFetching={isFetching} />
+        </div>
         <Button variant="ghost" size="icon" className="rounded-full" aria-label="Search chats">
           <Search className="h-5 w-5" />
         </Button>

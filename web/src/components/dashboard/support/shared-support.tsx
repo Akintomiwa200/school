@@ -32,6 +32,9 @@ import {
   TICKET_STATUS_STYLES,
   type SupportPriority,
 } from "./support-data";
+import { TeacherRoleLiveBadge } from "../teacher/teacher-workflow-ui";
+import { HrRoleLiveBadge } from "../hr/hr-workflow-ui";
+import { SuperAdminRoleLiveBadge } from "../super-admin/super-admin-workflow-ui";
 
 const EMPTY_TICKETS: SupportTicketDetail[] = [];
 
@@ -208,9 +211,10 @@ function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBack: () =
 }
 
 export function SharedSupport() {
-  const { data: tickets = EMPTY_TICKETS, isFetching } = useSupportTickets<SupportTicketDetail[]>(EMPTY_TICKETS);
+  const { data: tickets = EMPTY_TICKETS, isFetching, isFetched } = useSupportTickets<SupportTicketDetail[]>(EMPTY_TICKETS);
   const submitTicket = useSubmitSupportTicket();
-  const loading = usePageLoading() || isFetching;
+  const pageLoading = usePageLoading();
+  const loading = (pageLoading && isFetching) || (isFetching && !isFetched);
   const [showForm, setShowForm] = useState(false);
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState(SUPPORT_CATEGORIES[0]);
@@ -277,7 +281,12 @@ export function SharedSupport() {
     <div className="mx-auto w-full max-w-7xl space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Help & Support</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight">Help & Support</h1>
+            <TeacherRoleLiveBadge isFetching={isFetching} />
+            <HrRoleLiveBadge isFetching={isFetching} />
+            <SuperAdminRoleLiveBadge isFetching={isFetching} />
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">Get help from the school team. We typically respond within 24 hours.</p>
         </div>
         <Button onClick={() => setShowForm((v) => !v)} className="h-11 rounded-full bg-brand-purple px-6 text-white shadow-md shadow-brand-purple/20 hover:bg-brand-purple/90 hover:shadow-lg hover:shadow-brand-purple/25 transition-all">
@@ -334,7 +343,7 @@ export function SharedSupport() {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="h-11 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="box-border h-11 w-full min-w-0 max-w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {SUPPORT_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>

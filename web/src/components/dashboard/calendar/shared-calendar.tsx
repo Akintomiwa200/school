@@ -11,9 +11,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useCalendar } from "@/hooks/use-dashboard-data";
 import { useCurrentTime } from "@/hooks/use-current-time";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { mapApiCalendarEntries, getMonthRange } from "@/lib/calendar/map-calendar-api";
 import { cn } from "@/lib/utils";
+import { TeacherRoleLiveBadge } from "../teacher/teacher-workflow-ui";
+import { HrRoleLiveBadge } from "../hr/hr-workflow-ui";
+import { SuperAdminRoleLiveBadge } from "../super-admin/super-admin-workflow-ui";
 import {
   type CalendarEntry,
   type CalendarFilter,
@@ -22,7 +27,6 @@ import {
   filterCalendarEntries,
   formatDayHeader,
   formatMonthYear,
-  getCalendarEntries,
   getCalendarStats,
   getEntriesForDate,
   isSameDay,
@@ -177,19 +181,34 @@ function DayDetailList({
   );
 }
 
-export function SharedCalendar({ eventsPath }: { eventsPath?: string }) {
+export function SharedCalendar({
+  eventsPath,
+  timetablePath = "/student/timetable",
+}: {
+  eventsPath?: string;
+  timetablePath?: string;
+}) {
   const isLoading = usePageLoading();
   const now = useCurrentTime();
   const [viewMonth, setViewMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
   const [filter, setFilter] = useState<CalendarFilter>("all");
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(() => toDateKey(now));
 
-  const allEntries = useMemo(() => getCalendarEntries(viewMonth), [viewMonth]);
+  const monthRange = useMemo(() => getMonthRange(viewMonth), [viewMonth]);
+  const { data: calendarData, isFetching, isFetched } = useCalendar(monthRange.start, monthRange.end);
+
+  const allEntries = useMemo(() => {
+    if (!calendarData?.entries) return [] as CalendarEntry[];
+    return mapApiCalendarEntries(calendarData.entries, viewMonth, {
+      timetableHref: timetablePath,
+      eventsPath,
+    });
+  }, [calendarData?.entries, viewMonth, timetablePath, eventsPath]);
   const entries = useMemo(() => filterCalendarEntries(allEntries, filter), [allEntries, filter]);
   const stats = useMemo(() => getCalendarStats(allEntries), [allEntries]);
   const weeks = useMemo(() => buildMonthGrid(viewMonth), [viewMonth]);
 
-  if (isLoading) {
+  if (isLoading || (isFetching && !isFetched)) {
     return (
       <div className="mx-auto min-w-0 w-full max-w-7xl">
         <CalendarSkeleton />
@@ -201,9 +220,14 @@ export function SharedCalendar({ eventsPath }: { eventsPath?: string }) {
     <div className="mx-auto min-w-0 w-full max-w-7xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Calendar
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              Calendar
+            </h1>
+            <TeacherRoleLiveBadge isFetching={isFetching} />
+            <HrRoleLiveBadge isFetching={isFetching} />
+            <SuperAdminRoleLiveBadge isFetching={isFetching} />
+          </div>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Events, exams, and school holidays in one month view.
           </p>
@@ -366,7 +390,7 @@ export function SharedCalendar({ eventsPath }: { eventsPath?: string }) {
           <p className="mt-1 text-sm text-muted-foreground">
             Week-by-week schedule with filters and session details.
           </p>
-          <CalendarActionLink href="/student/timetable" className="mt-4">
+          <CalendarActionLink href={timetablePath} className="mt-4">
             Open timetable
             <ChevronRight className="h-4 w-4 shrink-0" />
           </CalendarActionLink>

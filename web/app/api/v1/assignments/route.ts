@@ -15,23 +15,35 @@ export async function GET(request: NextRequest) {
       include: {
         course: { select: { classId: true, class: { select: { name: true, section: true } } } },
         _count: { select: { submissions: true } },
+        submissions: { select: { score: true, status: true } },
       },
       orderBy: { dueDate: "desc" },
     });
 
-    const studentsInClasses = await prisma.student.count({ where: { classId: { in: resolvedClassIds }, isActive: true } });
+    const studentsByClass = new Map<string, number>();
+    for (const cid of resolvedClassIds) {
+      studentsByClass.set(cid, await prisma.student.count({ where: { classId: cid, isActive: true } }));
+    }
 
     const data = assignments.map((a) => {
-      const submittedCount = a.status === "PUBLISHED" ? Math.round(a._count.submissions * 0.7) : 0;
+      const submittedCount = a.submissions.filter((s) => s.status !== "PENDING").length;
+      const gradedCount = a.submissions.filter((s) => s.score != null).length;
+      const total = studentsByClass.get(a.course.classId) ?? 0;
+
+      let status: "active" | "grading" | "closed" = "active";
+      if (a.status === "CLOSED") status = "closed";
+      else if (submittedCount > 0 && gradedCount < submittedCount) status = "grading";
+      else if (submittedCount > 0 && gradedCount === submittedCount && submittedCount === total) status = "closed";
+
       return {
         id: a.id,
         title: a.title,
         classId: a.course.classId,
         className: a.course.class.section ? `${a.course.class.name} - ${a.course.class.section}` : a.course.class.name,
         dueDate: a.dueDate.toISOString().slice(0, 10),
-        total: studentsInClasses,
+        total,
         submitted: submittedCount,
-        status: a.status === "PUBLISHED" ? "active" : a.status === "CLOSED" ? "closed" : "active",
+        status,
         maxScore: a.maxScore,
         description: a.description ?? undefined,
         createdAt: a.createdAt.toISOString(),

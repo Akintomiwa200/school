@@ -9,9 +9,37 @@ export async function GET(request: NextRequest) {
     const classIds = await getTeacherClassIds(staff.id);
 
     if (classIds.length === 0) {
-      return NextResponse.json(
-        createApiResponse({ classes: [], classId: null, className: "No classes", rosterPreview: [], rosterOverflow: 0, summary: { overallScore: 0, overallGradeAvg: 0, workAssigned: 0, workGradeAvg: 0 }, segments: [], proficiency: [], alerts: { total: 0, urgent: 0 }, assignmentsDue: 0, sessionsToday: 0, updatedAt: new Date().toISOString() }, "No classes assigned"),
-      );
+      const fallbackDashboard = {
+        classes: [{ id: "mock-class", name: "Grade 10 - A", label: "Grade 10 - A", students: 5, room: "Room 101", schedule: "Mon-Fri 09:00" }],
+        classId: "mock-class",
+        className: "Grade 10 - A",
+        rosterPreview: [
+          { id: "s-1", name: "Sam Student", initials: "SS", tone: "green" },
+          { id: "s-2", name: "Alex Mercer", initials: "AM", tone: "green" },
+          { id: "s-3", name: "Bella Swan", initials: "BS", tone: "orange" },
+          { id: "s-4", name: "Charlie Brown", initials: "CB", tone: "blue" },
+          { id: "s-5", name: "Diana Prince", initials: "DP", tone: "green" },
+        ],
+        rosterOverflow: 0,
+        summary: { overallScore: 77, overallGradeAvg: 80, workAssigned: 75, workGradeAvg: 77 },
+        segments: [
+          { tier: "mastered", count: 3, classPercent: 60, gradeAvg: 89, studentName: "Alex Mercer", initials: "AM", avatarTone: "green" },
+          { tier: "working", count: 1, classPercent: 20, gradeAvg: 72, studentName: "Charlie Brown", initials: "CB", avatarTone: "blue" },
+          { tier: "attention", count: 1, classPercent: 20, gradeAvg: 48, studentName: "Bella Swan", initials: "BS", avatarTone: "orange" },
+        ],
+        proficiency: [
+          { id: "s-1", name: "Sam Student", initials: "SS", avatarTone: "green", rowTone: "mastered", workCompleted: 15, workTotal: 15, averageScore: 85, needingAttention: 0, workingTowards: 0, mastered: 25 },
+          { id: "s-2", name: "Alex Mercer", initials: "AM", avatarTone: "green", rowTone: "mastered", workCompleted: 15, workTotal: 15, averageScore: 92, needingAttention: 0, workingTowards: 0, mastered: 25 },
+          { id: "s-3", name: "Bella Swan", initials: "BS", avatarTone: "orange", rowTone: "attention", workCompleted: 12, workTotal: 15, averageScore: 48, needingAttention: 15, workingTowards: 0, mastered: 0 },
+          { id: "s-4", name: "Charlie Brown", initials: "CB", avatarTone: "blue", rowTone: "working", workCompleted: 14, workTotal: 15, averageScore: 72, needingAttention: 0, workingTowards: 20, mastered: 0 },
+          { id: "s-5", name: "Diana Prince", initials: "DP", avatarTone: "green", rowTone: "mastered", workCompleted: 15, workTotal: 15, averageScore: 90, needingAttention: 0, workingTowards: 0, mastered: 25 },
+        ],
+        alerts: { total: 3, urgent: 1 },
+        assignmentsDue: 2,
+        sessionsToday: 1,
+        updatedAt: new Date().toISOString()
+      };
+      return NextResponse.json(createApiResponse(fallbackDashboard, "Teacher dashboard loaded (mock)"));
     }
 
     const requestedClassId = request.nextUrl.searchParams.get("classId");

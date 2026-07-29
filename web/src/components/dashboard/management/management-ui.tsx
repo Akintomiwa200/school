@@ -5,7 +5,7 @@ export function ManagementPanel({ className, ...props }: React.HTMLAttributes<HT
   return (
     <div
       className={cn(
-        "min-w-0 rounded-[20px] bg-card p-4 text-card-foreground shadow-float sm:p-5",
+        "w-full min-w-0 rounded-[20px] bg-card p-4 text-card-foreground shadow-float sm:p-5",
         className,
       )}
       {...props}

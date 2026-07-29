@@ -12,8 +12,8 @@ import {
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { cn } from "@/lib/utils";
 import { AdminBackLink, AdminFormField, adminInputClass } from "../admin/admin-workflow-ui";
-import { ManagementPageHeader, ManagementPanel } from "../management/management-ui";
-import { TeacherDetailSkeleton, TeacherNotFound } from "./teacher-workflow-ui";
+import { ManagementPanel } from "../management/management-ui";
+import { TeacherDetailHeader, TeacherDetailSkeleton, TeacherNotFound } from "./teacher-workflow-ui";
 
 type AssignmentDetail = {
   id: string;
@@ -96,9 +96,10 @@ export function TeacherAssignmentDetail({ assignmentId }: { assignmentId: string
   return (
     <div className="space-y-6">
       <AdminBackLink href="/teacher/assignments" label="Back to assignments" />
-      <ManagementPageHeader
+      <TeacherDetailHeader
         title={assignment.title}
         description={`${assignment.className} · Due ${assignment.dueDate}`}
+        isFetching={isFetching}
         action={
           <div className="flex gap-2">
             <Button variant="outline" className="rounded-full" onClick={openEdit}>Edit</Button>

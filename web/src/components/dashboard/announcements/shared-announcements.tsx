@@ -33,6 +33,9 @@ import {
   useNotificationsStore,
 } from "../notifications/notifications-live-store";
 import { ConnectionBadge } from "../notifications/notifications-ui";
+import { TeacherRoleLiveBadge } from "../teacher/teacher-workflow-ui";
+import { HrRoleLiveBadge } from "../hr/hr-workflow-ui";
+import { SuperAdminRoleLiveBadge } from "../super-admin/super-admin-workflow-ui";
 
 function AnnouncementsSkeleton() {
   return (
@@ -139,6 +142,9 @@ export function SharedAnnouncements({
           description="School-wide updates — publishing notifies everyone connected in real time."
         />
         <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <TeacherRoleLiveBadge />
+          <HrRoleLiveBadge />
+          <SuperAdminRoleLiveBadge />
           <ConnectionBadge status={connection} />
           <Button asChild variant="outline" className="h-9 shrink-0 rounded-xl px-4">
             <Link href={notifPath}>Notifications</Link>

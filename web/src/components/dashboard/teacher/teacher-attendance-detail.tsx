@@ -11,8 +11,8 @@ import {
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { cn } from "@/lib/utils";
 import { AdminBackLink } from "../admin/admin-workflow-ui";
-import { ManagementPageHeader, ManagementPanel } from "../management/management-ui";
-import { TeacherDetailSkeleton, TeacherNotFound } from "./teacher-workflow-ui";
+import { ManagementPanel } from "../management/management-ui";
+import { TeacherDetailHeader, TeacherDetailSkeleton, TeacherNotFound } from "./teacher-workflow-ui";
 type SessionDetail = {
   id: string;
   className: string;
@@ -63,9 +63,10 @@ export function TeacherAttendanceDetail({ sessionId }: { sessionId: string }) {
   return (
     <div className="space-y-6">
       <AdminBackLink href="/teacher/attendance" label="Back to attendance" />
-      <ManagementPageHeader
+      <TeacherDetailHeader
         title={session.className}
         description={`${session.date} · ${session.time}`}
+        isFetching={isFetching}
         action={
           <Button
             className="rounded-full bg-brand-purple text-white hover:bg-brand-purple/90"

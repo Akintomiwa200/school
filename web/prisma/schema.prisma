@@ -900,6 +900,37 @@ enum LeaveStatus {
   CANCELLED
 }
 
+model JobPosting {
+  id          String    @id @default(cuid())
+  title       String
+  department  String
+  description String?   @db.Text
+  status      JobStatus @default(OPEN)
+  postedAt    DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  applications JobApplication[]
+}
+
+enum JobStatus {
+  OPEN
+  INTERVIEWING
+  CLOSED
+}
+
+model JobApplication {
+  id        String   @id @default(cuid())
+  jobId     String
+  name      String
+  email     String
+  phone     String?
+  status    String   @default("applied")
+  createdAt DateTime @default(now())
+
+  job JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
 // ============================================
 // EVENTS & INVENTORY
 // ============================================

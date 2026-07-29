@@ -3,13 +3,13 @@ import { UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SOCIAL_PILLS = [
-  { label: "Vimeo", dark: false, className: "left-[4%] top-[22%] -rotate-[7deg]" },
-  { label: "Facebook", dark: true, className: "left-[18%] top-[48%] rotate-[4deg]" },
-  { label: "LinkedIn", dark: true, className: "left-[34%] top-[18%] -rotate-[3deg]" },
-  { label: "Pinterest", dark: false, className: "left-[48%] top-[52%] rotate-[6deg]" },
-  { label: "Instagram", dark: false, className: "right-[28%] top-[20%] -rotate-[5deg]" },
-  { label: "Twitter", dark: true, className: "right-[14%] top-[44%] rotate-[3deg]" },
-  { label: "YouTube", dark: true, className: "right-[2%] top-[24%] -rotate-[4deg]" },
+  { label: "Vimeo", href: "https://vimeo.com", dark: false, className: "left-[4%] top-[22%] -rotate-[7deg]" },
+  { label: "Facebook", href: "https://facebook.com", dark: true, className: "left-[18%] top-[48%] rotate-[4deg]" },
+  { label: "LinkedIn", href: "https://linkedin.com", dark: true, className: "left-[34%] top-[18%] -rotate-[3deg]" },
+  { label: "Pinterest", href: "https://pinterest.com", dark: false, className: "left-[48%] top-[52%] rotate-[6deg]" },
+  { label: "Instagram", href: "https://instagram.com", dark: false, className: "right-[28%] top-[20%] -rotate-[5deg]" },
+  { label: "Twitter", href: "https://twitter.com", dark: true, className: "right-[14%] top-[44%] rotate-[3deg]" },
+  { label: "YouTube", href: "https://youtube.com", dark: true, className: "right-[2%] top-[24%] -rotate-[4deg]" },
 ] as const;
 
 function ConsultBadge({
@@ -75,18 +75,22 @@ function ConsultBadge({
   );
 }
 
-function SocialPill({ label, dark }: { label: string; dark: boolean }) {
+function SocialPill({ label, href, dark }: { label: string; href: string; dark: boolean }) {
   return (
-    <span
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
       className={cn(
-        "inline-flex rounded-full border px-5 py-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] sm:text-xs",
+        "inline-flex rounded-full border px-5 py-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] transition-transform hover:scale-105 sm:text-xs",
         dark
-          ? "border-brand-purple bg-brand-purple text-white shadow-marketing"
-          : "border-brand-purple/15 bg-white text-brand-purple shadow-sm",
+          ? "border-brand-purple bg-brand-purple text-white shadow-marketing hover:bg-brand-purple/90"
+          : "border-brand-purple/15 bg-white text-brand-purple shadow-sm hover:border-brand-purple/30 hover:bg-brand-purple/5",
       )}
     >
       {label}
-    </span>
+    </a>
   );
 }
 
@@ -115,8 +119,8 @@ export function AboutContactCta({
       {!hideSocialDecor ? (
         <div className="container-content max-w-[1400px] py-14 lg:py-16">
           <div className="flex flex-wrap items-center justify-center gap-3 md:hidden">
-            {SOCIAL_PILLS.map(({ label, dark }) => (
-              <SocialPill key={label} label={label} dark={dark} />
+            {SOCIAL_PILLS.map(({ label, href, dark }) => (
+              <SocialPill key={label} label={label} href={href} dark={dark} />
             ))}
           </div>
 
@@ -125,9 +129,9 @@ export function AboutContactCta({
             <ConsultBadge variant="light" className="absolute right-[4%] top-[32%]" />
             <ConsultBadge variant="brand" className="absolute left-[38%] top-[8%] hidden lg:flex" />
 
-            {SOCIAL_PILLS.map(({ label, dark, className }) => (
+            {SOCIAL_PILLS.map(({ label, href, dark, className }) => (
               <div key={label} className={cn("absolute z-[1]", className)}>
-                <SocialPill label={label} dark={dark} />
+                <SocialPill label={label} href={href} dark={dark} />
               </div>
             ))}
           </div>

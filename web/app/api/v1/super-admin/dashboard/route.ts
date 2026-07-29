@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createApiResponse } from "@/shared";
+import { getSuperAdminContext } from "@/lib/api/super-admin-helpers";
 
 export async function GET() {
+  try {
+    await getSuperAdminContext();
+  } catch {
+    return NextResponse.json({ success: false, error: { code: "unauthorized", message: "Unauthorized" } }, { status: 401 });
+  }
+
   const [schoolCount, userCount, auditCount, recentAudit, schools] = await Promise.all([
     prisma.school.count(),
     prisma.user.count(),

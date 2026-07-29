@@ -25,14 +25,6 @@ export async function GET() {
 
     const data = DAY_NAMES.filter((d) => dayMap.has(d)).map((day) => ({ day, periods: dayMap.get(day)! }));
 
-    if (data.length === 0) {
-      const fallback = [
-        { day: "Monday", periods: [{ time: "09:00-10:00", subject: "Mathematics", room: "Room 101", classId: classIds[0] ?? "" }] },
-        { day: "Tuesday", periods: [{ time: "09:00-10:00", subject: "Science", room: "Room 102", classId: classIds[0] ?? "" }] },
-      ];
-      return NextResponse.json(createApiResponse(fallback, "Timetable loaded (empty)"));
-    }
-
     return NextResponse.json(createApiResponse(data, "Timetable loaded"));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to load timetable";

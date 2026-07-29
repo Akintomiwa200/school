@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { usePageLoading } from "@/hooks/use-page-loading";
+import { useCurrentUserProfile } from "@/hooks/use-dashboard-data";
 import { UserRole } from "@/shared";
 import { getNotificationsPathForRole, getSettingsPathForRole } from "@/shared/permissions";
 import { getAccountSummary, getProfileExtras } from "./profile-data";
@@ -36,9 +37,18 @@ function ProfileSkeleton() {
 export function SharedProfile() {
   const isLoading = usePageLoading();
   const { data: session } = useSession();
+  const { data: profile } = useCurrentUserProfile();
   const role = (session?.user?.role as UserRole) ?? UserRole.STUDENT;
   const extras = getProfileExtras(role);
-  const summary = getAccountSummary(role, extras);
+  const summary = getAccountSummary(role, {
+    ...extras,
+    phone: profile?.phone ?? extras.phone,
+    department: profile?.department ?? extras.department,
+    jobTitle: profile?.jobTitle ?? extras.jobTitle,
+    memberSince: profile?.memberSince
+      ? new Date(profile.memberSince).toLocaleDateString(undefined, { month: "long", year: "numeric" })
+      : extras.memberSince,
+  });
   const settingsPath = getSettingsPathForRole(role);
   const notificationsPath = getNotificationsPathForRole(role);
 
@@ -57,8 +67,12 @@ export function SharedProfile() {
     );
   }
 
-  const displayName = session?.user?.name ?? "User";
-  const email = session?.user?.email ?? "No email on file";
+  const displayName = profile?.name ?? session?.user?.name ?? "User";
+  const email = profile?.email ?? session?.user?.email ?? "No email on file";
+  const phone = profile?.phone ?? extras.phone;
+  const memberSince = profile?.memberSince
+    ? new Date(profile.memberSince).toLocaleDateString(undefined, { month: "long", year: "numeric" })
+    : extras.memberSince;
 
   return (
     <div className="mx-auto min-w-0 w-full max-w-7xl space-y-6">
@@ -116,7 +130,7 @@ export function SharedProfile() {
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Phone className="h-4 w-4 shrink-0" />
-                {extras.phone}
+                {phone}
               </span>
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -124,7 +138,7 @@ export function SharedProfile() {
                 {formatRoleLabel(role)}
               </span>
               <span className="inline-flex rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                Member since {extras.memberSince}
+                Member since {memberSince}
               </span>
             </div>
           </div>

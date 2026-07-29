@@ -1,7 +1,7 @@
 "use client";
 
 import type { CallType, SignalPayload } from "./messages-types";
-import { CURRENT_USER_ID } from "./messages-data";
+import { getCurrentUserId } from "./messages-live-store";
 
 const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:stun.l.google.com:19302" },
@@ -36,7 +36,7 @@ export class WebRTCCallSession {
     if (this.isInitiator) {
       const offer = await this.pc.createOffer();
       await this.pc.setLocalDescription(offer);
-      await this.postSignal({ type: "offer", payload: offer, fromUserId: CURRENT_USER_ID });
+      await this.postSignal({ type: "offer", payload: offer, fromUserId: getCurrentUserId() });
     }
 
     this.startPolling();
@@ -58,7 +58,7 @@ export class WebRTCCallSession {
       void this.postSignal({
         type: "ice",
         payload: event.candidate.toJSON(),
-        fromUserId: CURRENT_USER_ID,
+        fromUserId: getCurrentUserId(),
       });
     };
 
@@ -123,7 +123,7 @@ export class WebRTCCallSession {
       const signals = json.data?.signals ?? [];
       for (const signal of signals) {
         this.lastSignalAt = Math.max(this.lastSignalAt, signal.createdAt);
-        if (signal.fromUserId === CURRENT_USER_ID) continue;
+        if (signal.fromUserId === getCurrentUserId()) continue;
         await this.handleRemoteSignal(signal);
       }
     } catch {
@@ -138,7 +138,7 @@ export class WebRTCCallSession {
       await this.pc.setRemoteDescription(signal.payload as RTCSessionDescriptionInit);
       const answer = await this.pc.createAnswer();
       await this.pc.setLocalDescription(answer);
-      await this.postSignal({ type: "answer", payload: answer, fromUserId: CURRENT_USER_ID });
+      await this.postSignal({ type: "answer", payload: answer, fromUserId: getCurrentUserId() });
       return;
     }
 
@@ -179,7 +179,7 @@ export class WebRTCCallSession {
     }
 
     if (notifyRemote) {
-      await this.postSignal({ type: "hangup", fromUserId: CURRENT_USER_ID });
+      await this.postSignal({ type: "hangup", fromUserId: getCurrentUserId() });
     }
 
     this.localStream?.getTracks().forEach((track) => track.stop());

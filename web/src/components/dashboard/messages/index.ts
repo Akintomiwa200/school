@@ -1,7 +1,8 @@
 export {
   StudentMessages,
 } from "./student-messages";
-export { getTotalUnreadCount } from "./messages-live-store";
+export { MessagesRealtimeBridge } from "./messages-realtime-bridge";
+export { getTotalUnreadCount, getParticipantById } from "./messages-live-store";
 export {
   getConversationForParticipant,
   DEMO_PARTICIPANTS,

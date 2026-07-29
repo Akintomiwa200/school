@@ -3,7 +3,18 @@ import {
   sendContactConfirmationEmail,
   sendContactFormEmail,
 } from "@/lib/email";
+import { getContactStaffContext } from "@/lib/api/contact-helpers";
+import { createContactMessage, listContactMessages } from "@/lib/api/contact-messages-store";
 import { contactFormSchema, createApiError, createApiResponse } from "@/shared";
+
+export async function GET() {
+  try {
+    await getContactStaffContext();
+    return NextResponse.json(createApiResponse(listContactMessages(), "Contact messages loaded"));
+  } catch {
+    return NextResponse.json(createApiError("unauthorized", "Unauthorized"), { status: 401 });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { name, email, subject, message } = parsed.data;
+    const record = createContactMessage({ name, email, subject, message });
 
     await sendContactFormEmail({ name, email, subject, message });
 
@@ -28,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      createApiResponse(null, "Message sent! We will get back to you within 1–2 business days."),
+      createApiResponse(record, "Message sent! We will get back to you within 1–2 business days."),
     );
   } catch (error) {
     console.error("Contact form error:", error);

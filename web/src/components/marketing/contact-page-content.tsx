@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Building2, Mail, Phone } from "lucide-react";
+import { Building2, Mail, Phone, Wifi } from "lucide-react";
 import { toast } from "sonner";
 import { appConfig } from "@/config";
 import { cn } from "@/lib/utils";
+import { useContactLiveStore } from "@/components/contact/contact-live-store";
+import { useSubmitContactForm } from "@/hooks/use-dashboard-data";
 import { AboutContactCta } from "./about-contact-cta";
 
 const LOCATIONS = [
@@ -25,6 +26,21 @@ const LOCATIONS = [
 const MAP_EMBED_URL =
   "https://maps.google.com/maps?q=128+Learning+Lane+Lagos+Nigeria&t=&z=14&ie=UTF8&iwloc=&output=embed";
 
+function ContactLiveBadge() {
+  const { connection, lastSyncedAt } = useContactLiveStore();
+  const timeLabel = lastSyncedAt
+    ? new Date(lastSyncedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : null;
+
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-marketing-grid/80 bg-marketing-surface px-3 py-1 text-xs font-medium text-marketing-muted">
+      <Wifi className={cn("h-3.5 w-3.5", connection === "connected" ? "text-green" : "text-brand-orange")} />
+      {connection === "error" ? "Reconnecting" : connection === "idle" ? "Connecting" : "Live support channel"}
+      {timeLabel ? <span className="opacity-70">· {timeLabel}</span> : null}
+    </span>
+  );
+}
+
 function ContactHero() {
   return (
     <section className="relative overflow-hidden bg-marketing-bg py-16 text-center sm:py-20 lg:py-24">
@@ -39,10 +55,18 @@ function ContactHero() {
           WebkitMaskImage: "linear-gradient(to right, black 55%, transparent 100%)",
         }}
       />
-      <div className="container-content relative">
-        <h1 className="font-display text-4xl font-bold uppercase tracking-[0.12em] text-marketing-text sm:text-5xl lg:text-[3.5rem]">
-          Contact Us
-        </h1>
+      <div className="container-content relative w-full">
+        <div className="mx-auto w-full max-w-3xl text-center">
+          <div className="flex justify-center">
+            <ContactLiveBadge />
+          </div>
+          <h1 className="mt-4 font-display text-4xl font-bold uppercase tracking-[0.12em] text-marketing-text sm:text-5xl lg:text-[3.5rem]">
+            Contact Us
+          </h1>
+          <p className="marketing-body-copy mt-3 text-sm text-marketing-muted sm:text-base">
+            Send a message — our team receives it instantly and typically replies within 1–2 business days.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -144,12 +168,10 @@ function ContactFormField({
 }
 
 function ContactFormCard() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitContact = useSubmitContactForm();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
     const form = e.currentTarget;
     const formData = new FormData(form);
     const payload = {
@@ -160,25 +182,15 @@ function ContactFormCard() {
     };
 
     try {
-      const res = await fetch("/api/v1/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const json = (await res.json()) as { success?: boolean; message?: string; error?: string };
-
-      if (!res.ok || !json.success) {
-        throw new Error(json.message ?? json.error ?? "Could not send message");
-      }
-
-      toast.success(json.message ?? "Message sent! We will get back to you within 1–2 business days.");
+      await submitContact.mutateAsync(payload);
+      toast.success("Message sent! We will get back to you within 1–2 business days.");
       form.reset();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not send your message. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
+
+  const isSubmitting = submitContact.isPending;
 
   return (
     <div className="rounded-[1.75rem] bg-gradient-to-br from-[#4a1ca8] via-brand-purple to-[#6225d1] p-6 shadow-marketing sm:rounded-[2rem] sm:p-8 lg:p-10">
@@ -246,11 +258,11 @@ export function ContactPageContent() {
       <section className="bg-marketing-bg py-14 lg:py-20">
         <div className="container-content">
           <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
-            <div className="w-full">
+            <div className="w-full min-w-0">
               <h2 className="font-display text-3xl font-bold text-marketing-text sm:text-4xl">
                 Get In Touch
               </h2>
-              <p className="marketing-lead-sm mt-4 max-w-2xl leading-relaxed">
+              <p className="marketing-section-copy marketing-lead-sm mt-4 leading-relaxed">
                 Have questions about enrollment, programs, or support? Reach our team by phone,
                 email, or the form. We typically respond within one to two business days.
               </p>

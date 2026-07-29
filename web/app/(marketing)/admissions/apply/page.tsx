@@ -1,24 +1,16 @@
 import { AdmissionsApplyWizard } from "@/components/admissions/admissions-apply-wizard";
-import { MarketingPageHero } from "@/components/marketing/page-hero";
 
 export const metadata = {
   title: "Apply for admission",
-  description: "Submit your secondary or university application online.",
+  description: "Submit your application online — details, documents, payment, and tracking.",
 };
 
 export default function AdmissionsApplyPage() {
   return (
-    <>
-      <MarketingPageHero
-        badge="Apply"
-        title="Online admission application"
-        description="Choose secondary or university intake, submit your details, pay the application fee, and track your examination slip."
-      />
-      <section className="pb-section lg:pb-24">
-        <div className="container-content">
-          <AdmissionsApplyWizard />
-        </div>
-      </section>
-    </>
+    <section className="border-b border-marketing-grid/80 bg-marketing-bg py-10 lg:py-14">
+      <div className="container-content">
+        <AdmissionsApplyWizard />
+      </div>
+    </section>
   );
 }

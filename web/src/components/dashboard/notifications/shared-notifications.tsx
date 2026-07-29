@@ -25,6 +25,9 @@ import {
   useNotificationsStore,
 } from "./notifications-live-store";
 import { ConnectionBadge, NotificationsPanel } from "./notifications-ui";
+import { TeacherRoleLiveBadge } from "../teacher/teacher-workflow-ui";
+import { HrRoleLiveBadge } from "../hr/hr-workflow-ui";
+import { SuperAdminRoleLiveBadge } from "../super-admin/super-admin-workflow-ui";
 
 type Filter = "all" | "unread" | "announcements";
 
@@ -104,9 +107,14 @@ export function SharedNotifications() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Notifications
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              Notifications
+            </h1>
+            <TeacherRoleLiveBadge />
+            <HrRoleLiveBadge />
+            <SuperAdminRoleLiveBadge />
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
             Real-time alerts linked to announcements, messages, fees, and more.
           </p>

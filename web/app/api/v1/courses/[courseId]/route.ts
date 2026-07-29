@@ -15,7 +15,10 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       include: {
         class: { select: { name: true, section: true } },
         materials: { orderBy: { createdAt: "desc" } },
-        assignments: { orderBy: { dueDate: "desc" } },
+        assignments: {
+          orderBy: { dueDate: "desc" },
+          include: { _count: { select: { submissions: true } } },
+        },
       },
     });
 
@@ -25,11 +28,27 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
     const studentCount = await prisma.student.count({ where: { classId: course.classId, isActive: true } });
 
-    const modules = [
-      { id: `${course.id}-m1`, title: "Introduction", lessons: 4, order: 1 },
-      { id: `${course.id}-m2`, title: "Core Concepts", lessons: 5, order: 2 },
-      { id: `${course.id}-m3`, title: "Advanced Topics", lessons: 3, order: 3 },
-    ];
+    const items = [
+      ...course.materials.map((m) => ({
+        id: m.id,
+        title: m.title,
+        type: "material" as const,
+        fileType: m.fileType,
+        fileSize: `${Math.round(m.fileSize / 1024)} KB`,
+        createdAt: m.createdAt.toISOString(),
+      })),
+      ...course.assignments.map((a) => ({
+        id: a.id,
+        title: a.title,
+        type: "assignment" as const,
+        dueDate: a.dueDate.toISOString().slice(0, 10),
+        status: a.status.toLowerCase(),
+        submitted: a._count.submissions,
+        createdAt: a.createdAt.toISOString(),
+      })),
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    const totalContent = course.materials.length + course.assignments.length;
 
     return NextResponse.json(
       createApiResponse(
@@ -38,10 +57,9 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           title: course.title,
           classId: course.classId,
           className: course.class.section ? `${course.class.name} - ${course.class.section}` : course.class.name,
-          modules,
-          lessons: course.assignments.length + course.materials.length + 12,
           students: studentCount,
-          progress: course.status === "PUBLISHED" ? 75 : 25,
+          progress: course.status === "PUBLISHED" ? Math.min(100, totalContent * 25) : 0,
+          items,
         },
         "Course loaded",
       ),
@@ -59,16 +77,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const { courseId } = await context.params;
     const body = await request.json();
 
+    const course = await prisma.course.findFirst({ where: { id: courseId, teacherId: staff.id } });
+    if (!course) {
+      return NextResponse.json(createApiError("not_found", "Course not found"), { status: 404 });
+    }
+
     if (body.action === "add-module" && body.title?.trim()) {
-      const course = await prisma.course.findFirst({ where: { id: courseId, teacherId: staff.id } });
-      if (!course) {
-        return NextResponse.json(createApiError("not_found", "Course not found"), { status: 404 });
-      }
+      const assignment = await prisma.assignment.create({
+        data: {
+          courseId: course.id,
+          title: body.title.trim(),
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          maxScore: 100,
+          status: "DRAFT",
+        },
+      });
+
       return NextResponse.json(
         createApiResponse(
-          { id: `${courseId}-m-new-${Date.now()}`, title: body.title.trim(), lessons: 4, order: 4 },
-          "Module added",
+          { id: assignment.id, title: assignment.title, type: "assignment", dueDate: assignment.dueDate.toISOString().slice(0, 10) },
+          "Assignment created",
         ),
+        { status: 201 },
       );
     }
 

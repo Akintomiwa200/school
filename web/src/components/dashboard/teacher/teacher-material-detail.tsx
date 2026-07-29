@@ -13,8 +13,8 @@ import {
 } from "@/hooks/use-dashboard-data";
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { AdminBackLink, AdminFormField, adminSelectClass } from "../admin/admin-workflow-ui";
-import { ManagementPageHeader, ManagementPanel } from "../management/management-ui";
-import { TeacherDetailSkeleton, TeacherNotFound } from "./teacher-workflow-ui";
+import { ManagementPanel } from "../management/management-ui";
+import { TeacherDetailHeader, TeacherDetailSkeleton, TeacherNotFound } from "./teacher-workflow-ui";
 type MaterialDetail = {
   id: string;
   name: string;
@@ -69,7 +69,11 @@ export function TeacherMaterialDetail({ materialId }: { materialId: string }) {
   return (
     <div className="space-y-6">
       <AdminBackLink href="/teacher/materials" label="Back to materials" />
-      <ManagementPageHeader title={material.name} description={`${material.type} · ${material.size} · Uploaded ${material.uploaded}`} />
+      <TeacherDetailHeader
+        title={material.name}
+        description={`${material.type} · ${material.size} · Uploaded ${material.uploaded}`}
+        isFetching={isFetching}
+      />
 
       <ManagementPanel className="border border-border space-y-4">
         <div>

@@ -1,5 +1,5 @@
-import { AdminAdmissionSettings } from "@/components/dashboard/admin/admin-admission-settings";
+import { SuperAdminAdmissionSettings } from "@/components/dashboard/super-admin/super-admin-admission-settings";
 
 export default function Page() {
-  return <AdminAdmissionSettings backHref="/super-admin" />;
+  return <SuperAdminAdmissionSettings backHref="/super-admin" />;
 }

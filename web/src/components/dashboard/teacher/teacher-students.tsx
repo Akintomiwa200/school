@@ -5,8 +5,9 @@ import { useMemo, useState } from "react";
 import { useTeacherCourses, useTeacherStudents } from "@/hooks/use-dashboard-data";
 import { usePageLoading } from "@/hooks/use-page-loading";
 import { cn } from "@/lib/utils";
-import { ManagementPageHeader, ManagementPanel, ManagementStatCard } from "../management/management-ui";
+import { ManagementPanel, ManagementStatCard } from "../management/management-ui";
 import { TEACHER_AVATAR_TONES } from "./teacher-data";
+import { TeacherPageHeader, teacherInitialLoading } from "./teacher-workflow-ui";
 
 const COURSES_EMPTY = { classes: [] as { id: string; name: string }[], courses: [] as { id: string; title: string }[] };
 
@@ -43,9 +44,9 @@ export function TeacherStudents() {
   const [classId, setClassId] = useState("");
   const [search, setSearch] = useState("");
   const pageLoading = usePageLoading();
-  const { data: students = [], isFetching } = useTeacherStudents<StudentRow[]>(classId || undefined);
+  const { data: students = [], isFetching, isFetched } = useTeacherStudents<StudentRow[]>(classId || undefined);
 
-  const loading = pageLoading || (isFetching && students.length === 0);
+  const loading = teacherInitialLoading(pageLoading, isFetching, isFetched);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return students;
@@ -67,9 +68,10 @@ export function TeacherStudents() {
 
   return (
     <div className="space-y-6">
-      <ManagementPageHeader
+      <TeacherPageHeader
         title="Students"
         description={totalStudents > 0 ? `${totalStudents} students across your classes` : "All students across your classes with live scores."}
+        isFetching={isFetching}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -84,14 +86,14 @@ export function TeacherStudents() {
         <ManagementStatCard label="At risk" value={String(atRisk)} hint={atRisk > 0 ? "Below 45% average" : "All performing well"} tone="pink" />
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <div className="relative max-w-xs flex-1">
+      <div className="dashboard-filter-bar" data-filter-bar="true">
+        <div className="relative min-w-[12rem] flex-1 basis-[14rem]" data-search-field="true">
           <input
             type="text"
             placeholder="Search by name or ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-10 w-full rounded-xl border border-border bg-card px-4 pl-9 text-sm outline-none placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-ring"
+            className="box-border h-10 w-full min-w-0 max-w-full rounded-xl border border-border bg-card px-4 pl-9 text-sm outline-none placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-ring"
           />
           <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -100,7 +102,7 @@ export function TeacherStudents() {
         <select
           value={classId}
           onChange={(e) => setClassId(e.target.value)}
-          className="h-10 rounded-xl border border-border bg-card px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="dashboard-filter-select box-border h-10 w-full min-w-[10.5rem] max-w-full shrink-0 appearance-none rounded-xl border border-border bg-card px-3 pr-9 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto sm:max-w-[16rem]"
         >
           <option value="">All classes</option>
           {coursesData.classes.map((item) => (

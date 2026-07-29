@@ -1,8 +1,10 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { API_ENDPOINTS } from "@/shared/constants";
 import { apiDelete, apiGet, apiPatch, apiPost } from "@/lib/api/client";
+import { invalidateTeacherLiveQueries } from "@/lib/teacher/teacher-query-sync";
+import { invalidateHrLiveQueries } from "@/lib/hr/hr-query-sync";
 import { createDefaultAdmissionConfig } from "@/components/admissions/admissions-workflow-data";
 import type {
   TeacherPerformanceTier,
@@ -73,14 +75,15 @@ export type SchoolDetail = {
   website: string;
   status: string;
   createdAt: string;
+  updatedAt?: string;
   stats: { students: number; admins: number; teachers: number; staff: number; totalUsers: number };
-  recentUsers: Array<{ id: string; name: string; email: string; role: string; isActive: boolean; joinedAt: string }>;
+  recentUsers: Array<{ id: string; name: string; email: string; role: string; isActive: boolean; joinedAt: string; lastActive?: string }>;
 };
 
-export function useSchoolDetail(schoolId: string) {
-  return useQuery<SchoolDetail>({
+export function useSchoolDetail<T = SchoolDetail>(schoolId: string) {
+  return useQuery<T>({
     queryKey: ["school", schoolId],
-    queryFn: () => apiGet<SchoolDetail>(API_ENDPOINTS.SCHOOLS_BY_ID(schoolId)),
+    queryFn: () => apiGet<T>(API_ENDPOINTS.SCHOOLS_BY_ID(schoolId)),
     enabled: !!schoolId,
     staleTime: 30_000,
   });
@@ -141,6 +144,56 @@ export type SuperAdminDashboardData = {
 export function useSuperAdminDashboard(fallback: SuperAdminDashboardData) {
   return useApiData<SuperAdminDashboardData>("super-admin-dashboard", API_ENDPOINTS.SUPER_ADMIN_DASHBOARD, fallback);
 }
+
+export type CurrentUserProfile = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: string;
+  avatar: string | null;
+  memberSince: string;
+  school: string | null;
+  department: string | null;
+  jobTitle: string | null;
+};
+
+export function useCurrentUserProfile() {
+  return useQuery({
+    queryKey: ["current-user-profile"],
+    queryFn: () => apiGet<CurrentUserProfile>(API_ENDPOINTS.USERS_ME),
+    staleTime: 60_000,
+  });
+}
+
+export function useUpdateUserStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, action }: { userId: string; action: "suspend" | "restore" }) =>
+      apiPatch(API_ENDPOINTS.USERS_BY_ID(userId), { action }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["super-admin-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["audit"] });
+    },
+  });
+}
+
+export function usePlatformSettings<T extends Record<string, unknown>>(fallback: T) {
+  return useApiData<T>("platform-settings", API_ENDPOINTS.SETTINGS, fallback);
+}
+
+export function useSavePlatformSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Record<string, unknown>) => apiPost(API_ENDPOINTS.SETTINGS, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["platform-settings"] });
+    },
+  });
+}
+
+export { invalidateSuperAdminLiveQueries } from "@/lib/super-admin/super-admin-query-sync";
 
 export type AuditStats = {
   totalEvents: number;
@@ -216,7 +269,68 @@ export function useParentDashboard<T>(fallback: T) {
 }
 
 export function useHrData<T>(fallback: T) {
-  return useApiData<T>("hr", API_ENDPOINTS.HR, fallback);
+  return useQuery({
+    queryKey: ["hr"],
+    queryFn: () => apiGet<T>(API_ENDPOINTS.HR),
+    initialData: fallback,
+    staleTime: 5_000,
+  });
+}
+
+export { invalidateHrLiveQueries } from "@/lib/hr/hr-query-sync";
+
+export function useUpdateHrLeaveRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ requestId, action }: { requestId: string; action: "approve" | "reject" }) =>
+      apiPatch(API_ENDPOINTS.HR_LEAVE(requestId), { action }),
+    onSuccess: () => {
+      invalidateHrLiveQueries(queryClient);
+    },
+  });
+}
+
+export function useCreateHrJobPosting() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { title: string; department: string; description?: string }) =>
+      apiPost(API_ENDPOINTS.HR_RECRUITMENT, body),
+    onSuccess: () => {
+      invalidateHrLiveQueries(queryClient);
+    },
+  });
+}
+
+export function useHrEmployee<T>(employeeId: string, fallback?: T) {
+  return useQuery({
+    queryKey: ["hr", "employee", employeeId],
+    queryFn: () => apiGet<T>(API_ENDPOINTS.HR_EMPLOYEE(employeeId)),
+    initialData: fallback,
+    staleTime: 5_000,
+    enabled: employeeId.length > 0,
+  });
+}
+
+export function useHrJob<T>(jobId: string, fallback?: T) {
+  return useQuery({
+    queryKey: ["hr", "job", jobId],
+    queryFn: () => apiGet<T>(API_ENDPOINTS.HR_JOB(jobId)),
+    initialData: fallback,
+    staleTime: 5_000,
+    enabled: jobId.length > 0,
+  });
+}
+
+export function useUpdateHrJob(jobId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { status: "open" | "interviewing" | "closed" }) =>
+      apiPatch(API_ENDPOINTS.HR_JOB(jobId), body),
+    onSuccess: () => {
+      invalidateHrLiveQueries(queryClient);
+      queryClient.invalidateQueries({ queryKey: ["hr", "job", jobId] });
+    },
+  });
 }
 
 export function useFinanceFees<T>(fallback: T) {
@@ -694,20 +808,42 @@ export function useInventoryItems<T>(fallback: T) {
   return useApiData<T>("inventory", API_ENDPOINTS.INVENTORY, fallback);
 }
 
+export { invalidateTeacherLiveQueries } from "@/lib/teacher/teacher-query-sync";
+
 export function useTeacherAssignments<T>(fallback: T) {
-  return useApiData<T>("assignments", API_ENDPOINTS.ASSIGNMENTS, fallback);
+  return useQuery({
+    queryKey: ["assignments"],
+    queryFn: () => apiGet<T>(API_ENDPOINTS.ASSIGNMENTS),
+    initialData: fallback,
+    staleTime: 5_000,
+  });
 }
 
 export function useTeacherCourses<T>(fallback: T) {
-  return useApiData<T>("courses", API_ENDPOINTS.COURSES, fallback);
+  return useQuery({
+    queryKey: ["courses"],
+    queryFn: () => apiGet<T>(API_ENDPOINTS.COURSES),
+    initialData: fallback,
+    staleTime: 5_000,
+  });
 }
 
 export function useTeacherTimetable<T>(fallback: T) {
-  return useApiData<T>("timetable", API_ENDPOINTS.TIMETABLE, fallback);
+  return useQuery({
+    queryKey: ["timetable"],
+    queryFn: () => apiGet<T>(API_ENDPOINTS.TIMETABLE),
+    initialData: fallback,
+    staleTime: 5_000,
+  });
 }
 
 export function useTeacherAttendance<T>(fallback: T) {
-  return useApiData<T>("attendance", `${API_ENDPOINTS.ATTENDANCE}?scope=teacher`, fallback);
+  return useQuery({
+    queryKey: ["attendance"],
+    queryFn: () => apiGet<T>(`${API_ENDPOINTS.ATTENDANCE}?scope=teacher`),
+    initialData: fallback,
+    staleTime: 5_000,
+  });
 }
 
 export type TeacherDashboardLive = {
@@ -745,7 +881,6 @@ export function useTeacherDashboard(classId: string, fallback: TeacherDashboardL
       apiGet<TeacherDashboardLive>(`${API_ENDPOINTS.TEACHER_DASHBOARD}?classId=${encodeURIComponent(classId)}`),
     initialData: fallback,
     staleTime: 5_000,
-    refetchInterval: 8_000,
   });
 }
 
@@ -755,7 +890,6 @@ export function useTeacherAssignment<T>(assignmentId: string, fallback?: T) {
     queryFn: () => apiGet<T>(API_ENDPOINTS.ASSIGNMENTS_BY_ID(assignmentId)),
     initialData: fallback,
     staleTime: 5_000,
-    refetchInterval: 8_000,
     enabled: assignmentId.length > 0,
   });
 }
@@ -767,21 +901,8 @@ export function useTeacherGradebook<T>(classId: string, fallback?: T) {
       apiGet<T>(`${API_ENDPOINTS.TEACHER_GRADEBOOK}?classId=${encodeURIComponent(classId)}`),
     initialData: fallback,
     staleTime: 5_000,
-    refetchInterval: 10_000,
     enabled: classId.length > 0,
   });
-}
-
-function invalidateTeacherLiveQueries(queryClient: QueryClient) {
-  queryClient.invalidateQueries({ queryKey: ["teacher", "dashboard"] });
-  queryClient.invalidateQueries({ queryKey: ["teacher", "gradebook"] });
-  queryClient.invalidateQueries({ queryKey: ["teacher", "classes"] });
-  queryClient.invalidateQueries({ queryKey: ["teacher", "class"] });
-  queryClient.invalidateQueries({ queryKey: ["teacher", "student"] });
-  queryClient.invalidateQueries({ queryKey: ["teacher", "students"] });
-  queryClient.invalidateQueries({ queryKey: ["attendance"] });
-  queryClient.invalidateQueries({ queryKey: ["courses"] });
-  queryClient.invalidateQueries({ queryKey: ["materials"] });
 }
 
 export function useTeacherMaterials<T>(fallback: T, classId?: string) {
@@ -790,7 +911,7 @@ export function useTeacherMaterials<T>(fallback: T, classId?: string) {
     queryKey: ["materials", classId ?? "all"],
     queryFn: () => apiGet<T>(`${API_ENDPOINTS.MATERIALS}${suffix}`),
     initialData: fallback,
-    staleTime: 15_000,
+    staleTime: 5_000,
   });
 }
 
@@ -833,6 +954,7 @@ export function useMarkTeacherAttendanceSession() {
         absent: body.absent,
       }),
     onSuccess: (_data, variables) => {
+      invalidateTeacherLiveQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       queryClient.invalidateQueries({ queryKey: ["teacher", "attendance", variables.sessionId] });
       queryClient.invalidateQueries({ queryKey: ["teacher", "dashboard"] });
@@ -845,7 +967,7 @@ export function useTeacherClassDetail<T>(classId: string, fallback?: T) {
     queryKey: ["teacher", "class", classId],
     queryFn: () => apiGet<T>(API_ENDPOINTS.TEACHER_CLASS(classId)),
     initialData: fallback,
-    staleTime: 8_000,
+    staleTime: 5_000,
     enabled: classId.length > 0,
   });
 }
@@ -855,8 +977,7 @@ export function useTeacherClassesOverview<T>(fallback: T) {
     queryKey: ["teacher", "classes", "overview"],
     queryFn: () => apiGet<T>(API_ENDPOINTS.TEACHER_CLASSES_OVERVIEW),
     initialData: fallback,
-    staleTime: 8_000,
-    refetchInterval: 12_000,
+    staleTime: 5_000,
   });
 }
 
@@ -922,8 +1043,20 @@ export function useTeacherCourse<T>(courseId: string, fallback?: T) {
     queryKey: ["courses", courseId],
     queryFn: () => apiGet<T>(API_ENDPOINTS.COURSES_BY_ID(courseId)),
     initialData: fallback,
-    staleTime: 10_000,
+    staleTime: 5_000,
     enabled: courseId.length > 0,
+  });
+}
+
+export function useCreateTeacherCourse() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { title: string; classId: string; subjectId?: string; description?: string }) =>
+      apiPost(API_ENDPOINTS.COURSES, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      invalidateTeacherLiveQueries(queryClient);
+    },
   });
 }
 
@@ -944,7 +1077,7 @@ export function useTeacherMaterial<T>(materialId: string, fallback?: T) {
     queryKey: ["materials", materialId],
     queryFn: () => apiGet<T>(API_ENDPOINTS.MATERIALS_BY_ID(materialId)),
     initialData: fallback,
-    staleTime: 10_000,
+    staleTime: 5_000,
     enabled: materialId.length > 0,
   });
 }
@@ -978,7 +1111,7 @@ export function useTeacherStudent<T>(studentId: string, fallback?: T) {
     queryKey: ["teacher", "student", studentId],
     queryFn: () => apiGet<T>(API_ENDPOINTS.TEACHER_STUDENT(studentId)),
     initialData: fallback,
-    staleTime: 10_000,
+    staleTime: 5_000,
     enabled: studentId.length > 0,
   });
 }
@@ -988,8 +1121,7 @@ export function useTeacherStudents<T>(classId?: string) {
   return useQuery({
     queryKey: ["teacher", "students", classId ?? "all"],
     queryFn: () => apiGet<T>(`${API_ENDPOINTS.TEACHER_STUDENTS}${suffix}`),
-    staleTime: 10_000,
-    refetchInterval: 12_000,
+    staleTime: 5_000,
   });
 }
 
@@ -1002,6 +1134,56 @@ export function useAddTeacherMaterial() {
       queryClient.invalidateQueries({ queryKey: ["materials"] });
       invalidateTeacherLiveQueries(queryClient);
     },
+  });
+}
+
+export type MessagesApiPayload = {
+  currentUserId: string;
+  conversations: import("@/components/dashboard/messages/messages-types").Conversation[];
+  messages: import("@/components/dashboard/messages/messages-types").ChatMessage[];
+};
+
+export function useMessages(enabled = true) {
+  return useQuery({
+    queryKey: ["messages"],
+    queryFn: () => apiGet<MessagesApiPayload>(API_ENDPOINTS.MESSAGES),
+    staleTime: 5_000,
+    enabled,
+  });
+}
+
+export function useSendMessage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { receiverId: string; content: string; subject?: string }) =>
+      apiPost(API_ENDPOINTS.MESSAGES, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
+      invalidateTeacherLiveQueries(queryClient);
+      invalidateHrLiveQueries(queryClient);
+    },
+  });
+}
+
+export type CalendarApiPayload = {
+  entries: import("@/lib/calendar/map-calendar-api").ApiCalendarEntry[];
+  stats: { totalEvents: number; upcomingEvents: number; totalClasses: number; recentAnnouncements: number };
+};
+
+export function useCalendar(start: string, end: string) {
+  return useQuery({
+    queryKey: ["calendar", start, end],
+    queryFn: () => apiGet<CalendarApiPayload>(`${API_ENDPOINTS.CALENDAR}?start=${start}&end=${end}`),
+    staleTime: 5_000,
+  });
+}
+
+export function useEvents(search = "") {
+  const suffix = search ? `?search=${encodeURIComponent(search)}&limit=100` : "?limit=100";
+  return useQuery({
+    queryKey: ["events", search],
+    queryFn: () => apiGet<import("@/lib/events/map-events-api").ApiEvent[]>(`${API_ENDPOINTS.EVENTS}${suffix}`),
+    staleTime: 5_000,
   });
 }
 
@@ -1031,7 +1213,11 @@ export function useSubmitSupportTicket() {
   return useMutation({
     mutationFn: (body: { subject: string; category: string; priority: string; description: string }) =>
       apiPost(API_ENDPOINTS.SUPPORT, body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["support"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["support"] });
+      invalidateTeacherLiveQueries(queryClient);
+      invalidateHrLiveQueries(queryClient);
+    },
   });
 }
 
@@ -1055,7 +1241,6 @@ export function useSupportTicketDetail(ticketId: string) {
     queryFn: () => apiGet<SupportTicketDetail>(API_ENDPOINTS.SUPPORT_BY_ID(ticketId)),
     enabled: !!ticketId,
     staleTime: 5_000,
-    refetchInterval: 10_000,
   });
 }
 
@@ -1066,6 +1251,8 @@ export function useReplySupportTicket(ticketId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["support", ticketId] });
       queryClient.invalidateQueries({ queryKey: ["support"] });
+      invalidateTeacherLiveQueries(queryClient);
+      invalidateHrLiveQueries(queryClient);
     },
   });
 }
@@ -1077,6 +1264,8 @@ export function useUpdateSupportTicket(ticketId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["support", ticketId] });
       queryClient.invalidateQueries({ queryKey: ["support"] });
+      invalidateTeacherLiveQueries(queryClient);
+      invalidateHrLiveQueries(queryClient);
     },
   });
 }
@@ -1341,7 +1530,8 @@ export function useAdmissionConfig() {
     queryKey: ["admissions", "config"],
     queryFn: () => apiGet<import("@/components/admissions/admissions-workflow-data").AdmissionConfig>(`${API_ENDPOINTS.ADMISSIONS}/config`),
     placeholderData: createDefaultAdmissionConfig(),
-    staleTime: 60_000,
+    staleTime: 5_000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -1351,10 +1541,41 @@ export function useUpdateAdmissionConfig() {
     mutationFn: (body: Partial<import("@/components/admissions/admissions-workflow-data").AdmissionConfig> & {
       action?: "reset" | "set_school_type";
       schoolType?: import("@/components/admissions/admissions-workflow-data").SchoolType;
-    }) => apiPatch(`${API_ENDPOINTS.ADMISSIONS}/config`, body),
-    onSuccess: () => {
+    }) => apiPatch<import("@/components/admissions/admissions-workflow-data").AdmissionConfig>(`${API_ENDPOINTS.ADMISSIONS}/config`, body),
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.setQueryData(["admissions", "config"], data);
+      }
       queryClient.invalidateQueries({ queryKey: ["admissions", "config"] });
     },
+  });
+}
+
+export function useContactMessages(fallback: import("@/lib/contact/contact-messages-data").ContactMessage[] = []) {
+  return useQuery({
+    queryKey: ["contact", "messages"],
+    queryFn: () => apiGet<import("@/lib/contact/contact-messages-data").ContactMessage[]>(API_ENDPOINTS.CONTACT),
+    placeholderData: fallback,
+    staleTime: 5_000,
+  });
+}
+
+export function useUpdateContactMessage(messageId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { status: import("@/lib/contact/contact-messages-data").ContactMessageStatus }) =>
+      apiPatch<import("@/lib/contact/contact-messages-data").ContactMessage>(`${API_ENDPOINTS.CONTACT}/${messageId}`, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contact", "messages"] });
+      queryClient.invalidateQueries({ queryKey: ["contact", "message", messageId] });
+    },
+  });
+}
+
+export function useSubmitContactForm() {
+  return useMutation({
+    mutationFn: (body: { name: string; email: string; subject: string; message: string }) =>
+      apiPost<import("@/lib/contact/contact-messages-data").ContactMessage>(API_ENDPOINTS.CONTACT, body),
   });
 }
 
